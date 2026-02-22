@@ -1,0 +1,6 @@
+/src/main/java/com/cha_hai_ji_lan/canvas_of_the_sea/generated
+/src/main/jniLibs/**/*.so
+/src/main/assets/tauri.conf.json
+/tauri.build.gradle.kts
+/proguard-tauri.pro
+/tauri.properties
