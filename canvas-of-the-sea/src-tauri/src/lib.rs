@@ -1,14 +1,38 @@
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+use std::fs;
+use serde_json::Value;
+use tauri::{Manager};
+
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+async fn get_app_path(app_handle: tauri::AppHandle) -> Result<String, String> {
+    let resource_dir = app_handle
+        .path()
+        .resource_dir()
+        .map_err(|e| e.to_string())?;
+    let resource_path_str = resource_dir.display().to_string();
+    // 修复：正确处理Option类型并返回Result
+    let resources_path = resource_path_str
+        .get(4..resource_path_str.len())
+        .ok_or_else(|| "Failed to extract resource path".to_string())?
+        .to_string();
+
+    Ok(resources_path)
+}
+
+#[tauri::command]
+fn read_json_file(file_path: String) -> Result<Value, String> {
+    let content = fs::read_to_string(file_path).map_err(|e| e.to_string())?;
+    let json: Value = serde_json::from_str(&content).map_err(|e| e.to_string())?;
+    Ok(json)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![
+            get_app_path,       // 获取app路径
+            read_json_file      // 读取json文件
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

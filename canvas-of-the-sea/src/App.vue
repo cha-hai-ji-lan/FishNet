@@ -7,10 +7,17 @@
   </main>
 </template>
 <script setup lang="ts">
-import { RouterView } from 'vue-router';
+// import { RouterView } from 'vue-router';
 
-// import { ref } from "vue";
-// import { invoke } from "@tauri-apps/api/core";
+import { ref, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
+
+import { init_app } from "./utils/MainIndex";
+
+onMounted(async () => {
+  await init_app();
+})
+
 </script>
 
 
@@ -22,7 +29,8 @@ import { RouterView } from 'vue-router';
   align-items: center;
   justify-content: center;
 }
-.main-head{
+
+.main-head {
   display: flex;
   flex-direction: row;
   align-items: center;
