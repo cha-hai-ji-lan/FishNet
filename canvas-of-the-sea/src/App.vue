@@ -1,7 +1,15 @@
 <template>
   <main class="container">
     <div data-tauri-drag-region class="main-head">
-      这是头
+      <div class="title-head left-head"></div>
+      <div class="title-head mid-head"></div>
+      <div class="title-head right-head">
+        <BaseIcon whichIcon="pin"></BaseIcon>
+        <BaseIcon whichIcon="minimize"></BaseIcon>
+        <BaseIcon whichIcon="maximize"></BaseIcon>
+        <BaseIcon whichIcon="close"></BaseIcon>
+      </div>
+
     </div>
     <RouterView></RouterView>
   </main>
@@ -13,6 +21,7 @@ import { RouterView } from 'vue-router';
 import { invoke } from "@tauri-apps/api/core";
 
 import { init_app } from "./utils/MainIndex";
+import BaseIcon from "./assets/icons/BaseIcon.vue";
 
 onMounted(async () => {
   await init_app();
@@ -40,6 +49,17 @@ onMounted(async () => {
   width: 100%;
   background: var(--title);
 }
+
+.title-head {
+  width: calc(100% / 3);
+}
+
+.right-head {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  margin-right: 1vmin;
+}
 </style>
 <style>
 html {
@@ -55,5 +75,17 @@ html {
 body {
   padding: 0;
   margin: 0;
+}
+
+.base-icon {
+  height: 4vmin;
+  width: 4vmin;
+  margin-right: 2vmin;
+  stroke: var(--button);
+  fill: var(--button);
+
+  &:hover {
+    border: 0.25vmin dashed var(--button);
+  }
 }
 </style>
