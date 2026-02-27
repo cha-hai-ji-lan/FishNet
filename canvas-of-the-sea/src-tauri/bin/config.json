@@ -1,10 +1,11 @@
 {
     "ColorPalette":{
         "Theme":{
+            "currentTheme":"dark",
             "dark":{
                 "Title":[60, 63, 65, 1],
                 "Background":[33, 40, 48, 1],
-                "ModifyingLine":[48, 54, 69, 1],
+                "BorderLine":[48, 54, 69, 1],
                 "Button":[59, 68, 83, 1],
                 "Font":[245, 245, 245, 1]
             }
