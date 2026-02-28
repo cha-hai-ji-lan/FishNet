@@ -1,14 +1,42 @@
 {
-    "ColorPalette":{
-        "Theme":{
-            "currentTheme":"dark",
-            "dark":{
-                "Title":[60, 63, 65, 1],
-                "Background":[33, 40, 48, 1],
-                "BorderLine":[48, 54, 69, 1],
-                "Button":[132, 134, 135, 1],
-                "Font":[245, 245, 245, 1]
+    "colorPalette": {
+        "theme": {
+            "currentTheme": "dark",
+            "dark": {
+                "title": [
+                    60,
+                    63,
+                    65,
+                    1
+                ],
+                "background": [
+                    33,
+                    40,
+                    48,
+                    1
+                ],
+                "borderLine": [
+                    48,
+                    54,
+                    69,
+                    1
+                ],
+                "button": [
+                    132,
+                    134,
+                    135,
+                    1
+                ],
+                "font": [
+                    245,
+                    245,
+                    245,
+                    1
+                ]
             }
         }
+    },
+    "interfaceStyle": {
+        "gridSize": "20px"
     }
 }

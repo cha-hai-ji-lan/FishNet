@@ -8,7 +8,8 @@ export const configPathF = ref("__CONFIG_PATH_F__")
 
 // 相关配置文件
 export const mainConfig = ref<any>({config : "__CONFIGURE__"})
-export const ThemeConfig = ref<any>({config : "__THEME_CONFIGURE__"})
+export const themeConfig = ref<any>({config : "__THEME_CONFIGURE__"})
+export const interfaceStyle = ref<any>({config : "__INTERFACE_STYLE_CONFIGURE__"})
 
 
 // 内部配置
@@ -22,16 +23,23 @@ export const init_app = async () => {
 
 }
 const init_config = async () => {
-    ThemeConfig.value = mainConfig.value["ColorPalette"]["Theme"]
-    currentThemeConfig.value = ThemeConfig.value["currentTheme"]
+    // 获取主题配置
+    themeConfig.value = mainConfig.value["colorPalette"]["theme"]
+    currentThemeConfig.value = themeConfig.value["currentTheme"]
+    // 获取界面样式
+    interfaceStyle.value = mainConfig.value["interfaceStyle"]
+    console.log(interfaceStyle.value)
 }
 const init_color_palette = async () => {
     // 主题颜色
-    document.documentElement.style.setProperty("--title",`rgba(${ThemeConfig.value[currentThemeConfig.value]["Title"]})`)
-    document.documentElement.style.setProperty("--background",`rgba(${ThemeConfig.value[currentThemeConfig.value]["Background"]})`)
-    document.documentElement.style.setProperty("--border-line",`rgba(${ThemeConfig.value[currentThemeConfig.value]["BorderLine"]})`)
-    document.documentElement.style.setProperty("--button",`rgba(${ThemeConfig.value[currentThemeConfig.value]["Button"]})`)
-    document.documentElement.style.setProperty("--font",`rgba(${ThemeConfig.value[currentThemeConfig.value]["Font"]})`)
+    document.documentElement.style.setProperty("--title",`rgba(${themeConfig.value[currentThemeConfig.value]["title"]})`)
+    document.documentElement.style.setProperty("--background",`rgba(${themeConfig.value[currentThemeConfig.value]["background"]})`)
+    document.documentElement.style.setProperty("--border-line",`rgba(${themeConfig.value[currentThemeConfig.value]["borderLine"]})`)
+    document.documentElement.style.setProperty("--button",`rgba(${themeConfig.value[currentThemeConfig.value]["button"]})`)
+    document.documentElement.style.setProperty("--font",`rgba(${themeConfig.value[currentThemeConfig.value]["font"]})`)
+    // 界面样式
+    document.documentElement.style.setProperty("--grid-size",`${interfaceStyle.value["gridSize"]}`)
+
 }
 
 const init_app_path = async () => {
