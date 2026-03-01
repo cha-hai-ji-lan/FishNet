@@ -1,6 +1,12 @@
 @font-face {
     font-family:'Judou-Heavy';
-    src: url('/Judou-Heavy.ttc') format('truetype');
+    src: url('/fonts/Judou-Heavy.ttc') format('truetype');
+    font-weight: 400;
+    font-display: swap;
+}
+@font-face {
+    font-family:'荆南圆体';
+    src: url('/fonts/荆南圆体.ttf') format('truetype');
     font-weight: 400;
     font-display: swap;
 }

@@ -7,9 +7,9 @@ export const binPath = ref("__BIN_PATH__")
 export const configPathF = ref("__CONFIG_PATH_F__")
 
 // 相关配置文件
-export const mainConfig = ref<any>({config : "__CONFIGURE__"})
-export const themeConfig = ref<any>({config : "__THEME_CONFIGURE__"})
-export const interfaceStyle = ref<any>({config : "__INTERFACE_STYLE_CONFIGURE__"})
+export const mainConfig = ref<any>({config : "__CONFIGURE__"})  // 主要配置
+export const themeConfig = ref<any>({config : "__THEME_CONFIGURE__"})  // 主题配置
+export const interfaceStyle = ref<any>({config : "__INTERFACE_STYLE_CONFIGURE__"})  // 界面设置
 
 
 // 内部配置
@@ -26,8 +26,8 @@ const init_config = async () => {
     // 获取主题配置
     themeConfig.value = mainConfig.value["colorPalette"]["theme"]
     currentThemeConfig.value = themeConfig.value["currentTheme"]
-    // 获取界面样式
-    interfaceStyle.value = mainConfig.value["interfaceStyle"]
+    // 获取界面设置
+    interfaceStyle.value = mainConfig.value["interfaceSetting"]
     console.log(interfaceStyle.value)
 }
 const init_color_palette = async () => {

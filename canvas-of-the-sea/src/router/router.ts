@@ -1,11 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../components/Home.vue'
+import Home from '../components/page/Home.vue'
+import drawTwoPiece from '../components/page/drawTwoPiece.vue'
 const router = createRouter({
     history: createWebHistory(), // 路由器的工作模式
     routes: [
         {
             path: '/', // 添加根路径路由
             component: Home // 可以选择一个组件作为默认页面
+        },
+        {
+            path: '/draw-two-piece', // 添加根路径路由
+            component: drawTwoPiece // 可以选择一个组件作为默认页面
         },
         // {
         //     path: '/deal-file',

@@ -36,7 +36,8 @@
             }
         }
     },
-    "interfaceStyle": {
-        "gridSize": "20px"
+    "interfaceSetting": {
+        "gridSize": "20px",
+        "atomicTime": 150
     }
 }

@@ -1,23 +1,41 @@
 <template>
   <div class="home-main">
-    <div class="blank"></div>
-    <div class="flex-r-div"><img class="main-icon" src="../assets/icon.png" alt="">
+    <div class="blank-17_5pe"></div>
+    <div class="flex-r-div"><img class="main-icon" src="../../assets/icon.png" alt="">
       <h1>Canvas of the sea</h1>
       <div class="app-version">0.1.5</div>
     </div>
-    <div class="flex-r-div home-subtitle">{{welcomeTitle}} 欢迎回来.{{ careTitle }}</div>
-    <div class="flex-r-div"><NormalIcons whichIcon="newFile"></NormalIcons></div>
+    <div class="flex-r-div home-subtitle">{{ welcomeTitle }} 欢迎回来.{{ careTitle }}</div>
+    <div class="blank-10pe"></div>
+    <div class="select-bar-frame">
+      <SelectBar v-model="drawMode" :options="netTypes" placeholder="拖网类型"></SelectBar>
+    </div>
+    <div class="blank-10pe"></div>
+    <div @click="() => { start_drawing() }" class="flex-r-div but-frame">
+      <div class="flex-r-div">
+        <NormalIcons whichIcon="newFile"></NormalIcons>
+      </div>新建绘图
+    </div>
+
 
 
   </div>
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import NormalIcons from '../assets/icons/NormalIcons.vue';
+import { netTypes } from '../../utils/Memory.ts'
+import { set_content } from '../../utils/warn.ts'
+import { useRouter } from "vue-router"; // 引入 useRoute
+import NormalIcons from '../../assets/icons/NormalIcons.vue';
+import SelectBar from '../utils/SelectorBar.vue';
+
 // 响应式变量存储当前时间
 const currentTime = ref('');
 const welcomeTitle = ref("__WELCOME_SENTENCES__")
 const careTitle = ref("") // __CARE_SENTENCES__
+const drawMode = ref("")
+
+const router = useRouter()
 
 onMounted(() => {
   updateTime(); // 立即更新一次时间
@@ -46,6 +64,15 @@ const updateTime = () => {
   }
   console.log(currentTime.value)
 };
+
+const start_drawing = () => {
+  console.log(drawMode.value)
+  if (drawMode.value === "") {
+    set_content("请选择绘图类型后再开始绘制拖网.")
+  } else {
+    router.push("/draw-two-piece")
+  }
+}
 
 </script>
 <style scoped>
@@ -88,6 +115,51 @@ h1 {
   align-items: center;
   justify-content: start;
   flex-direction: row;
+}
+
+.select-bar-frame {
+  font-family: "Judou-Heavy", "宋体", 'Courier New', Courier, monospace;
+  font-size: 2.5vmin;
+  text-align: center;
+  width: 35vmin;
+  height: 6vmin;
+}
+
+.but-frame {
+
+  font-size: 3vmin;
+  font-family: "Judou-Heavy", "宋体", 'Courier New', Courier, monospace;
+  width: fit-content;
+  scale: 1;
+  padding: 1vmin 2vmin;
+  border-radius: 2vmin;
+  /* border : 2px solid var(--button); */
+  background: linear-gradient(45deg, var(--border-line), var(--button));
+  background-size: cover;
+  /* 确保渐变覆盖整个区域 */
+  box-shadow:
+    -0.25vmin -0.25vmin 1.75vmin var(--border-line),
+    0.25vmin 0.25vmin 1.75vmin var(--button),
+    -0.75vmin -0.75vmin 1.75vmin var(--button),
+    0.75vmin 0.75vmin 1.75vmin var(--border-line);
+
+  user-select: none;
+  /* 用户无法选择 */
+  -webkit-user-select: none;
+  /* Safari兼容性 */
+  -moz-user-select: none;
+  /* Firefox兼容性 */
+  -ms-user-select: none;
+  /* IE兼容性 */
+  transition: scale 100ms ease;
+
+  &:hover {
+    filter: brightness(1.2);
+  }
+
+  &:active {
+    scale: 0.8;
+  }
 }
 
 .app-version {

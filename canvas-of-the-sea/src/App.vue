@@ -23,6 +23,7 @@
 
     </div>
     <RouterView></RouterView>
+    <div v-if="showPromptBox" class="warn">{{ attentionContent }}</div>
   </main>
 </template>
 <script setup lang="ts">
@@ -33,6 +34,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { Window } from "@tauri-apps/api/window";
 
 import { init_app } from "./utils/MainIndex";
+import { attentionContent, showPromptBox } from "./utils/warn";
 import BaseIcon from "./assets/icons/BaseIcon.vue";
 
 const appWindow = Window.getCurrent()
@@ -127,9 +129,26 @@ const title_bar_click = (mode: string) => {
   max-width: 22.5px;
   margin-left: 1vmin;
 }
+
+/* -------------------------------------- 警告设置 -------------------------------------- */
+.warn {
+  font-family: "荆南圆体", "宋体", "Microsoft YaHei", "微软雅黑", "SimSun", sans-serif;
+  position: absolute;
+  bottom:5vmin;
+  right: 2vmin;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  background-color: #e51050;
+  border: 0.25vmin solid #fff14d;
+  padding: 0.75vmin 1vmin;
+  border-radius: 0.5vmin;
+}
 </style>
 <style>
 @import  "./style/font.css";
+@import  "./style/setting.css";
 html {
   padding: 0;
   margin: 0;
