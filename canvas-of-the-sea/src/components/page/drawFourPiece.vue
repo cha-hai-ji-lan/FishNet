@@ -1,4 +1,6 @@
-<template><div class="draw-two-piece-main">绘制四片式</div></template>
+<template>
+<div class="draw-two-piece-main">绘制四片式</div>
+</template>
 <script setup lang="ts"></script>
 <style scoped>
 .draw-two-piece-main{

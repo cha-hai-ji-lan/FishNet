@@ -6,3 +6,10 @@
     width: 100%;
     height: 10%;
 }
+
+.ban-select {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}

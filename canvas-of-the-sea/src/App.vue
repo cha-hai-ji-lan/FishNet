@@ -2,7 +2,7 @@
   <main class="container">
     <div data-tauri-drag-region class="main-head">
       <div data-tauri-drag-region class="title-head left-head">
-        <img class="main-base-icon" src="./assets/icon.png" alt="">
+        <img @click="to_home()" class="main-base-icon" src="./assets/icon.png" alt="">
       </div>
       <div data-tauri-drag-region class="title-head mid-head"></div>
       <div data-tauri-drag-region class="title-head right-head">
@@ -22,7 +22,11 @@
       </div>
 
     </div>
-    <RouterView></RouterView>
+    <!-- <transition-group name="path-item" tag="div"> -->
+      <RouterView></RouterView>
+    <!-- </transition-group> -->
+      
+
     <div v-if="showPromptBox" class="warn">{{ attentionContent }}</div>
   </main>
 </template>
@@ -34,12 +38,16 @@ import { invoke } from "@tauri-apps/api/core";
 import { Window } from "@tauri-apps/api/window";
 
 import { init_app } from "./utils/MainIndex";
+import { useRouter } from "vue-router"; // 引入 useRoute
 import { attentionContent, showPromptBox } from "./utils/warn";
 import BaseIcon from "./assets/icons/BaseIcon.vue";
+
 
 const appWindow = Window.getCurrent()
 
 const baseIconCtr = ref({ "maximize": "maximize-max", "pin": "pin" })  // 控制窗口最大化和钉住屏幕图标
+
+const router = useRouter()
 
 onMounted(async () => {
   await init_app();
@@ -80,6 +88,10 @@ const title_bar_click = (mode: string) => {
 
 }
 
+const to_home = () => {
+  router.push("/")
+}
+
 </script>
 
 
@@ -103,6 +115,7 @@ const title_bar_click = (mode: string) => {
   max-height: 31.5px;
   width: 100%;
   background: var(--title);
+  /* transition: all 5s ease; */
 }
 
 .title-head {
@@ -137,6 +150,7 @@ const title_bar_click = (mode: string) => {
   bottom:5vmin;
   right: 2vmin;
   display: flex;
+  z-index: 999;
   flex-direction: row;
   justify-content: center;
   align-items: center;
@@ -190,4 +204,5 @@ body {
   stroke: var(--button);
   fill: var(--button);
 }
+
 </style>
