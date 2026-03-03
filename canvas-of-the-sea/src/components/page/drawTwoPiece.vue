@@ -2,7 +2,13 @@
   <div class="draw-two-piece-main"></div>
   <div class="float-option-version" :class="{'show-option-version': choosePart}">
     <div class="choose-column ban-select" @click="() => { show_part() }">{{ choosePart?"取消选择":"部位选择"}}</div>
-    <div class="choose-part"></div>
+    <div class="choose-part">
+    <div class="blank-10p"></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div class="blank-10p"></div>
+    </div>
   </div>
 </template>
 <script setup lang="ts">
@@ -54,6 +60,7 @@ const show_part = () => {
 }
 
 .choose-column {
+  font-family: "荆南圆体", "宋体", "Microsoft YaHei", "微软雅黑", "SimSun", sans-serif;
   writing-mode: vertical-rl;
   /* 从上到下，从右到左 */
   text-orientation: upright;
