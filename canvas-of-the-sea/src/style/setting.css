@@ -6,7 +6,15 @@
     width: 100%;
     height: 10%;
 }
-
+.w100{
+    width: 100%;
+}
+.flex-ccr{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+}
 .ban-select {
     user-select: none;
     -webkit-user-select: none;
