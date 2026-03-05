@@ -104,6 +104,7 @@ const to_home = () => {
   justify-content: center;
   height: 100vh; /* 确保容器占满整个视口高度 *
   /* border: 0.25vmin solid #fff */
+  filter: opacity(var(--transparency));
 }
 
 .main-head {
@@ -161,6 +162,7 @@ const to_home = () => {
 }
 </style>
 <style>
+/* @import  "./style/animation.css"; */
 @import  "./style/font.css";
 @import  "./style/setting.css";
 html {

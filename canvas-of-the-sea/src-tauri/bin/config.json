@@ -38,6 +38,7 @@
     },
     "interfaceSetting": {
         "gridSize": "20px",
-        "atomicTime": 150
+        "atomicTime": 150,
+        "InterfaceTransparency": 1
     }
 }

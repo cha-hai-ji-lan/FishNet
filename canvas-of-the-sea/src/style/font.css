@@ -10,3 +10,9 @@
     font-weight: 400;
     font-display: swap;
 }
+@font-face {
+    font-family:'思印宋';
+    src: url('/fonts/SiyinSong-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-display: swap;
+}

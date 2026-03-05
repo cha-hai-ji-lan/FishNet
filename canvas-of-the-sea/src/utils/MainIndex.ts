@@ -39,6 +39,7 @@ const init_color_palette = async () => {
     document.documentElement.style.setProperty("--font",`rgba(${themeConfig.value[currentThemeConfig.value]["font"]})`)
     // 界面样式
     document.documentElement.style.setProperty("--grid-size",`${interfaceStyle.value["gridSize"]}`)
+    document.documentElement.style.setProperty("--transparency",`${interfaceStyle.value["InterfaceTransparency"]}`)
 
 }
 

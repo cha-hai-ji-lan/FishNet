@@ -123,6 +123,9 @@ h1 {
   text-align: center;
   width: 35vmin;
   height: 6vmin;
+  background-color: var(--title);
+  border-radius: 2vmin;
+  /* filter: brightness(0.75); */
 }
 
 .but-frame {
