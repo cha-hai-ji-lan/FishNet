@@ -3,6 +3,12 @@
     <div data-tauri-drag-region class="main-head">
       <div data-tauri-drag-region class="title-head left-head">
         <img @click="to_home()" class="main-base-icon" src="./assets/icon.png" alt="">
+        <a href="mailto:shi2760992374@outlook.com?subject=BUG反馈&body=请发送反馈内容">
+          <div class="mar-l-2vm" @click="">
+            <BaseIcon whichIcon="report-bug"></BaseIcon>
+          </div>
+        </a>
+
       </div>
       <div data-tauri-drag-region class="title-head mid-head"></div>
       <div data-tauri-drag-region class="title-head right-head">
@@ -23,9 +29,9 @@
 
     </div>
     <!-- <transition-group name="path-item" tag="div"> -->
-      <RouterView></RouterView>
+    <RouterView></RouterView>
     <!-- </transition-group> -->
-      
+
 
     <div v-if="showPromptBox" class="warn">{{ attentionContent }}</div>
   </main>
@@ -102,7 +108,8 @@ const to_home = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh; /* 确保容器占满整个视口高度 *
+  height: 100vh;
+  /* 确保容器占满整个视口高度 *
   /* border: 0.25vmin solid #fff */
   filter: opacity(var(--transparency));
 }
@@ -122,7 +129,8 @@ const to_home = () => {
 .title-head {
   width: calc(100% / 3);
 }
-.left-head{
+
+.left-head {
   display: flex;
   align-items: center;
   justify-content: start;
@@ -138,7 +146,8 @@ const to_home = () => {
 
 .main-base-icon {
   height: 3.5vmin;
-  max-height: 22.5px;;
+  max-height: 22.5px;
+  ;
   width: 3.5vmin;
   max-width: 22.5px;
   margin-left: 1vmin;
@@ -148,7 +157,7 @@ const to_home = () => {
 .warn {
   font-family: "荆南圆体", "宋体", "Microsoft YaHei", "微软雅黑", "SimSun", sans-serif;
   position: absolute;
-  bottom:5vmin;
+  bottom: 5vmin;
   right: 2vmin;
   display: flex;
   z-index: 999;
@@ -163,8 +172,9 @@ const to_home = () => {
 </style>
 <style>
 /* @import  "./style/animation.css"; */
-@import  "./style/font.css";
-@import  "./style/setting.css";
+@import "./style/font.css";
+@import "./style/setting.css";
+
 html {
   padding: 0;
   margin: 0;
@@ -195,16 +205,17 @@ body {
     width: 3.5vmin;
     border: 0.25vmin dashed var(--button);
   }
-  &:active{
-  stroke: var(--font);
+
+  &:active {
+    stroke: var(--font);
 
   }
 }
+
 .mid-icon {
   height: 8vmin;
   width: 8vmin;
   stroke: var(--button);
   fill: var(--button);
 }
-
 </style>
