@@ -3,7 +3,7 @@
     <div class="blank-17_5pe"></div>
     <div class="flex-r-div"><img class="main-icon" src="../../assets/icon.png" alt="">
       <h1>Canvas of the sea</h1>
-      <div class="app-version">0.1.5</div>
+      <div class="app-version">0.1.12</div>
     </div>
     <div class="flex-r-div home-subtitle">{{ welcomeTitle }} 欢迎回来.{{ careTitle }}</div>
     <div class="blank-10pe"></div>
@@ -170,6 +170,7 @@ h1 {
   width: fit-content;
   height: fit-content;
   border: 2px solid #1177bb;
+  background-color: rgba(17, 119, 187, 0.3);
   border-radius: 2vmin;
   padding: 0.5vmin 1vmin;
   font-size: 3.5vmin;
