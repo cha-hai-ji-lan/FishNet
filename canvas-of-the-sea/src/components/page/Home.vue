@@ -90,12 +90,12 @@ h1 {
   width: 100%;
   flex: 1%;
   /* height: 95vh; */
-  background-color: var(--background);
+  background-color: rgba(var(--background),var(--transparency));
   /* background-color: rgba(33, 40, 48, 1); */
   /* 淡灰色底色 */
   background-image:
-    linear-gradient(to right, var(--border-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--border-line) 1px, transparent 1px);
+    linear-gradient(to right, rgba(var(--border-line),var(--transparency)) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(var(--border-line),var(--transparency)) 1px, transparent 1px);
   /* 创建虚线网格 */
   background-size: var(--grid-size) var(--grid-size);
 }
@@ -123,7 +123,7 @@ h1 {
   text-align: center;
   width: 35vmin;
   height: 6vmin;
-  background-color: var(--title);
+  background-color:rgba(var(--title),var(--transparency));
   border-radius: 2vmin;
   /* filter: brightness(0.75); */
 }
@@ -137,14 +137,14 @@ h1 {
   padding: 1vmin 2vmin;
   border-radius: 2vmin;
   /* border : 2px solid var(--button); */
-  background: linear-gradient(45deg, var(--border-line), var(--button));
+  background: linear-gradient(45deg, rgba(var(--border-line),var(--transparency)), rgba(var(--button),var(--transparency)));
   background-size: cover;
   /* 确保渐变覆盖整个区域 */
   box-shadow:
-    -0.25vmin -0.25vmin 1.75vmin var(--border-line),
-    0.25vmin 0.25vmin 1.75vmin var(--button),
-    -0.75vmin -0.75vmin 1.75vmin var(--button),
-    0.75vmin 0.75vmin 1.75vmin var(--border-line);
+    -0.25vmin -0.25vmin 1.75vmin rgba(var(--border-line),var(--transparency)),
+    0.25vmin 0.25vmin 1.75vmin rgba(var(--button),var(--transparency)),
+    -0.75vmin -0.75vmin 1.75vmin rgba(var(--button),var(--transparency)),
+    0.75vmin 0.75vmin 1.75vmin rgba(var(--border-line),var(--transparency));
 
   user-select: none;
   /* 用户无法选择 */

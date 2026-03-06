@@ -96,12 +96,12 @@ const choose_part =  (who: string) => {
   width: 100%;
   flex: 1%;
   /* height: 95vh; */
-  background-color: var(--background);
+  background-color: rgba(var(--background),var(--transparency));
   /* background-color: rgba(33, 40, 48, 1); */
   /* 淡灰色底色 */
   background-image:
-    linear-gradient(to right, var(--border-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--border-line) 1px, transparent 1px);
+    linear-gradient(to right, rgba(var(--border-line),var(--transparency)) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(var(--border-line),var(--transparency)) 1px, transparent 1px);
   /* 创建虚线网格 */
   background-size: var(--grid-size) var(--grid-size);
 }
@@ -131,8 +131,8 @@ const choose_part =  (who: string) => {
     text-orientation: upright;
     /* 保持字符直立 */
     background: transparent;
-    border: 2px solid var(--font);
-    border-right: 0px solid var(--font);
+    border: 2px solid rgba(var(--font),var(--transparency));
+    border-right: 0px solid rgba(var(--font),var(--transparency));
     border-radius: 1vmin 0 0 2.5vmin;
     padding: 1vmin;
     /* padding-right: 0.5vmin; */
@@ -145,13 +145,13 @@ const choose_part =  (who: string) => {
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    background: var(--border-line);
+    background: rgba(var(--border-line),var(--transparency));
     background-image:
-      linear-gradient(to right, var(--title) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--title) 1px, transparent 1px);
+      linear-gradient(to right, rgba(var(--title),var(--transparency)) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(var(--title),var(--transparency)) 1px, transparent 1px);
     /* 创建虚线网格 */
     background-size: var(--grid-size) var(--grid-size);
-    border-left: 2px solid var(--font);
+    border-left: 2px solid rgba(var(--font),var(--transparency));
     border-radius: 2.5vmin 0 0 2.5vmin;
     height: 100%;
     pointer-events:  auto;
@@ -185,8 +185,8 @@ const choose_part =  (who: string) => {
     writing-mode: vertical-rl;
     text-orientation: upright;
     background: transparent;
-    border: 2px solid var(--font);
-    border-left: 0px solid var(--font);
+    border: 2px solid rgba(var(--font),var(--transparency));
+    border-left: 0px solid rgba(var(--font),var(--transparency));
     border-radius: 0 2.5vmin 2.5vmin 0;
     padding: 1vmin;
 
@@ -195,13 +195,13 @@ const choose_part =  (who: string) => {
   & .parameters-table {
     height: 100%;
     transition: width 0.75s ease;
-    background-color: var(--border-line);
+    background-color: rgba(var(--border-line),var(--transparency));
     width: 0;
-    border-right: 2px solid var(--font);
+    border-right: 2px solid rgba(var(--font),var(--transparency));
     border-radius: 0 2.5vmin 2.5vmin 0;
     background-image:
-      linear-gradient(to right, var(--title) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--title) 1px, transparent 1px);
+      linear-gradient(to right, rgba(var(--title),var(--transparency)) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(var(--title),var(--transparency)) 1px, transparent 1px);
     /* 创建虚线网格 */
     background-size: var(--grid-size) var(--grid-size);
     &.show-para {
@@ -241,22 +241,22 @@ const choose_part =  (who: string) => {
     text-orientation: upright;
     margin-bottom: 20vmin;
     background: transparent;
-    border: 2px solid var(--font);
-    border-right: 0px solid var(--font);
+    border: 2px solid rgba(var(--font),var(--transparency));
+    border-right: 0px solid rgba(var(--font),var(--transparency));
     border-radius: 2.5vmin 0 0 1vmin;
     padding: 1vmin;
   }
 
   & .two-piece-canvas {
-    background: var(--border-line);
+    background: rgba(var(--border-line),var(--transparency));
     transition: width 0.75s ease;
     height: 100%;
     width: 0vmin;
-    border-left: 2px solid var(--font);
+    border-left: 2px solid rgba(var(--font),var(--transparency));
     border-radius: 2.5vmin 0 0 2.5vmin;
     background-image:
-      linear-gradient(to right, var(--title) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--title) 1px, transparent 1px);
+      linear-gradient(to right, rgba(var(--title),var(--transparency)) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(var(--title),var(--transparency)) 1px, transparent 1px);
     /* 创建虚线网格 */
     background-size: var(--grid-size) var(--grid-size);
   }

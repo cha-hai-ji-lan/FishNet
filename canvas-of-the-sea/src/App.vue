@@ -2,15 +2,15 @@
   <main class="container">
     <div data-tauri-drag-region class="main-head">
       <div data-tauri-drag-region class="title-head left-head">
-        <img @click="to_home()" class="main-base-icon" src="./assets/icon.png" alt="">
+        <img @click="router_to('/')" class="main-base-icon" src="./assets/icon.png" alt="">
         <a href="mailto:shi2760992374@outlook.com?subject=BUG反馈&body=请发送反馈内容">
           <div class="mar-l-2vm" @click="">
             <BaseIcon whichIcon="report-bug"></BaseIcon>
           </div>
         </a>
-        <div @click="">
-            <BaseIcon whichIcon="setting"></BaseIcon>
-          </div>
+        <div @click="router_to('/setting')">
+          <BaseIcon whichIcon="setting"></BaseIcon>
+        </div>
 
       </div>
       <div data-tauri-drag-region class="title-head mid-head"></div>
@@ -97,8 +97,19 @@ const title_bar_click = (mode: string) => {
 
 }
 
-const to_home = () => {
-  router.push("/")
+const router_to = (where: string) => {
+  switch (where) {
+    case '/':
+      router.push("/")
+      break;
+    case '/setting':
+      router.push("/setting")
+      break;
+
+    default:
+      break;
+  }
+
 }
 
 </script>
@@ -114,7 +125,7 @@ const to_home = () => {
   height: 100vh;
   /* 确保容器占满整个视口高度 *
   /* border: 0.25vmin solid #fff */
-  filter: opacity(var(--transparency));
+  /* filter: opacity(var(--transparency)); */
 }
 
 .main-head {
@@ -125,7 +136,7 @@ const to_home = () => {
   height: 5vh;
   max-height: 31.5px;
   width: 100%;
-  background: var(--title);
+  background: rgba(var(--title),var(--transparency));
   /* transition: all 5s ease; */
 }
 
@@ -183,7 +194,7 @@ html {
   margin: 0;
   font: 1.75vmin "宋体", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 500;
-  color: var(--font);
+  color: rgba(var(--font),1);
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -200,17 +211,17 @@ body {
   width: 4vmin;
   max-width: 30px;
   margin-right: 2.5vmin;
-  stroke: var(--button);
-  fill: var(--button);
+  stroke: rgba(var(--button),var(--transparency));
+  fill: rgba(var(--button),var(--transparency));
 
   &:hover {
     height: 3.5vmin;
     width: 3.5vmin;
-    border: 0.25vmin dashed var(--button);
+    border: 0.25vmin dashed rgba(var(--button),var(--transparency));
   }
 
   &:active {
-    stroke: var(--font);
+    stroke: rgba(var(--font),var(--transparency));
 
   }
 }
@@ -218,7 +229,7 @@ body {
 .mid-icon {
   height: 8vmin;
   width: 8vmin;
-  stroke: var(--button);
-  fill: var(--button);
+  stroke: rgba(var(--button),var(--transparency));
+  fill: rgba(var(--button),var(--transparency));
 }
 </style>

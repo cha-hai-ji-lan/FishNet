@@ -82,17 +82,17 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   /* padding-top: 1px; */
-  border-top: 0px dashed var(--button);
-  border-bottom: 2px dashed var(--button);
-  border-left: 0px dashed var(--button);
-  border-right: 0px dashed var(--button);
+  border-top: 0px dashed rgba(var(--button), var(--transparency));
+  border-bottom: 2px dashed rgba(var(--button), var(--transparency));
+  border-left: 0px dashed rgba(var(--button), var(--transparency));
+  border-right: 0px dashed rgba(var(--button), var(--transparency));
   background-color: transparent;
   cursor: pointer;
   transition: border-color 0.3s ease;
 }
 
 .select-wrapper:hover {
-  border-color: var(--font);
+  border-color: rgba(var(--button), var(--transparency));
 }
 
 .select-selected {
@@ -104,7 +104,7 @@ onUnmounted(() => {
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 5px solid var(--font);
+  border-top: 5px solid rgba(var(--font), var(--transparency));
   transition: transform 0.3s ease;
 }
 
@@ -117,11 +117,11 @@ onUnmounted(() => {
   top: 100%;
   left: 0;
   right: 0;
-  border: 1px dashed var(--button);
+  border: 1px dashed rgba(var(--button), var(--transparency));
   border-top: none;
   border-radius: 0 0 1vmin 1vmin;
   backdrop-filter: blur(30px);
-  background-color: var(--button);
+  background-color: rgba(var(--button), var(--transparency));
   z-index: 5;
   max-height: 20vmin;
   overflow-y: auto;
@@ -137,11 +137,11 @@ onUnmounted(() => {
 }
 
 .select-option:hover {
-  background-color: var(--border-line);
+  background-color: rgba(var(--border-line), var(--transparency));
 }
 
 .select-option.selected {
-  background-color: var(--title);
-  color: var(--background);
+  background-color: rgba(var(--title), var(--transparency));
+  color: rgba(var(--background), 1);
 }
 </style>

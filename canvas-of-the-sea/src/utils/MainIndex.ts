@@ -32,14 +32,15 @@ const init_config = async () => {
 }
 const init_color_palette = async () => {
     // 主题颜色
-    document.documentElement.style.setProperty("--title",`rgba(${themeConfig.value[currentThemeConfig.value]["title"]})`)
-    document.documentElement.style.setProperty("--background",`rgba(${themeConfig.value[currentThemeConfig.value]["background"]})`)
-    document.documentElement.style.setProperty("--border-line",`rgba(${themeConfig.value[currentThemeConfig.value]["borderLine"]})`)
-    document.documentElement.style.setProperty("--button",`rgba(${themeConfig.value[currentThemeConfig.value]["button"]})`)
-    document.documentElement.style.setProperty("--font",`rgba(${themeConfig.value[currentThemeConfig.value]["font"]})`)
+    document.documentElement.style.setProperty("--title",`${themeConfig.value[currentThemeConfig.value]["title"]}`)
+    document.documentElement.style.setProperty("--background",`${themeConfig.value[currentThemeConfig.value]["background"]}`)
+    document.documentElement.style.setProperty("--border-line",`${themeConfig.value[currentThemeConfig.value]["borderLine"]}`)
+    document.documentElement.style.setProperty("--button",`${themeConfig.value[currentThemeConfig.value]["button"]}`)
+    document.documentElement.style.setProperty("--font",`${themeConfig.value[currentThemeConfig.value]["font"]}`)
     // 界面样式
     document.documentElement.style.setProperty("--grid-size",`${interfaceStyle.value["gridSize"]}`)
-    document.documentElement.style.setProperty("--transparency",`${interfaceStyle.value["InterfaceTransparency"]}`)
+    document.documentElement.style.setProperty("--transparency",`${interfaceStyle.value["interfaceTransparency"]}`)
+    document.documentElement.style.setProperty("--pTransparency",`${interfaceStyle.value["partialTransparency"]}`)
 
 }
 

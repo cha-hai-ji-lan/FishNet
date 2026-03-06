@@ -68,7 +68,7 @@ onMounted(() => {
         align-items: start;
         flex-direction: row;
         width: 100%;
-        border-bottom: 2px solid var(--button);
+        border-bottom: 2px solid rgba(var(--button),var(--transparency));
         padding-top: 1vmin;
         padding-bottom: 1vmin;
 
@@ -87,7 +87,7 @@ onMounted(() => {
             -moz-appearance: none;
 
             /* 重置边框和背景 */
-            border: 2px solid var(--title);
+            border: 2px solid rgba(var(--title),var(--transparency));
             ;
             outline: none;
             background: transparent;
@@ -102,7 +102,7 @@ onMounted(() => {
 
             width: 50%;
             max-width: 400px;
-            background-color: var(--border-line);
+            background-color: rgba(var(--border-line),var(--transparency));
             border-radius: 1vmin;
             text-align: center;
             height: 3vmin;
