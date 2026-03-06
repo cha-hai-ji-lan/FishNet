@@ -8,6 +8,9 @@
             <BaseIcon whichIcon="report-bug"></BaseIcon>
           </div>
         </a>
+        <div @click="">
+            <BaseIcon whichIcon="setting"></BaseIcon>
+          </div>
 
       </div>
       <div data-tauri-drag-region class="title-head mid-head"></div>

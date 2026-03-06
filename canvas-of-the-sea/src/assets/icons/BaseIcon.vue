@@ -62,6 +62,21 @@
 		<path d="M384 640h-128v96 96h128M256 736h100M420 736h64" fill="none" stroke-width="36"  stroke-linecap="round" stroke-linejoin="round" />
 	</g>
 </svg>
+<svg v-if="whichIcon === 'setting'" xmlns="http://www.w3.org/2000/svg" class="base-icon" width="1024" height="1024" viewBox="0 0 1024 1024">
+	<g>
+		<path d="M464 256h96s32 0 32-32l-32-128s0-16-16-16h-64s-16 0-16 16l-32 128s0 32 32 32z" stroke-width="32"  fill="none" />
+		<path d="M464 256h96s32 0 32-32l-32-128s0-16-16-16h-64s-16 0-16 16l-32 128s0 32 32 32z" stroke-width="32"  fill="none" transform="rotate(37 512 512)" />
+		<path d="M464 256h96s32 0 32-32l-32-128s0-16-16-16h-64s-16 0-16 16l-32 128s0 32 32 32z" stroke-width="32"  fill="none" transform="rotate(74 512 512)" />
+		<path d="M464 256h96s32 0 32-32l-32-128s0-16-16-16h-64s-16 0-16 16l-32 128s0 32 32 32z" stroke-width="32"  fill="none" transform="rotate(111 512 512)" />
+		<path d="M464 256h96s32 0 32-32l-32-128s0-16-16-16h-64s-16 0-16 16l-32 128s0 32 32 32z" stroke-width="32"  fill="none" transform="rotate(144 512 512)" />
+		<path d="M464 256h96s32 0 32-32l-32-128s0-16-16-16h-64s-16 0-16 16l-32 128s0 32 32 32z" stroke-width="32"  fill="none" transform="rotate(181 512 512)" />
+		<path d="M464 256h96s32 0 32-32l-32-128s0-16-16-16h-64s-16 0-16 16l-32 128s0 32 32 32z" stroke-width="32"  fill="none" transform="rotate(-37 512 512)" />
+		<path d="M464 256h96s32 0 32-32l-32-128s0-16-16-16h-64s-16 0-16 16l-32 128s0 32 32 32z" stroke-width="32"  fill="none" transform="rotate(-74 512 512)" />
+		<path d="M464 256h96s32 0 32-32l-32-128s0-16-16-16h-64s-16 0-16 16l-32 128s0 32 32 32z" stroke-width="32"  fill="none" transform="rotate(-111 512 512)" />
+		<path d="M464 256h96s32 0 32-32l-32-128s0-16-16-16h-64s-16 0-16 16l-32 128s0 32 32 32z" stroke-width="32"  fill="none" transform="rotate(-144 512 512)" />
+		<path d="M416 512l32-64 64-32 64 32 32 64-32 64-64 32-64-32z"  fill="none" stroke-width="32" stroke-linejoin="round" stroke-linecap="round" />
+	</g>
+</svg>
 </template>
 <script setup lang="ts">
 defineProps<{
