@@ -5,9 +5,12 @@
             <div class="setting-item">
                 <div class="setting-title">软件透明度</div>
                 <input v-model.number="transparencyValue" type="range" min="0" max="100">
-                <div>{{transparencyValue }}</div>
+                <div>{{ transparencyValue }}</div>
             </div>
         </div>
+    </div>
+    <div class="float-save">
+        <div class="save-setting-button ban-select">保存</div>
     </div>
 </template>
 <script setup lang="ts">
@@ -15,12 +18,12 @@ import { computed } from 'vue';
 import { interfaceStyle } from "../../utils/MainIndex.ts";
 // 创建可写的计算属性
 const transparencyValue = computed({
-  get: () => Math.round(interfaceStyle.value['interfaceTransparency'] * 100),
-  set: (newValue: number) => {
-    interfaceStyle.value['interfaceTransparency'] = newValue / 100;
-    // 更新 CSS 变量
-    document.documentElement.style.setProperty("--transparency", `${newValue / 100}`);
-  }
+    get: () => Math.round(interfaceStyle.value['interfaceTransparency'] * 100),
+    set: (newValue: number) => {
+        interfaceStyle.value['interfaceTransparency'] = newValue / 100;
+        // 更新 CSS 变量
+        document.documentElement.style.setProperty("--transparency", `${newValue / 100}`);
+    }
 });
 </script>
 <style scoped>
@@ -70,7 +73,7 @@ const transparencyValue = computed({
             margin-top: 2vmin;
             border: 2px solid rgba(var(--border-line), var(--transparency));
             border-radius: 2vmin;
-            background-color: rgba(var(--title), var(--pTransparency));
+            background-color: rgba(var(--button), var(--pTransparency));
 
             & .setting-title {
                 width: 30%;
@@ -135,6 +138,40 @@ const transparencyValue = computed({
                     cursor: pointer;
                 }
             }
+        }
+    }
+}
+
+.float-save {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 2vmin;
+    right: 2vmin;
+    width: 25vmin;
+    height: 8vmin;
+    border-radius: 2vmin;
+    background-color: rgba(var(--button), var(--pTransparency));
+    z-index: 100;
+
+    & .save-setting-button {
+        font-size: 3.25vmin;
+        font-family: "思印宋", "宋体", "Microsoft YaHei", "微软雅黑", "SimSun", sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 18vmin;
+        height: 4vmin;
+        border-radius: 1vmin;
+        border: 2px solid rgba(6, 150, 215, 1);
+        background-color: rgba(6, 150, 215, var(--pTransparency));
+        &:hover{
+            filter: brightness(1.1);
+        }
+        &:active{
+            filter: brightness(1.35);
+
         }
     }
 }
