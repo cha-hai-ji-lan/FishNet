@@ -142,6 +142,6 @@ onUnmounted(() => {
 
 .select-option.selected {
   background-color: rgba(var(--title), var(--transparency));
-  color: rgba(var(--background), 1);
+  color: rgba(var(--button), 1);
 }
 </style>

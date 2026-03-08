@@ -24,6 +24,12 @@ fn read_json_file(file_path: String) -> Result<Value, String> {
     let json: Value = serde_json::from_str(&content).map_err(|e| e.to_string())?;
     Ok(json)
 }
+#[tauri::command]
+fn write_json_file(file_path: String, data: Value) -> Result<(), String> {
+    let content = serde_json::to_string_pretty(&data).map_err(|e| e.to_string())?;
+    fs::write(file_path, content).map_err(|e| e.to_string())?;
+    Ok(())
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -31,7 +37,8 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             get_app_path,       // 获取app路径
-            read_json_file      // 读取json文件
+            read_json_file,      // 读取json文件
+            write_json_file,      // 读取json文件
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

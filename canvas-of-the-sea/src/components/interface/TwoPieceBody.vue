@@ -133,7 +133,7 @@ onMounted(() => {
             margin-left: 2vmin;
             padding: 0.5vmin 1vmin;
             border: 2px solid rgba(6, 150, 215, 1);
-            background-color: rgba(6, 150, 215, 0.4);
+            background-color: rgba(6, 150, 215, var(--pTransparency));
             border-radius: 2vmin;
         }
 
@@ -144,7 +144,7 @@ onMounted(() => {
             &.item-button {
                 width: calc(40% - 2vmin);
                 text-align: center;
-                background-color: rgba(6, 150, 215, 0.4);
+                background-color: rgba(6, 150, 215, var(--pTransparency));
                 border: 2px solid rgba(6, 150, 215, 1);
                 border-radius: 1vmin;
                 margin: 0 1vmin;
@@ -153,7 +153,7 @@ onMounted(() => {
             &.item-button-warn {
                 width: calc(40% - 2vmin);
                 text-align: center;
-                background-color: rgba(255, 206, 72, 0.4);
+                background-color: rgba(255, 206, 72, var(--pTransparency));
                 border: 2px solid rgba(255, 206, 72, 1);
                 border-radius: 1vmin;
                 margin: 0 1vmin;
@@ -165,7 +165,7 @@ onMounted(() => {
 
                 width: calc(40% - 2vmin);
                 text-align: center;
-                background-color: rgba(229, 16, 80, 0.4);
+                background-color: rgba(229, 16, 80, var(--pTransparency));
                 border: 2px solid rgba(229, 16, 80, 1);
                 border-radius: 1vmin;
                 margin: 0 1vmin;
@@ -180,7 +180,7 @@ onMounted(() => {
                 width: calc(40% - 2vmin);
                 max-width: 400px;
                 text-align: center;
-                background-color: rgba(6, 150, 215, 0.4);
+                background-color: rgba(6, 150, 215, var(--pTransparency));
                 border: 2px solid rgba(6, 150, 215, 1);
                 border-radius: 1vmin;
                 margin: 0 15vmin;

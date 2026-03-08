@@ -46,8 +46,9 @@ import { RouterView } from 'vue-router';
 import { invoke } from "@tauri-apps/api/core";
 import { Window } from "@tauri-apps/api/window";
 
-import { init_app } from "./utils/MainIndex";
-import { useRouter } from "vue-router"; // 引入 useRoute
+import { init_app } from "./utils/MainIndex.ts";
+import { cacheRouterPath } from "./utils/Memory.ts"
+import { useRouter, useRoute } from "vue-router"; // 引入 useRoute
 import { attentionContent, showPromptBox } from "./utils/warn";
 import BaseIcon from "./assets/icons/BaseIcon.vue";
 
@@ -57,6 +58,7 @@ const appWindow = Window.getCurrent()
 const baseIconCtr = ref({ "maximize": "maximize-max", "pin": "pin" })  // 控制窗口最大化和钉住屏幕图标
 
 const router = useRouter()
+const route = useRoute()
 
 onMounted(async () => {
   await init_app();
@@ -103,7 +105,18 @@ const router_to = (where: string) => {
       router.push("/")
       break;
     case '/setting':
-      router.push("/setting")
+      if (route.path === "/setting") {
+        router.push(cacheRouterPath.value)
+      } else {
+        cacheRouterPath.value = route.path
+        if(cacheRouterPath.value === "__NULL__"){
+        router.push("/")
+        }else{
+          router.push("/setting")
+        }
+      }
+
+
       break;
 
     default:
@@ -136,7 +149,7 @@ const router_to = (where: string) => {
   height: 5vh;
   max-height: 31.5px;
   width: 100%;
-  background: rgba(var(--title),var(--transparency));
+  background: rgba(var(--title), var(--transparency));
   /* transition: all 5s ease; */
 }
 
@@ -194,7 +207,7 @@ html {
   margin: 0;
   font: 1.75vmin "宋体", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 500;
-  color: rgba(var(--font),1);
+  color: rgba(var(--font), 1);
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -211,17 +224,17 @@ body {
   width: 4vmin;
   max-width: 30px;
   margin-right: 2.5vmin;
-  stroke: rgba(var(--button),var(--transparency));
-  fill: rgba(var(--button),var(--transparency));
+  stroke: rgba(var(--button), 1);
+  fill: rgba(var(--button), 1);
 
   &:hover {
     height: 3.5vmin;
     width: 3.5vmin;
-    border: 0.25vmin dashed rgba(var(--button),var(--transparency));
+    border: 0.25vmin dashed rgba(var(--button), 1);
   }
 
   &:active {
-    stroke: rgba(var(--font),var(--transparency));
+    stroke: rgba(var(--font), 1);
 
   }
 }
@@ -229,7 +242,7 @@ body {
 .mid-icon {
   height: 8vmin;
   width: 8vmin;
-  stroke: rgba(var(--button),var(--transparency));
-  fill: rgba(var(--button),var(--transparency));
+  stroke: rgba(var(--button), var(--transparency));
+  fill: rgba(var(--button), var(--transparency));
 }
 </style>
