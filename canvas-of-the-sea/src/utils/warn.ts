@@ -6,6 +6,8 @@ export const attentionContent = ref<string>("")  // 注意内容
 export const showPromptBox = ref<boolean>(false)  // 是否显示提示框
 export const promptLevel = ref<string>("__NULL_LEVEL__")  // 是否显示提示框
 
+let promptTimer: ReturnType<typeof setTimeout> | null = null;
+
 
 export const set_content = (content: string, level: number = 2) => {
     switch (level) {  // 不清空警告等级状态位 默认是 一般警告
@@ -25,8 +27,17 @@ export const set_content = (content: string, level: number = 2) => {
     attentionContent.value = content;
     showPromptBox.value = true;
     console.log(attentionContent.value.length * interfaceStyle.value["atomicTime"])
-    setTimeout(() => {
+    promptTimer = setTimeout(() => {
         showPromptBox.value = false;
         attentionContent.value = ""
     }, attentionContent.value.length * interfaceStyle.value["atomicTime"]) // interfaceStyle.value["atomicTime"] :原子时间,显示单个警告文字的最短时间
+}
+
+export const shut_down_note = () => {
+    if (promptTimer) {
+        clearTimeout(promptTimer);
+        promptTimer = null;
+    }
+    showPromptBox.value = false;
+    attentionContent.value = ""
 }

@@ -38,7 +38,7 @@
 
     <div v-if="showPromptBox" class="warn"
       :class="{ 'nor-warn': promptLevel === '1', 'mid-warn': promptLevel === '2', 'err-warn': promptLevel === '3' }">{{
-        attentionContent }}</div>
+        attentionContent }} <span class="ban-select" @click="shut_down_note()">X</span></div>
   </main>
 </template>
 <script setup lang="ts">
@@ -51,7 +51,7 @@ import { Window } from "@tauri-apps/api/window";
 import { init_app } from "./utils/MainIndex.ts";
 import { cacheRouterPath } from "./utils/Memory.ts"
 import { useRouter, useRoute } from "vue-router"; // 引入 useRoute
-import { attentionContent, showPromptBox, promptLevel } from "./utils/warn";
+import { attentionContent, showPromptBox, promptLevel, shut_down_note } from "./utils/warn";
 import BaseIcon from "./assets/icons/BaseIcon.vue";
 
 

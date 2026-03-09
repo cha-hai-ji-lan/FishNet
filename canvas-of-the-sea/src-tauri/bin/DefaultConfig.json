@@ -1,6 +1,6 @@
 {
     "app": {
-        "version": "0.1.14"
+        "version": "0.1.16"
     },
     "colorPalette": {
         "theme": {
@@ -78,7 +78,7 @@
     },
     "interfaceSetting": {
         "gridSize": "15px",
-        "atomicTime": 150,
+        "atomicTime": 200,
         "interfaceTransparency": 1,
         "partialTransparency": 0.4
     }
