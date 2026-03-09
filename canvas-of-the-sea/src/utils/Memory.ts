@@ -10,4 +10,5 @@ export const themeTypes = [  // 主题可选样式
   { value: "light", label: "亮色主题" },
 ]
 
-export const cacheRouterPath = ref("__NULL__")
+export const cacheRouterPath = ref<string>("__NULL__")  // 上一步操作的地址
+export const isNewFile = ref<boolean>(false)  // 是否为一个新建的项目

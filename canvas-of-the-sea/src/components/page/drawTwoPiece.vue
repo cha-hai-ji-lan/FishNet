@@ -19,15 +19,16 @@
     <div class="choose-part">
       <div class="blank-10p"></div>
       <div>
-        <span @click="() => { choose_part('left-sleeve')}" class="net-part">
+        <span @click="() => { choose_part('left-sleeve') }" class="net-part">
           <NetShowIcons whichIcon="left-sleeve"></NetShowIcons>
         </span>
-        <span @click="() => { choose_part('right-sleeve')}" class="net-part">
+        <span @click="() => { choose_part('right-sleeve') }" class="net-part">
           <NetShowIcons whichIcon="right-sleeve"></NetShowIcons>
         </span>
       </div>
       <div>
-        <span @click="() => { choose_part('net-body') }" class="net-part" :class="{'choose-first': hasChoose === false}">
+        <span @click="() => { choose_part('net-body') }" class="net-part"
+          :class="{ 'choose-first': hasChoose === false }">
           <NetShowIcons whichIcon="net-body"></NetShowIcons>
         </span>
       </div>
@@ -37,13 +38,22 @@
 </template>
 <script setup lang="ts">
 
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import NetShowIcons from '../../assets/icons/NetShowIcons.vue';
 import TwoPieceBody from '../../components/interface/TwoPieceBody.vue';
-import {hasChoose, focusPart} from '../../utils/core/startdraw'
+import { hasChoose, focusPart } from '../../utils/core/startdraw.ts'
+import { set_content } from '../../utils/warn.ts'
+import { isNewFile } from '../../utils/Memory.ts'
 const choosePart = ref(false)
 const showCanvas = ref(false)
 const showPara = ref(false)
+
+onMounted(() => {
+  if (isNewFile.value === true) {
+    hasChoose.value = false;
+    focusPart.value = "__NULL__"
+  }
+})
 const show_table = (who: string) => {
   switch (who) {
     case 'part':
@@ -74,16 +84,27 @@ const show_table = (who: string) => {
 
 }
 
-const choose_part =  (who: string) => {
-  show_table('part')
+const choose_part = (who: string) => {
   switch (who) {
     case 'net-body':
-    hasChoose.value = true;
-    focusPart.value = "two-net-body"
+      isNewFile.value = false  // 已进行了一步操作,可看作不是新文件
+      hasChoose.value = true;
+      focusPart.value = "two-net-body"
       break;
-  
+    case 'right-sleeve':
+      focusPart.value = "two-right-sleeve"
+      break;
+    case 'left-sleeve':
+      focusPart.value = "two-left-sleeve"
+      break;
+
     default:
       break;
+  }
+  if (hasChoose.value == true) {
+    show_table('part')
+  } else {
+    set_content("请在第一步选择绘制网身,否则无法参数化建模", 2)
   }
 }
 </script>
@@ -96,12 +117,12 @@ const choose_part =  (who: string) => {
   width: 100%;
   flex: 1%;
   /* height: 95vh; */
-  background-color: rgba(var(--background),var(--transparency));
+  background-color: rgba(var(--background), var(--transparency));
   /* background-color: rgba(33, 40, 48, 1); */
   /* 淡灰色底色 */
   background-image:
-    linear-gradient(to right, rgba(var(--border-line),var(--transparency)) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(var(--border-line),var(--transparency)) 1px, transparent 1px);
+    linear-gradient(to right, rgba(var(--border-line), var(--transparency)) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(var(--border-line), var(--transparency)) 1px, transparent 1px);
   /* 创建虚线网格 */
   background-size: var(--grid-size) var(--grid-size);
 }
@@ -131,8 +152,8 @@ const choose_part =  (who: string) => {
     text-orientation: upright;
     /* 保持字符直立 */
     background: transparent;
-    border: 2px solid rgba(var(--font),var(--transparency));
-    border-right: 0px solid rgba(var(--font),var(--transparency));
+    border: 2px solid rgba(var(--font), var(--transparency));
+    border-right: 0px solid rgba(var(--font), var(--transparency));
     border-radius: 1vmin 0 0 2.5vmin;
     padding: 1vmin;
     /* padding-right: 0.5vmin; */
@@ -145,25 +166,27 @@ const choose_part =  (who: string) => {
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    background: rgba(var(--border-line),var(--transparency));
+    background: rgba(var(--border-line), var(--transparency));
     background-image:
-      linear-gradient(to right, rgba(var(--title),var(--transparency)) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(var(--title),var(--transparency)) 1px, transparent 1px);
+      linear-gradient(to right, rgba(var(--title), var(--transparency)) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(var(--title), var(--transparency)) 1px, transparent 1px);
     /* 创建虚线网格 */
     background-size: var(--grid-size) var(--grid-size);
-    border-left: 2px solid rgba(var(--font),var(--transparency));
+    border-left: 2px solid rgba(var(--font), var(--transparency));
     border-radius: 2.5vmin 0 0 2.5vmin;
     height: 100%;
-    pointer-events:  auto;
+    pointer-events: auto;
 
     & .net-part {
       &:hover {
         filter: drop-shadow(0 0 0.75em rgba(243, 89, 122, 0.75));
-      } 
-      &:active{
+      }
+
+      &:active {
         filter: brightness(1.35);
       }
     }
+
     & .choose-first {
       filter: drop-shadow(0 0 0.75em rgba(243, 89, 122, 0.75));
     }
@@ -185,8 +208,8 @@ const choose_part =  (who: string) => {
     writing-mode: vertical-rl;
     text-orientation: upright;
     background: transparent;
-    border: 2px solid rgba(var(--font),var(--transparency));
-    border-left: 0px solid rgba(var(--font),var(--transparency));
+    border: 2px solid rgba(var(--font), var(--transparency));
+    border-left: 0px solid rgba(var(--font), var(--transparency));
     border-radius: 0 2.5vmin 2.5vmin 0;
     padding: 1vmin;
 
@@ -195,15 +218,16 @@ const choose_part =  (who: string) => {
   & .parameters-table {
     height: 100%;
     transition: width 0.75s ease;
-    background-color: rgba(var(--border-line),var(--transparency));
+    background-color: rgba(var(--border-line), var(--transparency));
     width: 0;
-    border-right: 2px solid rgba(var(--font),var(--transparency));
+    border-right: 2px solid rgba(var(--font), var(--transparency));
     border-radius: 0 2.5vmin 2.5vmin 0;
     background-image:
-      linear-gradient(to right, rgba(var(--title),var(--transparency)) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(var(--title),var(--transparency)) 1px, transparent 1px);
+      linear-gradient(to right, rgba(var(--title), var(--transparency)) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(var(--title), var(--transparency)) 1px, transparent 1px);
     /* 创建虚线网格 */
     background-size: var(--grid-size) var(--grid-size);
+
     &.show-para {
       transition: width 0.75s ease;
       width: 30vmin;
@@ -241,22 +265,22 @@ const choose_part =  (who: string) => {
     text-orientation: upright;
     margin-bottom: 20vmin;
     background: transparent;
-    border: 2px solid rgba(var(--font),var(--transparency));
-    border-right: 0px solid rgba(var(--font),var(--transparency));
+    border: 2px solid rgba(var(--font), var(--transparency));
+    border-right: 0px solid rgba(var(--font), var(--transparency));
     border-radius: 2.5vmin 0 0 1vmin;
     padding: 1vmin;
   }
 
   & .two-piece-canvas {
-    background: rgba(var(--border-line),var(--transparency));
+    background: rgba(var(--border-line), var(--transparency));
     transition: width 0.75s ease;
     height: 100%;
     width: 0vmin;
-    border-left: 2px solid rgba(var(--font),var(--transparency));
+    border-left: 2px solid rgba(var(--font), var(--transparency));
     border-radius: 2.5vmin 0 0 2.5vmin;
     background-image:
-      linear-gradient(to right, rgba(var(--title),var(--transparency)) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(var(--title),var(--transparency)) 1px, transparent 1px);
+      linear-gradient(to right, rgba(var(--title), var(--transparency)) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(var(--title), var(--transparency)) 1px, transparent 1px);
     /* 创建虚线网格 */
     background-size: var(--grid-size) var(--grid-size);
   }
@@ -265,17 +289,17 @@ const choose_part =  (who: string) => {
 
 
 @keyframes active-icon {
-    0% {
-      transform: scale(1);
-    }
-  
-    50% {
-      transform: scale(0.85);
-    }
-  
-    100% {
-      transform: scale(1);
-    }
-  
+  0% {
+    transform: scale(1);
   }
+
+  50% {
+    transform: scale(0.85);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+
+}
 </style>

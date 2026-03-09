@@ -9,6 +9,7 @@ export const defaultConfigPathF = ref("__DEFAULT_CONFIG_PATH_F__")
 
 // 相关配置文件
 export const mainConfig = ref<any>({ config: "__CONFIGURE__" })  // 主要配置
+export const appConfig = ref<any>({ config: "__APP_CONFIGURE__" })  // 主要配置
 export const themeConfig = ref<any>({ config: "__THEME_CONFIGURE__" })  // 主题配置
 export const interfaceStyle = ref<any>({ config: "__INTERFACE_STYLE_CONFIGURE__" })  // 界面设置
 
@@ -27,6 +28,9 @@ export const init_app = async () => {
 export const init_color_palette = async () => {
     console.log(themeConfig.value["currentTheme"])
     // 主题颜色
+    document.documentElement.style.setProperty("--noramal-note", `${themeConfig.value["normalNote"]}`)
+    document.documentElement.style.setProperty("--warn-note", `${themeConfig.value["warnNote"]}`)
+    document.documentElement.style.setProperty("--error-note", `${themeConfig.value["errorNote"]}`)
     document.documentElement.style.setProperty("--title", `${themeConfig.value[themeConfig.value["currentTheme"]]["title"]}`)
     document.documentElement.style.setProperty("--background", `${themeConfig.value[themeConfig.value["currentTheme"]]["background"]}`)
     document.documentElement.style.setProperty("--border-line", `${themeConfig.value[themeConfig.value["currentTheme"]]["borderLine"]}`)
@@ -48,6 +52,8 @@ export const write_config = async () => {
 }
 
 const init_config = async () => {
+    // 获取软件配置
+    appConfig.value = mainConfig.value["app"]
     // 获取主题配置
     themeConfig.value = mainConfig.value["colorPalette"]["theme"]
     // 获取界面设置

@@ -36,7 +36,9 @@
     <!-- </transition-group> -->
 
 
-    <div v-if="showPromptBox" class="warn">{{ attentionContent }}</div>
+    <div v-if="showPromptBox" class="warn"
+      :class="{ 'nor-warn': promptLevel === '1', 'mid-warn': promptLevel === '2', 'err-warn': promptLevel === '3' }">{{
+        attentionContent }}</div>
   </main>
 </template>
 <script setup lang="ts">
@@ -49,7 +51,7 @@ import { Window } from "@tauri-apps/api/window";
 import { init_app } from "./utils/MainIndex.ts";
 import { cacheRouterPath } from "./utils/Memory.ts"
 import { useRouter, useRoute } from "vue-router"; // 引入 useRoute
-import { attentionContent, showPromptBox } from "./utils/warn";
+import { attentionContent, showPromptBox, promptLevel } from "./utils/warn";
 import BaseIcon from "./assets/icons/BaseIcon.vue";
 
 
@@ -109,9 +111,9 @@ const router_to = (where: string) => {
         router.push(cacheRouterPath.value)
       } else {
         cacheRouterPath.value = route.path
-        if(cacheRouterPath.value === "__NULL__"){
-        router.push("/")
-        }else{
+        if (cacheRouterPath.value === "__NULL__") {
+          router.push("/")
+        } else {
           router.push("/setting")
         }
       }
@@ -191,10 +193,25 @@ const router_to = (where: string) => {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  background-color: #e51050;
-  border: 0.25vmin solid #fff14d;
+  background-color: rgba(var(--warn-note), var(--pTransparency));
+  border: 0.25vmin solid rgba(var(--warn-note), 1);
   padding: 0.75vmin 1vmin;
   border-radius: 0.5vmin;
+
+  &.nor-warn {
+    background-color: rgba(var(--normal-note), var(--pTransparency));
+    border: 0.25vmin solid rgba(var(--normal-note), 1);
+  }
+
+  &.mid-warn {
+    background-color: rgba(var(--warn-note), var(--pTransparency));
+    border: 0.25vmin solid rgba(var(--warn-note), 1);
+  }
+
+  &.err-warn {
+    background-color: rgba(var(--error-note), var(--pTransparency));
+    border: 0.25vmin solid rgba(var(--error-note), 1);
+  }
 }
 </style>
 <style>

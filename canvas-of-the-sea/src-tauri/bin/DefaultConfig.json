@@ -1,6 +1,24 @@
 {
+    "app": {
+        "version": "0.1.14"
+    },
     "colorPalette": {
         "theme": {
+            "normalNote": [
+                6,
+                150,
+                215
+            ],
+            "warnNote": [
+                255,
+                241,
+                77
+            ],
+            "errorNote": [
+                229,
+                16,
+                80
+            ],
             "currentTheme": "dark",
             "dark": {
                 "title": [
@@ -41,9 +59,9 @@
                     247
                 ],
                 "borderLine": [
-                    183,
-                    185,
-                    191
+                    220,
+                    220,
+                    220
                 ],
                 "button": [
                     148,

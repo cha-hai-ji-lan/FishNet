@@ -3,7 +3,7 @@
     <div class="blank-17_5pe"></div>
     <div class="flex-r-div"><img class="main-icon" src="../../assets/icon.png" alt="">
       <h1>Canvas of the sea</h1>
-      <div class="app-version">0.1.12</div>
+      <div class="app-version">{{appConfig['version']}}</div>
     </div>
     <div class="flex-r-div home-subtitle">{{ welcomeTitle }} 欢迎回来.{{ careTitle }}</div>
     <div class="blank-10pe"></div>
@@ -23,9 +23,10 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { netTypes } from '../../utils/Memory.ts'
+import { netTypes, isNewFile } from '../../utils/Memory.ts'
 import { set_content } from '../../utils/warn.ts'
 import { useRouter } from "vue-router"; // 引入 useRoute
+import { appConfig } from "../../utils/MainIndex.ts";
 import NormalIcons from '../../assets/icons/NormalIcons.vue';
 import SelectBar from '../utils/SelectorBar.vue';
 
@@ -68,8 +69,9 @@ const updateTime = () => {
 const start_drawing = () => {
   console.log(drawMode.value)
   if (drawMode.value === "") {
-    set_content("请选择绘图类型后再开始绘制拖网.")
+    set_content("请选择绘图类型后再开始绘制拖网.", 2)
   } else {
+    isNewFile.value = true
     router.push("/draw-two-piece")
   }
 }

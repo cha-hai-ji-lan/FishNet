@@ -39,7 +39,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { onMounted } from "vue";
 import { netGroup } from "../../utils/core/drawTwoPiece.ts";
 onMounted(() => {
     if (netGroup['two-net-body']['segment'] === 0) {
