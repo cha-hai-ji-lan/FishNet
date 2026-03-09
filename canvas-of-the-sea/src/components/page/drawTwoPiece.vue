@@ -7,6 +7,7 @@
     </div>
     <div class="mid-part">
       <TwoPieceBody v-if="focusPart === 'two-net-body'"></TwoPieceBody>
+      <TwoPieceLeftSleeve v-if="focusPart === 'two-left-sleeve'"></TwoPieceLeftSleeve>
     </div>
     <div class="right-part" :class="{ 'show-canvas': showCanvas }">
       <div class="canvas-switch ban-select" @click="() => { show_table('canvas') }">{{ showCanvas ? "隐藏画布" : "显示画布" }}
@@ -41,6 +42,7 @@
 import { ref, onMounted } from 'vue';
 import NetShowIcons from '../../assets/icons/NetShowIcons.vue';
 import TwoPieceBody from '../../components/interface/TwoPieceBody.vue';
+import TwoPieceLeftSleeve from '../../components/interface/TwoPieceLeftSleeve.vue';
 import { hasChoose, focusPart } from '../../utils/core/startdraw.ts'
 import { set_content } from '../../utils/warn.ts'
 import { isNewFile } from '../../utils/Memory.ts'

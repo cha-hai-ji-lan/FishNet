@@ -1,7 +1,7 @@
 <template>
     <div class="draw-two-piece-main">
         <div class="router">
-            <div @click="() => {router.push(cacheRouterPath)}" class="router-item ban-select">
+            <div @click="() => { router.push(cacheRouterPath) }" class="router-item ban-select">
                 <span>返回上一界面</span>
             </div>
             <div class="router-item ban-select">
@@ -21,11 +21,57 @@
 
                 </div>
             </div>
+            <div class="setting-item part-flex-colum">
+                <div class="setting-title">主题颜色</div>
+                <div class="setting-item">
+                    <div class="setting-title">标题栏颜色</div>
+                    <div class="update-item nor-input">
+                        <input  v-model="ThemeColor['title']" type="text"
+                            :placeholder="ThemeColor['title']">
+
+                    </div>
+                    <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['title']})` }"></div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-title">背景颜色</div>
+                    <div class="update-item nor-input">
+                        <input  v-model="ThemeColor['background']" type="text"
+                            :placeholder="ThemeColor['background']">
+
+                    </div>
+                    <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['background']})` }"></div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-title">边框线颜色</div>
+                    <div class="update-item nor-input">
+                        <input  v-model="ThemeColor['borderLine']" type="text"
+                            :placeholder="ThemeColor['borderLine']">
+
+                    </div>
+                    <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['borderLine']})` }"></div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-title">一般按钮颜色</div>
+                    <div class="update-item nor-input">
+                        <input  v-model="ThemeColor['button']" type="text"
+                            :placeholder="ThemeColor['button']">
+                    </div>
+                    <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['button']})` }"></div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-title">文字颜色</div>
+                    <div class="update-item nor-input">
+                        <input  v-model="ThemeColor['font']" type="text"
+                            :placeholder="ThemeColor['font']">
+                    </div>
+                    <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['font']})` }"></div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="float-save">
-        <div @click="()=>{save_config()}" class="save-setting-button ban-select">保存</div>
-        <div @click="()=>{replace_default_config()}" class="replace-setting-button ban-select">恢复默认</div>
+        <div @click="() => { save_config() }" class="save-setting-button ban-select">保存</div>
+        <div @click="() => { replace_default_config() }" class="replace-setting-button ban-select">恢复默认</div>
     </div>
 </template>
 <script setup lang="ts">
@@ -33,7 +79,7 @@ import { computed } from 'vue';
 import { useRouter } from "vue-router"; // 引入 useRoute
 import SelectBar from '../utils/SelectorBar.vue';
 import { themeTypes, cacheRouterPath } from '../../utils/Memory.ts'
-import { themeConfig, interfaceStyle, init_color_palette, write_config , replace_config, init_app} from "../../utils/MainIndex.ts";
+import { themeConfig, interfaceStyle, init_color_palette, write_config, replace_config, init_app } from "../../utils/MainIndex.ts";
 
 const router = useRouter()
 // 创建可写的计算属性
@@ -53,13 +99,21 @@ const currentTheme = computed({
         init_color_palette()
     }
 });
+const ThemeColor = computed({
+    get: () => themeConfig.value[themeConfig.value["currentTheme"]],
+    set: (newValue: string) => {
+        themeConfig.value["currentTheme"] = newValue;
+        // 更新 CSS 变量
+        init_color_palette()
+    }
+});
 
-const save_config = () =>{
+const save_config = () => {
     write_config()
 }
-const replace_default_config = async () =>{
+const replace_default_config = async () => {
     await replace_config()
-    await  init_app()
+    await init_app()
 }
 </script>
 <style scoped>
@@ -140,6 +194,11 @@ const replace_default_config = async () =>{
             border-radius: 2vmin;
             background-color: rgba(var(--button), var(--pTransparency));
 
+            &.part-flex-colum {
+                align-items: start;
+                flex-direction: column;
+            }
+
             & .setting-title {
                 width: 30%;
                 margin: 2vmin;
@@ -149,7 +208,7 @@ const replace_default_config = async () =>{
                 text-align: center;
                 flex: 1;
                 max-width: 300px;
-                height: 1.5vmin;
+                /* height: 1.5vmin; */
             }
 
             & input[type="range"] {
@@ -212,6 +271,67 @@ const replace_default_config = async () =>{
     }
 }
 
+.nor-input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    width: 100%;
+    border-bottom: 2px solid rgba(var(--button), var(--transparency));
+    padding-top: 1vmin;
+    padding-bottom: 1vmin;
+
+
+    /* 数字输入框移除上下箭头 */
+    & input[type="number"]::-webkit-inner-spin-button,
+    & input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    & input {
+        /* 移除所有默认样式 */
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+
+        /* 重置边框和背景 */
+        border: 2px solid rgba(var(--title), var(--transparency));
+        outline: none;
+        background: transparent;
+
+        /* 重置其他样式 */
+        padding: 0;
+        margin: 0;
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+        border-radius: 0;
+        background-color: rgba(var(--border-line), var(--transparency));
+        border-radius: 1vmin;
+        text-align: center;
+        height: 3vmin;
+
+        &:hover {
+            filter: drop-shadow(0 0 0.25em rgba(var(--normal-note), 0.75));
+        }
+
+        &:active {
+            border: 2px solid rgba(var(--normal-note), 1);
+        }
+
+        &:focus {
+            border: 2px dashed rgba(var(--normal-note), 0.75);
+        }
+    }
+}
+
+.color-block {
+    width: 3vmin;
+    height: 3vmin;
+    border-radius: 0.75vmin;
+    border: 2px solid rgba(var(--title), var(--pTransparency));
+}
 .float-save {
     display: flex;
     align-items: center;

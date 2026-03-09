@@ -2,8 +2,9 @@
     <div class="two-piece-body">
         <div class="blank-10pe"></div>
         <div class="item">
-            <div class="part-title "><span>网身</span></div>
+            <div class="part-title "><span>上网翼</span></div>
             <div class="part-title segments"><span>第{{ netGroup['two-net-body']['segment'] }}段</span></div>
+            <div v-if="netGroup['two-net-body']['segment'] === 1" class="part-title segments-port"><span>网口段</span></div>
         </div>
 
         <table>
@@ -134,6 +135,13 @@ onMounted(() => {
             padding: 0.5vmin 1vmin;
             border: 2px solid rgba(var(--normal-note), 1);
             background-color: rgba(var(--normal-note), var(--pTransparency));
+            border-radius: 2vmin;
+        }
+        & .segments-port {
+            margin-left: 2vmin;
+            padding: 0.5vmin 1vmin;
+            border: 2px solid rgba(var(--warn-note), 1);
+            background-color: rgba(var(--warn-note), var(--pTransparency));
             border-radius: 2vmin;
         }
 

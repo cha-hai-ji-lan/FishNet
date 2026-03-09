@@ -1,7 +1,22 @@
-use std::fs;
+use std::{fs, thread};
+use std::process::Command;
 use serde_json::Value;
 use tauri::{Manager};
 
+#[tauri::command]
+fn run_exe(path: String) {
+    // 使用系统命令启动 EXE 文件，并在新线程中执行
+    thread::spawn(move || {
+        let output = Command::new("cmd")
+            .args(&["/C", "start", "", &path])
+            .output()
+            .expect("Failed to execute command");
+
+        if !output.status.success() {
+            eprintln!("Failed to run EXE: {:?}", output);
+        }
+    });
+}
 #[tauri::command]
 async fn get_app_path(app_handle: tauri::AppHandle) -> Result<String, String> {
     let resource_dir = app_handle
@@ -36,9 +51,11 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            get_app_path,       // 获取app路径
-            read_json_file,      // 读取json文件
+            run_exe,              // 运行exe
+            get_app_path,         // 获取app路径
+            read_json_file,       // 读取json文件
             write_json_file,      // 读取json文件
+
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
