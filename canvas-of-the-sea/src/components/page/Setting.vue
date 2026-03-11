@@ -4,11 +4,17 @@
             <div @click="() => { router.push(cacheRouterPath) }" class="router-item ban-select">
                 <span>返回上一界面</span>
             </div>
-            <div class="router-item ban-select">
-                <span>基础设置</span>
+            <div class="router-item ban-select" @click="() => { rollTo('app-base-setting') }">
+                <span>软件基础设置</span>
+            </div>
+            <div class="router-item ban-select" @click="() => { rollTo('app-default-setting') }">
+                <span>缺省参数设置</span>
             </div>
         </div>
         <div class="detail">
+            <div class="setting-item">
+                <span id="app-base-setting" class="position-title">软件基础设置</span>
+            </div>
             <div class="setting-item">
                 <div class="setting-title">软件透明度</div>
                 <input v-model.number="transparencyValue" type="range" min="0" max="100">
@@ -22,12 +28,14 @@
                 </div>
             </div>
             <div class="setting-item part-flex-colum">
-                <div class="setting-title">主题颜色</div>
+                <div class="setting-item ban-bor-bgc">
+                    <div class="setting-title">主题颜色</div>
+                    <div @click="() => { init_color_palette() }" class="set-but ban-select">设置</div>
+                </div>
                 <div class="setting-item">
                     <div class="setting-title">标题栏颜色</div>
                     <div class="update-item nor-input">
-                        <input  v-model="ThemeColor['title']" type="text"
-                            :placeholder="ThemeColor['title']">
+                        <input v-model="ThemeColor['title']" type="text" :placeholder="ThemeColor['title']">
 
                     </div>
                     <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['title']})` }"></div>
@@ -35,8 +43,7 @@
                 <div class="setting-item">
                     <div class="setting-title">背景颜色</div>
                     <div class="update-item nor-input">
-                        <input  v-model="ThemeColor['background']" type="text"
-                            :placeholder="ThemeColor['background']">
+                        <input v-model="ThemeColor['background']" type="text" :placeholder="ThemeColor['background']">
 
                     </div>
                     <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['background']})` }"></div>
@@ -44,8 +51,7 @@
                 <div class="setting-item">
                     <div class="setting-title">边框线颜色</div>
                     <div class="update-item nor-input">
-                        <input  v-model="ThemeColor['borderLine']" type="text"
-                            :placeholder="ThemeColor['borderLine']">
+                        <input v-model="ThemeColor['borderLine']" type="text" :placeholder="ThemeColor['borderLine']">
 
                     </div>
                     <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['borderLine']})` }"></div>
@@ -53,19 +59,23 @@
                 <div class="setting-item">
                     <div class="setting-title">一般按钮颜色</div>
                     <div class="update-item nor-input">
-                        <input  v-model="ThemeColor['button']" type="text"
-                            :placeholder="ThemeColor['button']">
+                        <input v-model="ThemeColor['button']" type="text" :placeholder="ThemeColor['button']">
                     </div>
                     <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['button']})` }"></div>
                 </div>
                 <div class="setting-item">
                     <div class="setting-title">文字颜色</div>
                     <div class="update-item nor-input">
-                        <input  v-model="ThemeColor['font']" type="text"
-                            :placeholder="ThemeColor['font']">
+                        <input v-model="ThemeColor['font']" type="text" :placeholder="ThemeColor['font']">
                     </div>
                     <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['font']})` }"></div>
                 </div>
+            </div>
+            <div class="setting-item">
+                <span id="app-default-setting" class="position-title">缺省参数设置</span>
+            </div>
+            <div class="setting-item ban-bor-bgc">
+                <div class="blank-10vh"></div>
             </div>
         </div>
     </div>
@@ -95,18 +105,30 @@ const currentTheme = computed({
     get: () => themeConfig.value["currentTheme"],
     set: (newValue: string) => {
         themeConfig.value["currentTheme"] = newValue;
+        console.log(newValue)
+
         // 更新 CSS 变量
         init_color_palette()
     }
 });
 const ThemeColor = computed({
     get: () => themeConfig.value[themeConfig.value["currentTheme"]],
-    set: (newValue: string) => {
-        themeConfig.value["currentTheme"] = newValue;
+    set: (newValue: number[]) => {
+        console.log(newValue)
         // 更新 CSS 变量
         init_color_palette()
     }
 });
+
+const rollTo = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+        element.scrollIntoView({
+            block: 'start',
+            behavior: 'smooth'
+        });
+    }
+}
 
 const save_config = () => {
     write_config()
@@ -126,7 +148,8 @@ const replace_default_config = async () => {
     justify-content: start;
     flex-direction: row;
     width: 100%;
-    flex: 1%;
+    height: 95%;
+    overflow: hidden;
     /* height: 95vh; */
     background-color: rgba(var(--background), var(--transparency));
     /* background-color: rgba(33, 40, 48, 1); */
@@ -181,6 +204,8 @@ const replace_default_config = async () => {
         flex-direction: column;
         height: 100%;
         margin: 2vmin;
+        overflow-y: auto;
+        overflow-x: hidden;
 
 
         & .setting-item {
@@ -194,9 +219,45 @@ const replace_default_config = async () => {
             border-radius: 2vmin;
             background-color: rgba(var(--button), var(--pTransparency));
 
+            & .position-title {
+                font-size: 3.5vmin;
+                font-weight: bold;
+                margin: 0.5vmin 2vmin;
+            }
+
+            &.ban-bor-bgc {
+                border: 0 solid rgba(var(--border-line), var(--transparency));
+                border-radius: 0;
+                background-color: rgba(0, 0, 0, 0);
+            }
+
             &.part-flex-colum {
                 align-items: start;
                 flex-direction: column;
+            }
+
+            & .set-but {
+                width: fit-content;
+                height: fit-content;
+                display: flex;
+                align-items: start;
+                justify-content: start;
+                flex-direction: row;
+                margin-left: auto;
+                margin-right: 4vmin;
+                padding: 0.25vmin 3.5vmin;
+                border-radius: 1.5vmin;
+                border: 2px solid rgba(var(--normal-note), 1);
+                background-color: rgba(var(--normal-note), var(--pTransparency));
+
+                &:hover {
+                    filter: brightness(1.1);
+                }
+
+                &:active {
+                    filter: brightness(1.35);
+
+                }
             }
 
             & .setting-title {
@@ -268,6 +329,31 @@ const replace_default_config = async () => {
                 }
             }
         }
+
+        &::-webkit-scrollbar {
+            width: 1vmin;
+            /* 垂直滚动条宽度 */
+            height: 1vmin;
+            /* 水平滚动条高度 */
+
+        }
+
+        &::-webkit-scrollbar-track {
+            background: rgba(var(--title), var(--pTransparency));
+            /* 滚动条轨道背景色 */
+            border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: rgba(var(--button), var(--pTransparency));
+            /* 滚动条滑块颜色 */
+            border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb:hover {
+            filter: brightness(1.2);
+            /* 滑块悬停时的颜色 */
+        }
     }
 }
 
@@ -280,6 +366,7 @@ const replace_default_config = async () => {
     border-bottom: 2px solid rgba(var(--button), var(--transparency));
     padding-top: 1vmin;
     padding-bottom: 1vmin;
+    margin-right: 2vmin;
 
 
     /* 数字输入框移除上下箭头 */
@@ -332,6 +419,7 @@ const replace_default_config = async () => {
     border-radius: 0.75vmin;
     border: 2px solid rgba(var(--title), var(--pTransparency));
 }
+
 .float-save {
     display: flex;
     align-items: center;

@@ -52,6 +52,7 @@ const showPara = ref(false)
 
 onMounted(() => {
   if (isNewFile.value === true) {
+    show_table('part')  // 新文件进入后显示 部位选择
     hasChoose.value = false;
     focusPart.value = "__NULL__"
   }
