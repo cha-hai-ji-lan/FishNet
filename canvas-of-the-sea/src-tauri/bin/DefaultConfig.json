@@ -1,33 +1,46 @@
 {
-    "app": {
-      "version": "0.1.17"
-    },
-    "colorPalette": {
-      "theme": {
-        "currentTheme": "dark",
-        "dark": {
-          "background": "33,40,48",
-          "borderLine": "48,54,69",
-          "button": "132,134,135",
-          "font": "245,245,245",
-          "title": "60,63,65"
-        },
-        "errorNote": "229,16,80",
-        "light": {
-          "background": "247,247,247",
-          "borderLine": "220,220,220",
-          "button": "148,148,148",
-          "font": "43,43,43",
-          "title": "193,193,193"
-        },
-        "normalNote": "6,150,215",
-        "warnNote": "255,241,77"
-      }
-    },
-    "interfaceSetting": {
-      "atomicTime": 200,
-      "gridSize": "15px",
-      "interfaceTransparency": 1,
-      "partialTransparency": 0.4
+  "app": {
+    "version": "0.1.20"
+  },
+  "core": {
+    "focusDraw": true,
+    "backUpMode":"single-step",
+    "defaultParam": {
+      "zoom": 0.01,
+      "tableOffset": 100,
+      "scaleX": 0.5,
+      "scaleY": 1,
+      "textHeight": 7,
+      "commentOffset": 2,
+      "materal": "PA6"
     }
+  },
+  "colorPalette": {
+    "theme": {
+      "currentTheme": "dark",
+      "dark": {
+        "background": "33,40,48",
+        "borderLine": "48,54,69",
+        "button": "132,134,135",
+        "font": "245,245,245",
+        "title": "60,63,65"
+      },
+      "errorNote": "229,16,80",
+      "light": {
+        "background": "247,247,247",
+        "borderLine": "220,220,220",
+        "button": "148,148,148",
+        "font": "43,43,43",
+        "title": "193,193,193"
+      },
+      "normalNote": "6,150,215",
+      "warnNote": "255,241,77"
+    }
+  },
+  "interfaceSetting": {
+    "atomicTime": 200,
+    "gridSize": "15px",
+    "interfaceTransparency": 1,
+    "partialTransparency": 0.4
   }
+}

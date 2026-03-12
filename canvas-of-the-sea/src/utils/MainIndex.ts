@@ -12,10 +12,11 @@ export const mainConfig = ref<any>({ config: "__CONFIGURE__" })  // 主要配置
 export const appConfig = ref<any>({ config: "__APP_CONFIGURE__" })  // 软件配置
 export const themeConfig = ref<any>({ config: "__THEME_CONFIGURE__" })  // 主题配置
 export const interfaceStyle = ref<any>({ config: "__INTERFACE_STYLE_CONFIGURE__" })  // 界面设置
+export const coreConfig = ref<any>({ config: "__DEFAULT_CORE_CONFIGURE__" })  // 核心参数
 
 
 //  内部文件
-const defaultConfig = ref<any>({ config: "__DEFAULT_CONFIGURE__" })  // 主要配置
+const defaultConfig = ref<any>({ config: "__DEFAULT_CONFIGURE__" })  // 默认参数 用于恢复默认配置
 
 export const init_app = async () => {
     await init_app_path()
@@ -43,12 +44,14 @@ export const init_color_palette = async () => {
 
 }
 
+export const init_default_core_para = async () => {
+}
 export const write_config = async () => {
     // 获取主题配置
-    mainConfig.value["colorPalette"]["theme"] = themeConfig.value; 
+    mainConfig.value["colorPalette"]["theme"] = themeConfig.value;
     // 获取界面设置
     mainConfig.value["interfaceSetting"] = interfaceStyle.value;
-    await invoke("write_json_file", { filePath: configPathF.value , data: mainConfig.value})
+    await invoke("write_json_file", { filePath: configPathF.value, data: mainConfig.value })
 }
 
 const init_config = async () => {
@@ -58,11 +61,14 @@ const init_config = async () => {
     themeConfig.value = mainConfig.value["colorPalette"]["theme"]
     // 获取界面设置
     interfaceStyle.value = mainConfig.value["interfaceSetting"]
+    // 核心参数
+    coreConfig.value = mainConfig.value["core"]
+
 }
 
 export const replace_config = async () => {
     defaultConfig.value = await invoke("read_json_file", { filePath: defaultConfigPathF.value })
-    await invoke("write_json_file", { filePath: configPathF.value , data: defaultConfig.value})
+    await invoke("write_json_file", { filePath: configPathF.value, data: defaultConfig.value })
 }
 
 

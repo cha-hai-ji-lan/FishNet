@@ -7,21 +7,24 @@
             <div class="router-item ban-select" @click="() => { rollTo('app-base-setting') }">
                 <span>软件基础设置</span>
             </div>
+            <div class="router-item ban-select" @click="() => { rollTo('app-core-setting') }">
+                <span>服务设置</span>
+            </div>
             <div class="router-item ban-select" @click="() => { rollTo('app-default-setting') }">
                 <span>缺省参数设置</span>
             </div>
         </div>
         <div class="detail">
             <div class="setting-item">
-                <span id="app-base-setting" class="position-title">软件基础设置</span>
+                <span id="app-base-setting" class="position-title ban-select">软件基础设置</span>
             </div>
             <div class="setting-item">
-                <div class="setting-title">软件透明度</div>
+                <div class="setting-title ban-select">软件透明度</div>
                 <input v-model.number="transparencyValue" type="range" min="0" max="100">
                 <div class="update-item">{{ transparencyValue }}</div>
             </div>
             <div class="setting-item">
-                <div class="setting-title">主题切换</div>
+                <div class="setting-title ban-select">主题切换</div>
                 <div class="update-item">
                     <SelectBar v-model="currentTheme" :options="themeTypes" placeholder="主题样式"></SelectBar>
 
@@ -29,19 +32,18 @@
             </div>
             <div class="setting-item part-flex-colum">
                 <div class="setting-item ban-bor-bgc">
-                    <div class="setting-title">主题颜色</div>
+                    <div class="setting-title ban-select">主题颜色</div>
                     <div @click="() => { init_color_palette() }" class="set-but ban-select">设置</div>
                 </div>
                 <div class="setting-item">
-                    <div class="setting-title">标题栏颜色</div>
+                    <div class="setting-title ban-select">标题栏颜色</div>
                     <div class="update-item nor-input">
                         <input v-model="ThemeColor['title']" type="text" :placeholder="ThemeColor['title']">
-
                     </div>
                     <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['title']})` }"></div>
                 </div>
                 <div class="setting-item">
-                    <div class="setting-title">背景颜色</div>
+                    <div class="setting-title ban-select">背景颜色</div>
                     <div class="update-item nor-input">
                         <input v-model="ThemeColor['background']" type="text" :placeholder="ThemeColor['background']">
 
@@ -49,7 +51,7 @@
                     <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['background']})` }"></div>
                 </div>
                 <div class="setting-item">
-                    <div class="setting-title">边框线颜色</div>
+                    <div class="setting-title ban-select">边框线颜色</div>
                     <div class="update-item nor-input">
                         <input v-model="ThemeColor['borderLine']" type="text" :placeholder="ThemeColor['borderLine']">
 
@@ -57,14 +59,14 @@
                     <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['borderLine']})` }"></div>
                 </div>
                 <div class="setting-item">
-                    <div class="setting-title">一般按钮颜色</div>
+                    <div class="setting-title ban-select">一般按钮颜色</div>
                     <div class="update-item nor-input">
                         <input v-model="ThemeColor['button']" type="text" :placeholder="ThemeColor['button']">
                     </div>
                     <div class="color-block" :style="{ 'background-color': `rgb(${ThemeColor['button']})` }"></div>
                 </div>
                 <div class="setting-item">
-                    <div class="setting-title">文字颜色</div>
+                    <div class="setting-title ban-select">文字颜色</div>
                     <div class="update-item nor-input">
                         <input v-model="ThemeColor['font']" type="text" :placeholder="ThemeColor['font']">
                     </div>
@@ -72,7 +74,46 @@
                 </div>
             </div>
             <div class="setting-item">
-                <span id="app-default-setting" class="position-title">缺省参数设置</span>
+                <span id="app-core-setting" class="position-title ban-select">服务设置</span>
+            </div>
+            <div class="setting-item">
+                <div class="setting-title ban-select">重启服务</div>
+                <div class="update-item">
+                    <div class="set-but ban-select">重启服务端</div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-title ban-select">聚焦绘图</div>
+                <div class="update-item" @click="() => { switch_but('focusDraw') }">
+                    <div class="set-but ban-select" :class="{ 'lost-color': focusDraw === '禁用中' }">{{ focusDraw }}</div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-title ban-select">撤销模式</div>
+                <div class="update-item" @click="() => { switch_but('undoMode') }">
+                    <div class="set-but ban-select">{{ undoMode }}</div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span id="app-default-setting" class="position-title ban-select">缺省参数设置</span>
+            </div>
+            <div class="setting-item part-flex-colum">
+                <div class="setting-item ban-bor-bgc">
+                    <div class="setting-title ban-select">缺省参数</div>
+                    <div @click="() => { init_color_palette() }" class="set-but ban-select">设置</div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-title ban-select">全局缩放</div>
+                    <div class="update-item nor-input">
+                        <input v-model="CoreConfig['zoom']" type="number" :placeholder="CoreConfig['zoom']">
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-title ban-select">全局缩放</div>
+                    <div class="update-item nor-input">
+                        <input v-model="CoreConfig['zoom']" type="number" :placeholder="CoreConfig['zoom']">
+                    </div>
+                </div>
             </div>
             <div class="setting-item ban-bor-bgc">
                 <div class="blank-10vh"></div>
@@ -85,11 +126,14 @@
     </div>
 </template>
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from "vue-router"; // 引入 useRoute
 import SelectBar from '../utils/SelectorBar.vue';
 import { themeTypes, cacheRouterPath } from '../../utils/Memory.ts'
-import { themeConfig, interfaceStyle, init_color_palette, write_config, replace_config, init_app } from "../../utils/MainIndex.ts";
+import { themeConfig, interfaceStyle,coreConfig, init_color_palette, write_config, replace_config, init_app } from "../../utils/MainIndex.ts";
+
+const focusDraw = ref<string>("启用中")
+const undoMode = ref<string>("段撤销")
 
 const router = useRouter()
 // 创建可写的计算属性
@@ -119,6 +163,12 @@ const ThemeColor = computed({
         init_color_palette()
     }
 });
+const CoreConfig = computed({
+    get: () => coreConfig.value["defaultParam"],
+    set: (newValue: any) => {
+        console.log(newValue)
+    }
+});
 
 const rollTo = (id: string) => {
     const element = document.getElementById(id);
@@ -128,6 +178,33 @@ const rollTo = (id: string) => {
             behavior: 'smooth'
         });
     }
+}
+
+const switch_but = (who: string) => {  // 切换按钮样式
+    switch (who) {
+        case "focusDraw":
+            if (focusDraw.value === "启用中") {
+                coreConfig.value["focusDraw"] = false;
+                focusDraw.value = "禁用中";
+            } else if ((focusDraw.value === "禁用中")) {
+                coreConfig.value["focusDraw"] = true;
+                focusDraw.value = "启用中";
+
+            }
+            break;
+        case "undoMode":
+            if (undoMode.value === "段撤销") {
+                coreConfig.value["backUpMode"] = "single-step";
+                undoMode.value = "步撤销"
+            } else if ((undoMode.value === "步撤销")) {
+                coreConfig.value["backUpMode"] ="segment-step";
+                undoMode.value = "段撤销"
+            }
+            break;
+        default:
+            break;
+    }
+
 }
 
 const save_config = () => {
@@ -257,6 +334,11 @@ const replace_default_config = async () => {
                 &:active {
                     filter: brightness(1.35);
 
+                }
+
+                &.lost-color {
+                    border: 2px solid rgba(var(--background), 1);
+                    background-color: rgba(var(--background), var(--pTransparency));
                 }
             }
 
