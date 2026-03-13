@@ -100,7 +100,7 @@
             <div class="setting-item part-flex-colum">
                 <div class="setting-item ban-bor-bgc">
                     <div class="setting-title ban-select">缺省参数</div>
-                    <div @click="() => { init_color_palette() }" class="set-but ban-select">设置</div>
+                    <!-- <div @click="() => { init_color_palette() }" class="set-but ban-select">设置</div> -->
                 </div>
                 <div class="setting-item">
                     <div class="setting-title ban-select">全局缩放</div>
@@ -109,9 +109,41 @@
                     </div>
                 </div>
                 <div class="setting-item">
-                    <div class="setting-title ban-select">全局缩放</div>
+                    <div class="setting-title ban-select">表格偏移量</div>
                     <div class="update-item nor-input">
-                        <input v-model="CoreConfig['zoom']" type="number" :placeholder="CoreConfig['zoom']">
+                        <input v-model="CoreConfig['tableOffset']" type="number"
+                            :placeholder="CoreConfig['tableOffset']">
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-title ban-select">水平比例尺</div>
+                    <div class="update-item nor-input">
+                        <input v-model="CoreConfig['scaleX']" type="number" :placeholder="CoreConfig['scaleX']">
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-title ban-select">垂直比例尺</div>
+                    <div class="update-item nor-input">
+                        <input v-model="CoreConfig['scaleY']" type="number" :placeholder="CoreConfig['scaleY']">
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-title ban-select">字 高</div>
+                    <div class="update-item nor-input">
+                        <input v-model="CoreConfig['textHeight']" type="number" :placeholder="CoreConfig['textHeight']">
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-title ban-select">表 格 字 高</div>
+                    <div class="update-item nor-input">
+                        <input v-model="CoreConfig['commentOffset']" type="number"
+                            :placeholder="CoreConfig['commentOffset']">
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-title ban-select">制 网 材 料</div>
+                    <div class="update-item nor-input">
+                        <input v-model="CoreConfig['materal']" type="text" :placeholder="CoreConfig['materal']">
                     </div>
                 </div>
             </div>
@@ -130,7 +162,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from "vue-router"; // 引入 useRoute
 import SelectBar from '../utils/SelectorBar.vue';
 import { themeTypes, cacheRouterPath } from '../../utils/Memory.ts'
-import { themeConfig, interfaceStyle,coreConfig, init_color_palette, write_config, replace_config, init_app } from "../../utils/MainIndex.ts";
+import { themeConfig, interfaceStyle, coreConfig, init_color_palette, write_config, replace_config, init_app } from "../../utils/MainIndex.ts";
 
 const focusDraw = ref<string>("启用中")
 const undoMode = ref<string>("段撤销")
@@ -197,7 +229,7 @@ const switch_but = (who: string) => {  // 切换按钮样式
                 coreConfig.value["backUpMode"] = "single-step";
                 undoMode.value = "步撤销"
             } else if ((undoMode.value === "步撤销")) {
-                coreConfig.value["backUpMode"] ="segment-step";
+                coreConfig.value["backUpMode"] = "segment-step";
                 undoMode.value = "段撤销"
             }
             break;
@@ -525,8 +557,8 @@ const replace_default_config = async () => {
         width: 18vmin;
         height: 4vmin;
         border-radius: 1vmin;
-        border: 2px solid rgba(6, 150, 215, 1);
-        background-color: rgba(6, 150, 215, var(--pTransparency));
+        border: 2px solid rgba(var(--normal-note), 1);
+        background-color: rgba(var(--normal-note), var(--pTransparency));
 
         &:hover {
             filter: brightness(1.1);
@@ -548,8 +580,8 @@ const replace_default_config = async () => {
         width: 18vmin;
         height: 4vmin;
         border-radius: 1vmin;
-        border: 2px solid rgba(255, 206, 72, 1);
-        background-color: rgba(255, 206, 72, var(--pTransparency));
+        border: 2px solid rgba(var(--warn-note), 1);
+        background-color: rgba(var(--warn-note), var(--pTransparency));
 
         &:hover {
             filter: brightness(1.1);

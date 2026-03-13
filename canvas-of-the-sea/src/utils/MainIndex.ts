@@ -44,7 +44,7 @@ export const init_color_palette = async () => {
 
 }
 
-export const init_default_core_para = async () => {
+export const rewrite_default_core_para = async () => {
 }
 export const write_config = async () => {
     // 获取主题配置
