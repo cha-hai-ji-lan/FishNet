@@ -8,6 +8,7 @@
     <div class="mid-part">
       <TwoPieceBody v-if="focusPart === 'two-net-body'"></TwoPieceBody>
       <TwoPieceLeftSleeve v-if="focusPart === 'two-left-sleeve'"></TwoPieceLeftSleeve>
+      <TwoPieceRightSleeve v-if="focusPart === 'two-right-sleeve'"></TwoPieceRightSleeve>
     </div>
     <div class="right-part" :class="{ 'show-canvas': showCanvas }">
       <div class="canvas-switch ban-select" @click="() => { show_table('canvas') }">{{ showCanvas ? "隐藏画布" : "显示画布" }}
@@ -43,6 +44,7 @@ import { ref, onMounted } from 'vue';
 import NetShowIcons from '../../assets/icons/NetShowIcons.vue';
 import TwoPieceBody from '../../components/interface/TwoPieceBody.vue';
 import TwoPieceLeftSleeve from '../../components/interface/TwoPieceLeftSleeve.vue';
+import TwoPieceRightSleeve from '../../components/interface/TwoPieceRightSleeve.vue';
 import { hasChoose, focusPart } from '../../utils/core/startdraw.ts'
 import { set_content } from '../../utils/warn.ts'
 import { isNewFile } from '../../utils/Memory.ts'
@@ -95,10 +97,14 @@ const choose_part = (who: string) => {
       focusPart.value = "two-net-body"
       break;
     case 'right-sleeve':
-      focusPart.value = "two-right-sleeve"
+      if (hasChoose.value == true) {  // 如果已经有网身段 则侧面印证了可以绘制其他部位
+        focusPart.value = "two-right-sleeve"
+      }
       break;
     case 'left-sleeve':
-      focusPart.value = "two-left-sleeve"
+      if (hasChoose.value == true) {
+        focusPart.value = "two-left-sleeve"
+      }
       break;
 
     default:
