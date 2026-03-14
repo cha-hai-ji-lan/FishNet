@@ -268,6 +268,8 @@ const replace_default_config = async () => {
         linear-gradient(to bottom, rgba(var(--border-line), var(--transparency)) 1px, transparent 1px);
     /* 创建虚线网格 */
     background-size: var(--grid-size) var(--grid-size);
+    transition: all 1.25s ease-in-out;
+
 
     & .router {
         display: flex;

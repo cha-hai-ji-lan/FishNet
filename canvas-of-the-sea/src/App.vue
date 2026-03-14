@@ -152,7 +152,8 @@ const router_to = (where: string) => {
   max-height: 31.5px;
   width: 100%;
   background: rgba(var(--title), var(--transparency));
-  /* transition: all 5s ease; */
+  transition: all 1.25s ease-in-out;
+
 }
 
 .title-head {
