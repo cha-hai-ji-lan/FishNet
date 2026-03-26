@@ -1,7 +1,10 @@
-use std::{fs, thread};
-use std::process::Command;
+mod util;
+
 use serde_json::Value;
-use tauri::{Manager};
+use std::process::Command;
+use std::{fs, thread};
+use tauri::Manager;
+use util::process_client::cad_cli_exchanges;
 
 #[tauri::command]
 fn run_exe(path: String) {
@@ -46,16 +49,28 @@ fn write_json_file(file_path: String, data: Value) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn cad_cli_exchanges_command(
+    acad_tool_path: String,
+    command1: Vec<String>,
+    command2: Vec<String>,
+) -> Result<String, String> {
+    let result = cad_cli_exchanges(acad_tool_path, Some(command1), Some(command2));
+    match result {
+        Ok(_) => Ok("-success".to_string()),
+        Err(error) => Err(error.to_string()),
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            run_exe,              // 运行exe
-            get_app_path,         // 获取app路径
-            read_json_file,       // 读取json文件
-            write_json_file,      // 读取json文件
-
+            run_exe,         // 运行exe
+            get_app_path,    // 获取app路径
+            read_json_file,  // 读取json文件
+            write_json_file, // 写入json文件
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

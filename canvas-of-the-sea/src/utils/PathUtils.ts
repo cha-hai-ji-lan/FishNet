@@ -87,4 +87,5 @@ export const PATH_CONSTANTS = {
   BIN_DIR: 'bin',
   CONFIG_FILE: 'config.json',
   DEFAULT_CONFIG_FILE: 'defaultConfig.json',
+  TEMPLATE_FILE: 'template.json',
 } as const;

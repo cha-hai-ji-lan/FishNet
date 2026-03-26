@@ -6,6 +6,7 @@ export const appPath = ref("__APP_PATH__")
 export const binPath = ref("__BIN_PATH__")
 export const configPathF = ref("__CONFIG_PATH_F__")
 export const defaultConfigPathF = ref("__DEFAULT_CONFIG_PATH_F__")
+export const templatePathF = ref("__TEMPLATE_PATH_F__")
 
 // 相关配置文件
 export const mainConfig = ref<any>({ config: "__CONFIGURE__" })  // 主要配置
@@ -13,6 +14,11 @@ export const appConfig = ref<any>({ config: "__APP_CONFIGURE__" })  // 软件配
 export const themeConfig = ref<any>({ config: "__THEME_CONFIGURE__" })  // 主题配置
 export const interfaceStyle = ref<any>({ config: "__INTERFACE_STYLE_CONFIGURE__" })  // 界面设置
 export const coreConfig = ref<any>({ config: "__DEFAULT_CORE_CONFIGURE__" })  // 核心参数
+// 模板配置
+export const NetT = ref<any>({ config: "__NET_TEMPLATE__" })  // 总模板
+export const twoNetT = ref<any>({ config: "__TWO_NET_TEMPLATE__" })  // 两片式模板
+export const fourNetT = ref<any>({ config: "__FOUR_NET_TEMPLATE__" })  // 四片式模板
+export const sixNetT = ref<any>({ config: "__SIX_NET_TEMPLATE__" })  // 六片式模板
 
 
 //  内部文件
@@ -44,7 +50,11 @@ export const init_color_palette = async () => {
 
 }
 
-export const rewrite_default_core_para = async () => {
+export const init_template = async () => {
+    NetT.value = await invoke("read_json_file", { filePath: templatePathF.value })
+    twoNetT.value = NetT.value["twoPieces"]
+    fourNetT.value = NetT.value["fourPieces"]
+    sixNetT.value = NetT.value["sixPieces"]
 }
 export const write_config = async () => {
     // 获取主题配置
@@ -78,4 +88,5 @@ const init_app_path = async () => {
     binPath.value = await PathUtils.buildResourcePath(appPath.value, PATH_CONSTANTS.BIN_DIR)
     configPathF.value = await PathUtils.buildResourcePath(binPath.value, PATH_CONSTANTS.CONFIG_FILE);
     defaultConfigPathF.value = await PathUtils.buildResourcePath(binPath.value, PATH_CONSTANTS.DEFAULT_CONFIG_FILE);
+    templatePathF.value = await PathUtils.buildResourcePath(binPath.value, PATH_CONSTANTS.TEMPLATE_FILE);
 }

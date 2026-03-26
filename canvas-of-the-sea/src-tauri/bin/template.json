@@ -1,0 +1,23 @@
+{
+  "twoPieces": {
+    "corePos": "",
+    "hasDraw": "",
+    "netBody": {
+      "segment": 0
+    },
+    "leftSleeve": {
+      "segment": 0
+    },
+    "rightSleeve": {
+      "segment": 0
+    }
+  },
+  "fourPieces": {
+    "corePos": "",
+    "hasDraw": ""
+  },
+  "sixPieces": {
+    "corePos": "",
+    "hasDraw": ""
+  }
+}

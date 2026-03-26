@@ -3,18 +3,24 @@
     <div class="blank-17_5pe"></div>
     <div class="flex-r-div"><img class="main-icon" src="../../assets/icon.png" alt="">
       <h1>Canvas of the sea</h1>
-      <div class="app-version">{{appConfig['version']}}</div>
+      <div class="app-version">{{ appConfig['version'] }}</div>
     </div>
     <div class="flex-r-div home-subtitle">{{ welcomeTitle }} 欢迎回来.{{ careTitle }}</div>
     <div class="blank-10pe"></div>
     <div class="select-bar-frame">
       <SelectBar v-model="drawMode" :options="netTypes" placeholder="拖网类型"></SelectBar>
     </div>
+    <input v-if="drawMode !== ''" v-model="netGroup['corePos']" type="text" placeholder="原点默认: 0 , 0">
     <div class="blank-10pe"></div>
-    <div @click="() => { start_drawing() }" class="flex-r-div but-frame">
+    <div @click="() => { start_drawing() }" class="flex-r-div but-frame ban-select">
       <div class="flex-r-div">
         <NormalIcons whichIcon="newFile"></NormalIcons>
       </div>新建绘图
+    </div>
+    <div class="blank-10pe"></div>
+    <div @click="() => { start_drawing() }" class="flex-r-div but-frame ">
+      <div v-if=" true" class="flex-r-div">
+      </div>返回绘图
     </div>
 
 
@@ -27,6 +33,7 @@ import { netTypes, isNewFile } from '../../utils/Memory.ts'
 import { set_content } from '../../utils/warn.ts'
 import { useRouter } from "vue-router"; // 引入 useRoute
 import { appConfig } from "../../utils/MainIndex.ts";
+import { netGroup } from "../../utils/core/drawTwoPiece.ts";
 import NormalIcons from '../../assets/icons/NormalIcons.vue';
 import SelectBar from '../utils/SelectorBar.vue';
 
@@ -92,14 +99,54 @@ h1 {
   width: 100%;
   flex: 1%;
   /* height: 95vh; */
-  background-color: rgba(var(--background),var(--transparency));
+  background-color: rgba(var(--background), var(--transparency));
   /* background-color: rgba(33, 40, 48, 1); */
   /* 淡灰色底色 */
   background-image:
-    linear-gradient(to right, rgba(var(--border-line),var(--transparency)) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(var(--border-line),var(--transparency)) 1px, transparent 1px);
+    linear-gradient(to right, rgba(var(--border-line), var(--transparency)) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(var(--border-line), var(--transparency)) 1px, transparent 1px);
   /* 创建虚线网格 */
   background-size: var(--grid-size) var(--grid-size);
+
+  & input {
+
+    /* 移除所有默认样式 */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    /* 重置边框和背景 */
+    border: 2px solid rgba(var(--title), var(--transparency));
+    outline: none;
+    background: transparent;
+
+    /* 重置其他样式 */
+    padding: 0;
+    margin: 0;
+    margin-top: 2.5vmin;
+    font-family: "Judou-Heavy", "宋体", "Microsoft YaHei", "微软雅黑", "SimSun", sans-serif;
+
+    font-size: inherit;
+    color: inherit;
+    border-radius: 0;
+    background-color: rgba(var(--border-line), var(--transparency));
+    border-radius: 1vmin;
+    text-align: center;
+    width: 30vmin;
+    height: 4vmin;
+
+    &:hover {
+      filter: drop-shadow(0 0 0.25em rgba(var(--normal-note), 0.75));
+    }
+
+    &:active {
+      border: 2px solid rgba(var(--normal-note), 1);
+    }
+
+    &:focus {
+      border: 2px dashed rgba(var(--normal-note), 0.75);
+    }
+  }
 }
 
 .blank {
@@ -125,7 +172,7 @@ h1 {
   text-align: center;
   width: 35vmin;
   height: 6vmin;
-  background-color:rgba(var(--title),var(--transparency));
+  background-color: rgba(var(--title), var(--transparency));
   border-radius: 2vmin;
   /* filter: brightness(0.75); */
 }
@@ -139,23 +186,15 @@ h1 {
   padding: 1vmin 2vmin;
   border-radius: 2vmin;
   /* border : 2px solid var(--button); */
-  background: linear-gradient(45deg, rgba(var(--border-line),var(--transparency)), rgba(var(--button),var(--transparency)));
+  background: linear-gradient(45deg, rgba(var(--border-line), var(--transparency)), rgba(var(--button), var(--transparency)));
   background-size: cover;
   /* 确保渐变覆盖整个区域 */
   box-shadow:
-    -0.25vmin -0.25vmin 1.75vmin rgba(var(--border-line),var(--transparency)),
-    0.25vmin 0.25vmin 1.75vmin rgba(var(--button),var(--transparency)),
-    -0.75vmin -0.75vmin 1.75vmin rgba(var(--button),var(--transparency)),
-    0.75vmin 0.75vmin 1.75vmin rgba(var(--border-line),var(--transparency));
+    -0.25vmin -0.25vmin 1.75vmin rgba(var(--border-line), var(--transparency)),
+    0.25vmin 0.25vmin 1.75vmin rgba(var(--button), var(--transparency)),
+    -0.75vmin -0.75vmin 1.75vmin rgba(var(--button), var(--transparency)),
+    0.75vmin 0.75vmin 1.75vmin rgba(var(--border-line), var(--transparency));
 
-  user-select: none;
-  /* 用户无法选择 */
-  -webkit-user-select: none;
-  /* Safari兼容性 */
-  -moz-user-select: none;
-  /* Firefox兼容性 */
-  -ms-user-select: none;
-  /* IE兼容性 */
   transition: scale 100ms ease;
 
   &:hover {

@@ -1,5 +1,9 @@
-import { ref, reactive} from "vue";
+import { ref, reactive, onMounted } from "vue";
+import { twoNetT } from "../MainIndex.ts";
+onMounted(() => {
+    if (netGroup.value === ""){
+        netGroup.value = twoNetT.value
+    }
 
-export const netGroup = reactive({"two-net-body" :{
-    "segment": 0
- }})
+})
+export const netGroup = ref<any>("")

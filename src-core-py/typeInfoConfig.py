@@ -15,3 +15,10 @@ def listTOFloatVT(list_ori):
 # 将字符串转化为可识别的COM中的一种字符串数据类型
 def sentenceTOStringVT(str_ori):
     return win32.VARIANT(pythoncom.VT_BSTR, str_ori)
+
+
+config: dict = {
+    "FIN_SAVE_DOC": False,
+    "FIN_CLOSE_DOC": False,
+    "FIN_QUIT_CAD": False,
+}

@@ -4,6 +4,8 @@ import os
 from typing import Callable
 
 import win32com.client
+from AcadCore import ACAD
+
 
 class CLIHandler:
     """CLI命令处理器"""
@@ -12,7 +14,7 @@ class CLIHandler:
         self.commands = {}
         self.running = True
         self.register_default_commands()
-        self.converter = OfficeCheck()
+        self.acad = ACAD()
 
     def register_default_commands(self):
         """注册默认命令"""
@@ -20,7 +22,6 @@ class CLIHandler:
         self.register_command('echo', self.echo_command, "回显输入内容--测试使用")
         self.register_command('status', self.status_command, "显示程序状态--测试使用")
         self.register_command('calc', self.calc_command, "简单计算器--测试使用")
-        self.register_command('-check', self.check, "检查电脑是否可使用docto")
 
     def register_command(self, name: str, func: Callable, description: str = ""):
         """注册新命令"""
@@ -39,8 +40,8 @@ class CLIHandler:
         args = parts[1:] if len(parts) > 1 else []
 
         # 检查是否为退出命令
-        if cmd_name in ['-exit', 'exit', 'quit']:
-            self.converter.__exit__()
+        if cmd_name in ['-exit', 'exit', 'quit', '-quit']:
+            self.acad.__exit__(None, None, None)
             self.running = False
             return False
 
@@ -118,27 +119,6 @@ class CLIHandler:
         except ValueError:
             print("错误: 请输入有效的数字")
 
-    @staticmethod
-    def check():
-        # 创建Word应用程序对象
-        """检查Office组件的可用性"""
-
-        try:
-            # 检查Word
-            word_test = win32com.client.Dispatch("Word.Application")
-            word_test.Quit()
-
-            # 检查Excel
-            excel_test = win32com.client.Dispatch("Excel.Application")
-            excel_test.Quit()
-
-            # 检查PowerPoint
-            ppt_test = win32com.client.Dispatch("PowerPoint.Application")
-            ppt_test.Quit()
-        except Exception:
-            print("-false")
-        else:
-            print("-true")
 
     @staticmethod
     def cleanup():
