@@ -246,8 +246,11 @@ pub fn send_params(params: Vec<String>) -> Result<(), Error> {
 
         // 尝试转换为字符串，忽略无效 UTF-8
         if let Ok(line) = String::from_utf8(buffer.clone()) {
-            println!("这是读取行");
+            println!("---read-line---");
             println!("{}", line);
+            if line.trim() == "-end" {
+                break;
+            }
             // 这里可以根据需要添加特定的响应处理逻辑
             // 例如等待特定的结束标志
         }

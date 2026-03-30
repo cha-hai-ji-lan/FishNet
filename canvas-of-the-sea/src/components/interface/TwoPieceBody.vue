@@ -50,6 +50,7 @@ const next_segment = () =>{
     send_parma_to_cli(["-i", netGroup.value['netBody'][`${segment.value}`].toString()])
     netGroup.value['netBody']['segment'] += 1
     segment.value = netGroup.value['netBody']['segment']
+    netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null)
 }
 
 </script>

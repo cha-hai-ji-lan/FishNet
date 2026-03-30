@@ -64,7 +64,7 @@ const route = useRoute()
 
 onMounted(async () => {
   await init_app();
-  invoke("connect_cad_cli", { acadToolPath:fishNetEXE.value, command1: ["-config-set",  JSON.stringify(coreConfig.value)]})
+  invoke("connect_cad_cli", { acadToolPath:fishNetEXE.value, command1: ["-config-set",  JSON.stringify(coreConfig.value["defaultParam"])]})
 })
 
 const title_bar_click = (mode: string) => {

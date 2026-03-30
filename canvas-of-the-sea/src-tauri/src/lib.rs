@@ -64,7 +64,6 @@ async fn connect_cad_cli(
 #[tauri::command]
 async  fn send_param_to_cli(command: Vec<String>) -> Result<String, String> {
     let result = send_params(command);
-    let _ = monitor_stdout();
     match result {
         Ok(_) => Ok("-success".to_string()),
         Err(error) => Err(error.to_string()),

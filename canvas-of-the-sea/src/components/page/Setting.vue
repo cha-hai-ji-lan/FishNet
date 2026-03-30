@@ -159,6 +159,7 @@
 </template>
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { invoke } from "@tauri-apps/api/core";
 import { useRouter } from "vue-router"; // 引入 useRoute
 import SelectBar from '../utils/SelectorBar.vue';
 import { themeTypes, cacheRouterPath } from '../../utils/Memory.ts'
@@ -241,7 +242,11 @@ const switch_but = (who: string) => {  // 切换按钮样式
 }
 
 const save_config = () => {
+    console.log(JSON.stringify(coreConfig.value["defaultParam"]))
+    invoke("send_param_to_cli", {command: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])]})
     write_config()
+
+
 }
 const replace_default_config = async () => {
     await replace_config()
