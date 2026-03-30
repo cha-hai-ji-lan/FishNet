@@ -18,9 +18,10 @@
       </div>新建绘图
     </div>
     <div class="blank-10pe"></div>
-    <div @click="() => { start_drawing() }" class="flex-r-div but-frame ">
-      <div v-if=" true" class="flex-r-div">
-      </div>返回绘图
+    <div v-if="typeof netGroup !== 'string' && netGroup['hasDraw'] !== ''" @click="() => { start_drawing() }" class="flex-r-div but-frame ">
+      <div class="flex-r-div">
+        返回绘图
+      </div>
     </div>
 
 
@@ -28,12 +29,12 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { netTypes, isNewFile } from '../../utils/Memory.ts'
 import { set_content } from '../../utils/warn.ts'
 import { useRouter } from "vue-router"; // 引入 useRoute
-import { appConfig } from "../../utils/MainIndex.ts";
-import { netGroup } from "../../utils/core/drawTwoPiece.ts";
+import { appConfig, twoNetT, fourNetT, sixNetT } from "../../utils/MainIndex.ts";
+import { netGroup } from '../../utils/core/startdraw.ts'
 import NormalIcons from '../../assets/icons/NormalIcons.vue';
 import SelectBar from '../utils/SelectorBar.vue';
 
@@ -47,7 +48,28 @@ const router = useRouter()
 
 onMounted(() => {
   updateTime(); // 立即更新一次时间
+  console.log(typeof netGroup.value)
 });
+
+watch(drawMode, (NewVal: string) => {
+  console.log(netGroup.value)
+  switch (NewVal) {
+    case '两片式':
+      netGroup.value = twoNetT.value
+      break;
+    case '四片式':
+      netGroup.value = fourNetT.value
+
+      break;
+    case '六片式':
+      netGroup.value = sixNetT.value
+      break;
+
+    default:
+      break;
+  }
+  console.log(netGroup.value)
+})
 const updateTime = () => {
   const now = new Date().getHours();
   currentTime.value = now.toLocaleString(); // 格式化时间为本地字符串

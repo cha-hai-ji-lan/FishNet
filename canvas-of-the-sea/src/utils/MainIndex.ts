@@ -28,6 +28,7 @@ export const init_app = async () => {
     await init_app_path()
     mainConfig.value = await invoke("read_json_file", { filePath: configPathF.value })
     await init_config()
+    await init_template()
     await init_color_palette()
 
 }

@@ -1,0 +1,10 @@
+
+[PACKAGE]
+package-name = FishNet
+[ONEFILE]
+[CONSOLE]
+[INCLUDE]
+import: win32com
+import: pythoncom
+import: typeInfoConfig
+import: AcadCore

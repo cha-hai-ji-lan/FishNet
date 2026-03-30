@@ -3,8 +3,8 @@
         <div class="blank-10pe"></div>
         <div class="item">
             <div class="part-title "><span>上网翼</span></div>
-            <div class="part-title segments"><span>第{{ netGroup['two-net-body']['segment'] }}段</span></div>
-            <div v-if="netGroup['two-net-body']['segment'] === 1" class="part-title segments-port"><span>网口段</span></div>
+            <div class="part-title segments"><span>第{{ twoNetT['leftSleeve']['segment'] }}段</span></div>
+            <div v-if="twoNetT['leftSleeve']['segment'] === 1" class="part-title segments-port"><span>网口段</span></div>
         </div>
 
         <table>
@@ -41,10 +41,10 @@
 </template>
 <script setup lang="ts">
 import { onMounted } from "vue";
-import { netGroup } from "../../utils/core/drawTwoPiece.ts";
+import { twoNetT } from "../../utils/MainIndex.ts";
 onMounted(() => {
-    if (netGroup['two-net-body']['segment'] === 0) {
-        netGroup['two-net-body']['segment'] += 1
+    if (twoNetT.value['leftSleeve']['segment'] === 0) {
+        twoNetT.value['leftSleeve']['segment'] += 1
     }
 })
 </script>

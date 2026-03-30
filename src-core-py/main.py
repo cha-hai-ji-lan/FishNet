@@ -1,10 +1,9 @@
-# main.py
+# --base-- test edition --base--
 import argparse
 import os
 from typing import Callable
 
-import win32com.client
-from AcadCore import ACAD
+# from AcadCore import ACAD
 
 
 class CLIHandler:
@@ -14,14 +13,11 @@ class CLIHandler:
         self.commands = {}
         self.running = True
         self.register_default_commands()
-        self.acad = ACAD()
 
     def register_default_commands(self):
         """注册默认命令"""
-        self.register_command('help', self.help_command, "显示帮助信息--测试使用")
-        self.register_command('echo', self.echo_command, "回显输入内容--测试使用")
-        self.register_command('status', self.status_command, "显示程序状态--测试使用")
-        self.register_command('calc', self.calc_command, "简单计算器--测试使用")
+        self.register_command('-help', self.help_command, "显示帮助信息")
+        self.register_command('-i', self.echo_command, "绘制一段拖网")
 
     def register_command(self, name: str, func: Callable, description: str = ""):
         """注册新命令"""
@@ -41,7 +37,6 @@ class CLIHandler:
 
         # 检查是否为退出命令
         if cmd_name in ['-exit', 'exit', 'quit', '-quit']:
-            self.acad.__exit__(None, None, None)
             self.running = False
             return False
 

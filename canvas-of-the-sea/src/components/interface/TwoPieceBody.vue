@@ -3,24 +3,24 @@
         <div class="blank-10pe"></div>
         <div class="item">
             <div class="part-title "><span>网身</span></div>
-            <div class="part-title segments"><span>第{{ netGroup['two-net-body']['segment'] }}段</span></div>
+            <div class="part-title segments"><span>第{{ segment }}段</span></div>
         </div>
 
         <table>
             <div class="item">
-                <div class="item-title">网身目大:</div><input placeholder="目大" type="number">
+                <div class="item-title">网身目大:</div><input v-model="netGroup['netBody'][`${segment}`][0]" placeholder="目大" type="number">
             </div>
             <div class="item">
-                <div class="item-title">网身纵向目数:</div><input placeholder="纵向目数" type="number">
+                <div class="item-title">网身纵向目数:</div><input v-model="netGroup['netBody'][`${segment}`][1]" placeholder="纵向目数" type="number">
             </div>
             <div class="item">
-                <div class="item-title">网身横向目数:</div><input placeholder="横向目数" type="number">
+                <div class="item-title">网身横向目数:</div><input v-model="netGroup['netBody'][`${segment}`][2]" placeholder="横向目数" type="number">
             </div>
             <div class="item">
-                <div class="item-title">边旁剪裁斜率:</div><input placeholder="剪裁斜率默认 1:0" type="number">
+                <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['netBody'][`${segment}`][3]" placeholder="剪裁斜率默认 1:0" type="text">
             </div>
             <div class="item">
-                <div class="item-title item-button">下一段</div>
+                <div @click="" class="item-title item-button">下一段</div>
                 <div class="item-title item-button-give-up">放弃</div>
             </div>
             <div class="item">
@@ -39,12 +39,17 @@
     </div>
 </template>
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { netGroup } from "../../utils/core/drawTwoPiece.ts";
+import { ref, onMounted } from "vue";
+import {netGroup} from "../../utils/core/startdraw.ts";
+const segment = ref<number>(1)
 onMounted(() => {
-    if (netGroup['two-net-body']['segment'] === 0) {
-        netGroup['two-net-body']['segment'] += 1
-    }
+    console.log(netGroup.value)
+    // if (netGroup.value['netBody']['segment'] === 0) {
+    //     netGroup.value['netBody']['segment'] += 1
+    //     netGroup.value['netBody'][`${segment}`] = Array(4).fill(null)
+    // }
+    segment.value = netGroup.value['netBody']['segment']
+
 })
 </script>
 <style scoped>

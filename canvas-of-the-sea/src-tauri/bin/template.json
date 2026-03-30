@@ -14,10 +14,28 @@
   },
   "fourPieces": {
     "corePos": "",
-    "hasDraw": ""
+    "hasDraw": "",
+    "netBody": {
+      "segment": 0
+    },
+    "leftSleeve": {
+      "segment": 0
+    },
+    "rightSleeve": {
+      "segment": 0
+    }
   },
   "sixPieces": {
     "corePos": "",
-    "hasDraw": ""
+    "hasDraw": "",
+    "netBody": {
+      "segment": 0
+    },
+    "leftSleeve": {
+      "segment": 0
+    },
+    "rightSleeve": {
+      "segment": 0
+    }
   }
 }

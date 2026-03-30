@@ -45,7 +45,7 @@ import NetShowIcons from '../../assets/icons/NetShowIcons.vue';
 import TwoPieceBody from '../../components/interface/TwoPieceBody.vue';
 import TwoPieceLeftSleeve from '../../components/interface/TwoPieceLeftSleeve.vue';
 import TwoPieceRightSleeve from '../../components/interface/TwoPieceRightSleeve.vue';
-import { hasChoose, focusPart } from '../../utils/core/startdraw.ts'
+import { hasChoose, focusPart, netGroup } from '../../utils/core/startdraw.ts'
 import { set_content } from '../../utils/warn.ts'
 import { isNewFile } from '../../utils/Memory.ts'
 const choosePart = ref(false)
@@ -54,6 +54,7 @@ const showPara = ref(false)
 
 onMounted(() => {
   if (isNewFile.value === true) {
+    console.log(netGroup.value)
     show_table('part')  // 新文件进入后显示 部位选择
     hasChoose.value = false;
     focusPart.value = "__NULL__"
@@ -95,15 +96,21 @@ const choose_part = (who: string) => {
       isNewFile.value = false  // 已进行了一步操作,可看作不是新文件
       hasChoose.value = true;
       focusPart.value = "two-net-body"
+      netGroup.value['netBody']['segment'] += 1
+      netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null)
       break;
     case 'right-sleeve':
       if (hasChoose.value == true) {  // 如果已经有网身段 则侧面印证了可以绘制其他部位
         focusPart.value = "two-right-sleeve"
+        netGroup.value['rightSleeve']['segment'] += 1
+        netGroup.value['rightSleeve'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null)
       }
       break;
     case 'left-sleeve':
       if (hasChoose.value == true) {
         focusPart.value = "two-left-sleeve"
+        netGroup.value['leftSleeve']['segment'] += 1
+        netGroup.value['leftSleeve'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null)
       }
       break;
 

@@ -4,7 +4,7 @@ use serde_json::Value;
 use std::process::Command;
 use std::{fs, thread};
 use tauri::Manager;
-use util::process_client::cad_cli_exchanges;
+use util::process_client::init_connect_cli;
 
 #[tauri::command]
 fn run_exe(path: String) {
@@ -50,12 +50,12 @@ fn write_json_file(file_path: String, data: Value) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn cad_cli_exchanges_command(
+fn connect_cad_cli(
     acad_tool_path: String,
     command1: Vec<String>,
     command2: Vec<String>,
 ) -> Result<String, String> {
-    let result = cad_cli_exchanges(acad_tool_path, Some(command1), Some(command2));
+    let result = init_connect_cli(acad_tool_path, Some(command1), Some(command2));
     match result {
         Ok(_) => Ok("-success".to_string()),
         Err(error) => Err(error.to_string()),
@@ -71,6 +71,7 @@ pub fn run() {
             get_app_path,    // 获取app路径
             read_json_file,  // 读取json文件
             write_json_file, // 写入json文件
+            connect_cad_cli, // 连接CAD_Tool_CLI
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
