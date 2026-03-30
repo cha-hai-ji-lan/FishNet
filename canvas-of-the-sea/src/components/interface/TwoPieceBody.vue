@@ -20,7 +20,7 @@
                 <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['netBody'][`${segment}`][3]" placeholder="剪裁斜率默认 1:0" type="text">
             </div>
             <div class="item">
-                <div @click="" class="item-title item-button">下一段</div>
+                <div @click="()=>{next_segment()}" class="item-title item-button">下一段</div>
                 <div class="item-title item-button-give-up">放弃</div>
             </div>
             <div class="item">
@@ -40,17 +40,18 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import {netGroup} from "../../utils/core/startdraw.ts";
+import {netGroup, send_parma_to_cli} from "../../utils/core/startdraw.ts";
 const segment = ref<number>(1)
 onMounted(() => {
     console.log(netGroup.value)
-    // if (netGroup.value['netBody']['segment'] === 0) {
-    //     netGroup.value['netBody']['segment'] += 1
-    //     netGroup.value['netBody'][`${segment}`] = Array(4).fill(null)
-    // }
     segment.value = netGroup.value['netBody']['segment']
-
 })
+const next_segment = () =>{
+    send_parma_to_cli(["-i", netGroup.value['netBody'][`${segment.value}`].toString()])
+    netGroup.value['netBody']['segment'] += 1
+    segment.value = netGroup.value['netBody']['segment']
+}
+
 </script>
 <style scoped>
 .two-piece-body {

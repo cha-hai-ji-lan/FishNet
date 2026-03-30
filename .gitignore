@@ -11,3 +11,4 @@ src-core-py/.idea/**/*
 *.pyc
 src-core-py/main.dist/**/*
 nuitka-crash-report.xml
+*.exe

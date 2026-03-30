@@ -88,4 +88,5 @@ export const PATH_CONSTANTS = {
   CONFIG_FILE: 'config.json',
   DEFAULT_CONFIG_FILE: 'defaultConfig.json',
   TEMPLATE_FILE: 'template.json',
+  FISH_NET_EXE: 'fishNet.exe',
 } as const;

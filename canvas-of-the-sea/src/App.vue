@@ -48,7 +48,7 @@ import { RouterView } from 'vue-router';
 import { invoke } from "@tauri-apps/api/core";
 import { Window } from "@tauri-apps/api/window";
 
-import { init_app } from "./utils/MainIndex.ts";
+import { init_app, fishNetEXE, coreConfig } from "./utils/MainIndex.ts";
 import { cacheRouterPath } from "./utils/Memory.ts"
 import { useRouter, useRoute } from "vue-router"; // 引入 useRoute
 import { attentionContent, showPromptBox, promptLevel, shut_down_note } from "./utils/warn";
@@ -64,6 +64,7 @@ const route = useRoute()
 
 onMounted(async () => {
   await init_app();
+  invoke("connect_cad_cli", { acadToolPath:fishNetEXE.value, command1: ["-config-set",  JSON.stringify(coreConfig.value)]})
 })
 
 const title_bar_click = (mode: string) => {

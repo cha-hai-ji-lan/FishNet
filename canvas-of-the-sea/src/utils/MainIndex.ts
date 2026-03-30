@@ -2,11 +2,12 @@ import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { PathUtils, PATH_CONSTANTS } from './PathUtils';
 // 软件相关路径
-export const appPath = ref("__APP_PATH__")
-export const binPath = ref("__BIN_PATH__")
-export const configPathF = ref("__CONFIG_PATH_F__")
-export const defaultConfigPathF = ref("__DEFAULT_CONFIG_PATH_F__")
-export const templatePathF = ref("__TEMPLATE_PATH_F__")
+export const appPath = ref("__APP_PATH__")  // 软件路径
+export const binPath = ref("__BIN_PATH__")  // 资源文件夹路径
+export const configPathF = ref("__CONFIG_PATH_F__") // 配置文件路径
+export const defaultConfigPathF = ref("__DEFAULT_CONFIG_PATH_F__")  // 默认配置文件路径
+export const templatePathF = ref("__TEMPLATE_PATH_F__")  // 模板文件路径
+export const fishNetEXE = ref("__FISH_NET_PATH_EXE__")  // 绘网工具程序路径
 
 // 相关配置文件
 export const mainConfig = ref<any>({ config: "__CONFIGURE__" })  // 主要配置
@@ -90,4 +91,5 @@ const init_app_path = async () => {
     configPathF.value = await PathUtils.buildResourcePath(binPath.value, PATH_CONSTANTS.CONFIG_FILE);
     defaultConfigPathF.value = await PathUtils.buildResourcePath(binPath.value, PATH_CONSTANTS.DEFAULT_CONFIG_FILE);
     templatePathF.value = await PathUtils.buildResourcePath(binPath.value, PATH_CONSTANTS.TEMPLATE_FILE);
+    fishNetEXE.value = await PathUtils.buildResourcePath(binPath.value, PATH_CONSTANTS.FISH_NET_EXE);
 }

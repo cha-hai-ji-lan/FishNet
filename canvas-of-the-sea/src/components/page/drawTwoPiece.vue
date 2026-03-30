@@ -41,6 +41,7 @@
 <script setup lang="ts">
 
 import { ref, onMounted } from 'vue';
+import { invoke } from "@tauri-apps/api/core";
 import NetShowIcons from '../../assets/icons/NetShowIcons.vue';
 import TwoPieceBody from '../../components/interface/TwoPieceBody.vue';
 import TwoPieceLeftSleeve from '../../components/interface/TwoPieceLeftSleeve.vue';
@@ -48,6 +49,7 @@ import TwoPieceRightSleeve from '../../components/interface/TwoPieceRightSleeve.
 import { hasChoose, focusPart, netGroup } from '../../utils/core/startdraw.ts'
 import { set_content } from '../../utils/warn.ts'
 import { isNewFile } from '../../utils/Memory.ts'
+import { coreConfig } from '../../utils/MainIndex.ts'
 const choosePart = ref(false)
 const showCanvas = ref(false)
 const showPara = ref(false)
@@ -91,6 +93,7 @@ const show_table = (who: string) => {
 }
 
 const choose_part = (who: string) => {
+  // invoke("send_param_to_cli", {command:["-i",JSON.stringify(coreConfig.value)]})
   switch (who) {
     case 'net-body':
       isNewFile.value = false  // 已进行了一步操作,可看作不是新文件

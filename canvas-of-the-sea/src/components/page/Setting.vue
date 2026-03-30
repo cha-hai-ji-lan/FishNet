@@ -168,6 +168,7 @@ const focusDraw = ref<string>("启用中")
 const undoMode = ref<string>("段撤销")
 
 const router = useRouter()
+
 // 创建可写的计算属性
 const transparencyValue = computed({
     get: () => Math.round(interfaceStyle.value['interfaceTransparency'] * 100),

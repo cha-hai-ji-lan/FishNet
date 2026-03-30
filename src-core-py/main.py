@@ -1,7 +1,9 @@
 # --base-- test edition --base--
 import argparse
+import json
 import os
 from typing import Callable
+
 
 # from AcadCore import ACAD
 
@@ -13,10 +15,12 @@ class CLIHandler:
         self.commands = {}
         self.running = True
         self.register_default_commands()
+        self.config = None
 
     def register_default_commands(self):
         """注册默认命令"""
         self.register_command('-help', self.help_command, "显示帮助信息")
+        self.register_command('-config-set', self.set_config_command, "绘制一段拖网")
         self.register_command('-i', self.echo_command, "绘制一段拖网")
 
     def register_command(self, name: str, func: Callable, description: str = ""):
@@ -43,6 +47,7 @@ class CLIHandler:
         # 查找并执行命令
         if cmd_name in self.commands:
             try:
+                print(f"执行命令: {cmd_name}")
                 result = self.commands[cmd_name]['function'](args)
                 return result if result is not None else True
             except Exception as e:
@@ -69,17 +74,27 @@ class CLIHandler:
     def echo_command(args):
         """回显命令"""
         if args:
-            print(" ".join(args))
+            print("echo:")
+            print("-fin-", "-".join(args))
         else:
-            print("请输入要回显的内容")
+            print("enter_what_you_want_to_echo")
+
+    def set_config_command(self, args):
+        """设置配置命令"""
+        if args:
+            print("-set-config:")
+            self.config = json.loads(" ".join(args))
+            print("-fin-set-", self.config)
+        else:
+            print("请输入要设置的配置参数")
 
     def status_command(self, args):
         """状态命令"""
         import datetime
-        print(f"程序运行状态: 正常运行")
-        print(f"当前时间: {datetime.datetime.now()}")
-        print(f"已注册命令数: {len(self.commands)}")
-        print(f"进程ID: {os.getpid()}")
+        print(f"program_running_status: normal_operation")
+        print(f"current_time: {datetime.datetime.now()}")
+        print(f"registered_commands_count: {len(self.commands)}")
+        print(f"process_id: {os.getpid()}")
 
     @staticmethod
     def calc_command(args):
@@ -113,7 +128,6 @@ class CLIHandler:
 
         except ValueError:
             print("错误: 请输入有效的数字")
-
 
     @staticmethod
     def cleanup():
@@ -152,10 +166,14 @@ def main():
             try:
                 # 获取用户输入
                 user_input = input(">>>").strip()
+                print(f"获取用户输入:{user_input}")
 
                 # 处理用户命令
                 if user_input:
                     cli_handler.process_command(user_input)
+                print(f"-user-input")
+                print(f"{user_input}")
+                print("-end")
 
             except KeyboardInterrupt:
                 print("\n\n检测到Ctrl+C，程序即将退出...")
