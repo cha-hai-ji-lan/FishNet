@@ -5,6 +5,7 @@ use std::process::Command;
 use std::{fs, thread};
 use tauri::Manager;
 use util::process_client::{init_connect_cli, send_params, monitor_stdout};
+use crate::util::event::set_app_handle;
 
 #[tauri::command]
 fn run_exe(path: String) {
@@ -73,6 +74,10 @@ async  fn send_param_to_cli(command: Vec<String>) -> Result<String, String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .setup(|app| {
+            set_app_handle(app.handle().clone());
+            Ok(())
+        })
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             run_exe,           // 运行exe

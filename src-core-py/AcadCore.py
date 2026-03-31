@@ -156,7 +156,7 @@ class ACADBase:
             return False
 
 
-class ACAD_DXF(ACADBase):
+class AcadDxf(ACADBase):
     def get_all_entities(self) -> list:
         """
         获取模型空间中所有绘制的元素（实体对象）
@@ -275,7 +275,7 @@ class ACAD_DXF(ACADBase):
 #     first_entity = all_entities[0]
 #     info = acad.get_entity_info(first_entity)
 #     print(info)
-class ACAD(ACAD_DXF):
+class ACAD(AcadDxf):
     def __init__(self):
         super().__init__()
         print("-start-cad")
@@ -294,6 +294,7 @@ class ACAD(ACAD_DXF):
             print("-try-crate-cad")
             self.cad = win32.Dispatch("AutoCAD.Application")
             self.cad.Visible = True  # 使 AutoCAD 可见
+            print("-fin-crate-cad")  # 成功创建CAD实例
         # 现在 acad 变量包含对 AutoCAD 应用程序对象的引用
         pref = self.cad.Preferences
         # 获取文件设置
@@ -312,5 +313,3 @@ class ACAD(ACAD_DXF):
         self.msp = self.doc.ModelSpace
         self.doc.Application.Visible = True
         self.load_line_type("ACAD_ISO04W100")  # 加载线型
-
-

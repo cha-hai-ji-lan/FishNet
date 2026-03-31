@@ -4,6 +4,8 @@ use std::io::{BufRead, BufReader, Error, Write};
 use std::process::{ChildStderr, ChildStdin, ChildStdout, Command, Stdio};
 use std::sync::{Arc, Mutex};
 
+use crate::util::event::{send_start_connect_event, get_app_handle};
+
 ///
 /// ### CLI 连接器结构体
 ///
@@ -50,9 +52,22 @@ fn wait_for_start(connector: &mut CadCliConnector) -> Result<(), Error> {
         // 尝试转换为字符串，忽略无效 UTF-8
         if let Ok(line) = String::from_utf8(buffer.clone()) {
             println!("{}", line);
-            if line.trim() == "-start" {
-                found_start = true;
-                break;
+            match line.trim() {
+                "-start-cad" =>{
+                    let app_handle = get_app_handle().unwrap();
+                    send_start_connect_event(&app_handle)
+                }
+                "-start" => {
+                    found_start = true;
+                    break;
+                }
+                "-end" => {
+                    return Err(Error::new(
+                        io::ErrorKind::UnexpectedEof,
+                        "-start 丢失".to_string(),
+                    ));
+                }
+                _ => {}
             }
         }
     }

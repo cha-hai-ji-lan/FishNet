@@ -43,14 +43,13 @@
 </template>
 <script setup lang="ts">
 
-import { ref, onMounted } from "vue";
-import { RouterView } from 'vue-router';
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter, useRoute ,RouterView } from 'vue-router';
 import { invoke } from "@tauri-apps/api/core";
 import { Window } from "@tauri-apps/api/window";
-
 import { init_app, fishNetEXE, coreConfig } from "./utils/MainIndex.ts";
+import { listen_start_connect, cleanup_event_listeners} from "./utils/event.ts";
 import { cacheRouterPath } from "./utils/Memory.ts"
-import { useRouter, useRoute } from "vue-router"; // 引入 useRoute
 import { attentionContent, showPromptBox, promptLevel, shut_down_note } from "./utils/warn";
 import BaseIcon from "./assets/icons/BaseIcon.vue";
 
@@ -64,7 +63,12 @@ const route = useRoute()
 
 onMounted(async () => {
   await init_app();
+  listen_start_connect()  // 监控cad启动
   invoke("connect_cad_cli", { acadToolPath:fishNetEXE.value, command1: ["-config-set",  JSON.stringify(coreConfig.value["defaultParam"])]})
+})
+
+onUnmounted(async ()=>{
+  cleanup_event_listeners()
 })
 
 const title_bar_click = (mode: string) => {

@@ -1,11 +1,11 @@
-# --base-- test edition --base--
+# --base-- format edition --base--
 import argparse
 import json
 import os
 from typing import Callable
 
 
-# from AcadCore import ACAD
+from AcadCore import ACAD
 
 
 class CLIHandler:
@@ -15,6 +15,7 @@ class CLIHandler:
         self.commands = {}
         self.running = True
         self.register_default_commands()
+        self.acad = ACAD()
         self.config = None
 
     def register_default_commands(self):
@@ -42,6 +43,7 @@ class CLIHandler:
         # 检查是否为退出命令
         if cmd_name in ['-exit', 'exit', 'quit', '-quit']:
             self.running = False
+            self.acad.__exit__(None, None, None)  # 关闭acad
             return False
 
         # 查找并执行命令
