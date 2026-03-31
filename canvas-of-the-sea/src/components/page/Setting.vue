@@ -163,6 +163,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useRouter } from "vue-router"; // 引入 useRoute
 import SelectBar from '../utils/SelectorBar.vue';
 import { themeTypes, cacheRouterPath } from '../../utils/Memory.ts'
+import { init_cad_listen_group} from "../../utils/event.ts";
 import { themeConfig, interfaceStyle, coreConfig, fishNetEXE, init_color_palette, write_config, replace_config, init_app } from "../../utils/MainIndex.ts";
 
 const focusDraw = ref<string>("启用中")
@@ -241,6 +242,7 @@ const switch_but = (who: string) => {  // 切换按钮样式
 
 }
 const reset_cli = () =>{
+    init_cad_listen_group()
     invoke("reset_cli", { acadToolPath:fishNetEXE.value, command1: ["-config-set",  JSON.stringify(coreConfig.value["defaultParam"])]})
 }
 const save_config = () => {

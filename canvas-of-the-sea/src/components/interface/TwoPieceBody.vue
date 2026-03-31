@@ -8,19 +8,23 @@
 
         <table>
             <div class="item">
-                <div class="item-title">网身目大:</div><input v-model="netGroup['netBody'][`${segment}`][0]" placeholder="目大" type="number">
+                <div class="item-title">网身目大:</div><input v-model="netGroup['netBody'][`${segment}`][0]"
+                    placeholder="目大" type="number">
             </div>
             <div class="item">
-                <div class="item-title">网身纵向目数:</div><input v-model="netGroup['netBody'][`${segment}`][1]" placeholder="纵向目数" type="number">
+                <div class="item-title">网身纵向目数:</div><input v-model="netGroup['netBody'][`${segment}`][1]"
+                    placeholder="纵向目数" type="number">
             </div>
             <div class="item">
-                <div class="item-title">网身横向目数:</div><input v-model="netGroup['netBody'][`${segment}`][2]" placeholder="横向目数" type="number">
+                <div class="item-title">网身横向目数:</div><input v-model="netGroup['netBody'][`${segment}`][2]"
+                    placeholder="横向目数" type="number">
             </div>
             <div class="item">
-                <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['netBody'][`${segment}`][3]" placeholder="剪裁斜率默认 1:0" type="text">
+                <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['netBody'][`${segment}`][3]"
+                    placeholder="剪裁斜率默认 1:0" type="text">
             </div>
             <div class="item">
-                <div @click="()=>{next_segment()}" class="item-title item-button">下一段</div>
+                <div @click="() => { next_segment() }" class="item-title item-button">下一段</div>
                 <div class="item-title item-button-give-up">放弃</div>
             </div>
             <div class="item">
@@ -40,13 +44,18 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import {netGroup, send_parma_to_cli} from "../../utils/core/startdraw.ts";
+import { useRoute } from 'vue-router';
+import { cacheRouterPath } from "../../utils/Memory.ts"
+import { netGroup, send_parma_to_cli } from "../../utils/core/startdraw.ts";
 const segment = ref<number>(1)
+const route = useRoute()
 onMounted(() => {
     console.log(netGroup.value)
     segment.value = netGroup.value['netBody']['segment']
 })
-const next_segment = () =>{
+const next_segment = () => {
+    cacheRouterPath.value = route.path
+    netGroup.value["hasDraw"] = true
     send_parma_to_cli(["-i", netGroup.value['netBody'][`${segment.value}`].toString()])
     netGroup.value['netBody']['segment'] += 1
     segment.value = netGroup.value['netBody']['segment']
@@ -75,7 +84,7 @@ const next_segment = () =>{
         align-items: start;
         flex-direction: row;
         width: 100%;
-        border-bottom: 2px solid rgba(var(--button),var(--transparency));
+        border-bottom: 2px solid rgba(var(--button), var(--transparency));
         padding-top: 1vmin;
         padding-bottom: 1vmin;
 
@@ -94,7 +103,7 @@ const next_segment = () =>{
             -moz-appearance: none;
 
             /* 重置边框和背景 */
-            border: 2px solid rgba(var(--title),var(--transparency));
+            border: 2px solid rgba(var(--title), var(--transparency));
             ;
             outline: none;
             background: transparent;
@@ -109,7 +118,7 @@ const next_segment = () =>{
 
             width: 50%;
             max-width: 400px;
-            background-color: rgba(var(--border-line),var(--transparency));
+            background-color: rgba(var(--border-line), var(--transparency));
             border-radius: 1vmin;
             text-align: center;
             height: 3vmin;

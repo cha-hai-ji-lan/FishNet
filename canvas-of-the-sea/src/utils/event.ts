@@ -7,7 +7,7 @@ let unlisten_fail_create_cad_example: UnlistenFn | null = null  // 创建AutoCAD
 let unlisten_cad_ready: UnlistenFn | null = null  // 创建AutoCAD实例失败监听器
 
 // 初始化事件监听
-export async function listen_start_connect() {
+export const listen_start_connect = async () => {
     if (unlisten_start_connect) {
         return // 避免重复注册
     }
@@ -21,7 +21,7 @@ export async function listen_start_connect() {
         }
     })
 }
-export async function listen_create_cad_example() {
+export const listen_create_cad_example = async () => {
     if (unlisten_create_cad_example) {
         return // 避免重复注册
 
@@ -36,7 +36,7 @@ export async function listen_create_cad_example() {
         }
     })
 }
-export async function listen_fail_create_cad_example() {
+export const listen_fail_create_cad_example = async () => {
     if (unlisten_fail_create_cad_example) {
         return // 避免重复注册
 
@@ -48,12 +48,12 @@ export async function listen_fail_create_cad_example() {
         cleanup_cad_listen_group()  // 清理监听组，停止监听后续事件
     })
 }
-export async function listen_cad_ready() {
+export const listen_cad_ready = async () => {
     if (unlisten_cad_ready) {
         return // 避免重复注册
 
     }
-    unlisten_cad_ready = await listen('cad_ready', (event) => {
+    unlisten_cad_ready = await listen('cad-ready', (event) => {
         console.log('收到 Rust 消息:', event.payload)
         // 在这里调用你的 TypeScript 函数
         set_content("AutoCAD准备就绪", 1)

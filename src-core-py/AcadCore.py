@@ -12,8 +12,9 @@ class ACADBase:
         self.cad = None  # CAD对象
         self.doc = None  # 当前文档
         self.ven = None  # CAD版本
-        self.oc = None  # 颜色对象
+        self.oc = None   # 颜色对象
         self.msp = None  # 模型空间
+        self.cfg = None  # 配置对象
         self.template_path = None  # 模板路径
 
     def __exit__(self, exc_type, exc_val, exc_tb):

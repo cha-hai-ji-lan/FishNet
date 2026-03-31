@@ -18,7 +18,7 @@
       </div>新建绘图
     </div>
     <div class="blank-10pe"></div>
-    <div v-if="typeof netGroup !== 'string' && netGroup['hasDraw'] !== ''" @click="() => { start_drawing() }" class="flex-r-div but-frame ">
+    <div v-if="typeof netGroup !== 'string' && netGroup['hasDraw'] !== false" @click="() => { back_drawing() }" class="flex-r-div but-frame ">
       <div class="flex-r-div">
         返回绘图
       </div>
@@ -30,7 +30,7 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import { netTypes, isNewFile } from '../../utils/Memory.ts'
+import { netTypes, isNewFile , cacheRouterPath} from '../../utils/Memory.ts'
 import { set_content } from '../../utils/warn.ts'
 import { useRouter } from "vue-router"; // 引入 useRoute
 import { appConfig, twoNetT, fourNetT, sixNetT } from "../../utils/MainIndex.ts";
@@ -96,12 +96,17 @@ const updateTime = () => {
 };
 
 const start_drawing = () => {
-  console.log(drawMode.value)
   if (drawMode.value === "") {
     set_content("请选择绘图类型后再开始绘制拖网.", 2)
   } else {
     isNewFile.value = true
     router.push("/draw-two-piece")
+  }
+}
+
+const back_drawing = () => {
+  if(cacheRouterPath.value !== '__NULL__'){
+    router.push(cacheRouterPath.value)
   }
 }
 

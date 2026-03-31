@@ -85,51 +85,11 @@ class CLIHandler:
         """设置配置命令"""
         if args:
             print("-set-config:")
-            self.config = json.loads(" ".join(args))
-            print("-fin-set-", self.config)
+            self.acad.cfg = json.loads(" ".join(args))
+            print("-fin-set-", self.acad.cfg, type(self.acad.cfg))
         else:
             print("请输入要设置的配置参数")
 
-    def status_command(self, args):
-        """状态命令"""
-        import datetime
-        print(f"program_running_status: normal_operation")
-        print(f"current_time: {datetime.datetime.now()}")
-        print(f"registered_commands_count: {len(self.commands)}")
-        print(f"process_id: {os.getpid()}")
-
-    @staticmethod
-    def calc_command(args):
-        """计算器命令"""
-        if len(args) != 3:
-            print("用法: calc <数字1> <操作符> <数字2>")
-            print("支持的操作符: + - * /")
-            return
-
-        try:
-            num1 = float(args[0])
-            operator = args[1]
-            num2 = float(args[2])
-
-            if operator == '+':
-                result = num1 + num2
-            elif operator == '-':
-                result = num1 - num2
-            elif operator == '*':
-                result = num1 * num2
-            elif operator == '/':
-                if num2 == 0:
-                    print("错误: 除数不能为零")
-                    return
-                result = num1 / num2
-            else:
-                print(f"不支持的操作符: {operator}")
-                return
-
-            print(f"{num1} {operator} {num2} = {result}")
-
-        except ValueError:
-            print("错误: 请输入有效的数字")
 
     @staticmethod
     def cleanup():
@@ -168,26 +128,21 @@ def main():
             try:
                 # 获取用户输入
                 user_input = input(">>>").strip()
-                print(f"获取用户输入:{user_input}")
 
                 # 处理用户命令
                 if user_input:
                     cli_handler.process_command(user_input)
-                print(f"-user-input")
-                print(f"{user_input}")
                 print("-end")
 
             except KeyboardInterrupt:
-                print("\n\n检测到Ctrl+C，程序即将退出...")
+                print("-ctrl-c-is-detected")
                 break
             except EOFError:
-                print("\n输入流结束，程序退出...")
+                print("-end-of-input-stream")
                 break
 
     finally:
-        # 清理资源
-        cli_handler.cleanup()
-        print("程序已正常退出")
+        print("-exit-app-normal")
 
 
 if __name__ == "__main__":

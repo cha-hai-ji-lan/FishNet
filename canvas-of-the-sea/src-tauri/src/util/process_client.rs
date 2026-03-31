@@ -1,4 +1,3 @@
-use once_cell::sync::OnceCell;
 use std::io;
 use std::io::{BufRead, BufReader, Error, Write};
 use std::process::{Child, ChildStderr, ChildStdin, ChildStdout, Command, Stdio};
@@ -14,25 +13,26 @@ use crate::util::event::{
 ///
 /// 用于管理主进程与子进程的通信
 pub struct CadCliConnector {
-    pub child_process: Child,
-    pub stdin: ChildStdin,
-    pub reader: BufReader<ChildStdout>,
-    pub stderr: BufReader<ChildStderr>,
+    pub child_process: Arc<Mutex<Child>>,
+    pub stdin: Arc<Mutex<ChildStdin>>,
+    pub reader: Arc<Mutex<BufReader<ChildStdout>>>,
+    pub stderr: Arc<Mutex<BufReader<ChildStderr>>>,
 }
 
 ///
 /// ### 全局 CAD CLI 连接器实例
 ///
-/// 使用 OnceCell 实现延迟初始化的全局变量
-static CAD_CONNECTOR: OnceCell<Arc<Mutex<CadCliConnector>>> = OnceCell::new();
+/// 使用 Mutex<Option> 允许后续清除和重新初始化
+static CAD_CONNECTOR: Mutex<Option<Arc<CadCliConnector>>> = Mutex::new(None);
 static mut START_MONITOR: bool = false;
 
 ///
 /// ### 获取全局连接器实例
 ///
 /// 返回全局连接器的引用，如果未初始化则返回错误
-fn get_connector() -> Result<Arc<Mutex<CadCliConnector>>, Error> {
-    CAD_CONNECTOR.get().cloned().ok_or_else(|| {
+fn get_connector() -> Result<Arc<CadCliConnector>, Error> {
+    let connector = CAD_CONNECTOR.lock().unwrap();
+    connector.clone().ok_or_else(|| {
         Error::new(
             io::ErrorKind::NotConnected,
             "CAD CLI 连接器未初始化，请先调用 init_connect_cli()",
@@ -48,7 +48,11 @@ fn wait_for_start(connector: &mut CadCliConnector) -> Result<(), Error> {
 
     loop {
         buffer.clear();
-        let bytes_read = connector.reader.read_until(b'\n', &mut buffer)?;
+        let bytes_read = connector
+            .reader
+            .lock()
+            .unwrap()
+            .read_until(b'\n', &mut buffer)?;
         if bytes_read == 0 {
             break; // EOF
         }
@@ -62,6 +66,7 @@ fn wait_for_start(connector: &mut CadCliConnector) -> Result<(), Error> {
                 "-try-crate-cad" => send_create_cad_example_event(&app_handle),
                 "-fail-crate-cad" => send_fail_create_cad_example_event(&app_handle),
                 "-start" => {
+                    println!("获取到 ---start--- 已启动");
                     send_cad_ready(&app_handle);
                     found_start = true;
                     break;
@@ -101,11 +106,15 @@ fn send_initial_params(
     let mut found_end = false;
     println!("{}{}", command1, command2);
     // 发送命令行参数
-    writeln!(connector.stdin, "{}{}", command1, command2)?;
+    writeln!(connector.stdin.lock().unwrap(), "{}{}", command1, command2)?;
 
     loop {
         buffer.clear();
-        let bytes_read = connector.reader.read_until(b'\n', &mut buffer)?;
+        let bytes_read = connector
+            .reader
+            .lock()
+            .unwrap()
+            .read_until(b'\n', &mut buffer)?;
         if bytes_read == 0 {
             break; // EOF
         }
@@ -147,7 +156,16 @@ pub fn init_connect_cli(
     args_g1: Option<Vec<String>>,
     args_g2: Option<Vec<String>>,
 ) -> Result<(), Error> {
-    let mut child:Child = Command::new(&acad_tool_path)
+    // 检查是否已经初始化
+    let global_connector = CAD_CONNECTOR.lock().unwrap();
+    if global_connector.is_some() {
+        return Err(Error::new(
+            io::ErrorKind::AlreadyExists,
+            "CAD CLI 连接器已初始化，无法重复初始化。请先调用 kill_cad_process() 或 close_cli_connection() 清除后再初始化",
+        ));
+    }
+    drop(global_connector);  // 释放锁
+    let mut child: Child = Command::new(&acad_tool_path)
         .stdin(Stdio::piped()) // 创建管道捕获 标准输入 [主进程 -> 子进程]
         .stdout(Stdio::piped()) // 创建管道捕获 标准输出 [子进程 -> 主进程]
         .stderr(Stdio::piped()) // 创建管道捕获 错误输出 [子进程 -> 主进程]
@@ -160,10 +178,10 @@ pub fn init_connect_cli(
     let reader = BufReader::new(stdout); // 读取缓冲区，用于读取字节流
     let stderr_reader = BufReader::new(stderr);
     let mut connector = CadCliConnector {
-        child_process: child,
-        stdin,
-        reader,
-        stderr: stderr_reader,
+        child_process: Arc::new(Mutex::new(child)),
+        stdin: Arc::new(Mutex::new(stdin)),
+        reader: Arc::new(Mutex::new(reader)),
+        stderr: Arc::new(Mutex::new(stderr_reader)),
     };
 
     // 等待 "-start" 标志
@@ -188,15 +206,10 @@ pub fn init_connect_cli(
     // 发送初始化参数并等待 "-end" 标志
     send_initial_params(&mut connector, &command1, &command2)?;
 
-    // 存储到全局变量
-    CAD_CONNECTOR
-        .set(Arc::new(Mutex::new(connector)))
-        .map_err(|_| {
-            Error::new(
-                io::ErrorKind::AlreadyExists,
-                "CAD CLI 连接器已初始化，无法重复初始化",
-            )
-        })?;
+    // 存储到全局变量 - Mutex<Option>
+    let mut global_connector = CAD_CONNECTOR.lock().unwrap();
+    *global_connector = Some(Arc::new(connector));
+
     println!("CAD CLI 连接器初始化成功");
     Ok(())
 }
@@ -204,9 +217,8 @@ pub fn init_connect_cli(
 /// ### 监控stdout
 ///
 /// 监控CAD CLI的输出
-/// 
+///
 /// [暂时停用]
-#[allow(unused_variables)]
 pub fn monitor_stdout() -> Result<(), Error> {
     let connector = get_connector()?;
     unsafe {
@@ -217,15 +229,14 @@ pub fn monitor_stdout() -> Result<(), Error> {
     loop {
         let mut buffer = Vec::new();
         let bytes_read = connector
+            .reader
             .lock()
             .unwrap()
-            .reader
             .read_until(b'\n', &mut buffer)?;
         if bytes_read == 0 {
-            break; // EOF
+            break;
         }
 
-        // 尝试转换为字符串，忽略无效 UTF-8
         if let Ok(line) = String::from_utf8(buffer.clone()) {
             println!("{}", line);
         }
@@ -245,9 +256,7 @@ pub fn send_params(params: Vec<String>) -> Result<(), Error> {
         START_MONITOR = false;
     }
     let connector = get_connector()?;
-    let mut connector_guard = connector
-        .lock()
-        .map_err(|e| Error::new(io::ErrorKind::Other, format!("获取连接器锁失败：{}", e)))?;
+    let mut connector_guard = connector;
 
     let mut buffer = Vec::new();
     let mut command = String::new();
@@ -258,12 +267,12 @@ pub fn send_params(params: Vec<String>) -> Result<(), Error> {
     }
 
     // 发送命令
-    writeln!(connector_guard.stdin, "{}", command)?;
+    writeln!(connector_guard.stdin.lock().unwrap(), "{}", command)?;
 
     // 读取响应（可以根据需要调整响应处理逻辑）
     loop {
         buffer.clear();
-        let bytes_read = connector_guard.reader.read_until(b'\n', &mut buffer)?;
+        let bytes_read = connector_guard.reader.lock().unwrap().read_until(b'\n', &mut buffer)?;
         if bytes_read == 0 {
             break; // EOF
         }
@@ -295,37 +304,56 @@ pub fn close_cli_connection() -> Result<(), Error> {
 
     // 从全局变量获取连接器
     let connector = get_connector()?;
-    let mut connector_guard = connector
-        .lock()
-        .map_err(|e| Error::new(io::ErrorKind::Other, format!("获取连接器锁失败：{}", e)))?;
+    let mut connector_guard = connector;
 
-    writeln!(connector_guard.stdin, "-exit")?;
+    writeln!(connector_guard.stdin.lock().unwrap(), "-exit")?;
 
     // 注意：这里不等待进程结束，让调用者决定如何处理
     // 如果需要等待，可以调用 child.wait()
 
     Ok(())
 }
+
 ///
-/// ### 强制终止子进程
+/// ### 强制终止子进程并清除连接器
 ///
-/// 立即终止 CAD 子进程，不等待优雅退出
+/// 立即终止 CAD 子进程，并清除连接器实例允许重新初始化
 pub fn kill_cad_process() -> Result<(), Error> {
     println!("正在强制终止 CAD 进程...");
 
     let connector = get_connector()?;
-    let mut connector_guard = connector
-        .lock()
-        .map_err(|e| Error::new(io::ErrorKind::Other, format!("获取连接器锁失败：{}", e)))?;
 
-    connector_guard.child_process.kill()?;
+    // 通过锁获取 child_process 的可变引用
+    let mut child_guard = connector.child_process.lock().unwrap();
+    child_guard.kill()?;
+    drop(child_guard);
 
     println!("CAD 进程已终止");
+
+    drop(connector);
+
+    let mut global_connector = CAD_CONNECTOR.lock().unwrap();
+    *global_connector = None;
+
+    println!("连接器已清除，可以重新初始化");
     Ok(())
 }
 
 ///
 /// ### 检查连接器是否已初始化
 pub fn is_connected() -> bool {
-    CAD_CONNECTOR.get().is_some()
+    CAD_CONNECTOR.lock().unwrap().is_some()
 }
+
+///
+/// ### 清除连接器实例
+///
+/// 手动清除连接器，允许重新初始化
+pub fn clear_connector() -> Result<(), Error> {
+    let mut global_connector = CAD_CONNECTOR.lock().unwrap();
+    *global_connector = None;
+    println!("连接器已清除");
+    Ok(())
+}
+
+// ... existing code ...

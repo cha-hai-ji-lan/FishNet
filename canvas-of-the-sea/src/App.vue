@@ -122,8 +122,6 @@ const router_to = (where: string) => {
           router.push("/setting")
         }
       }
-
-
       break;
 
     default:

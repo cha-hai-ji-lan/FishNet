@@ -1,7 +1,7 @@
 {
   "twoPieces": {
     "corePos": "",
-    "hasDraw": "",
+    "hasDraw": false,
     "netBody": {
       "segment": 0
     },
@@ -14,7 +14,7 @@
   },
   "fourPieces": {
     "corePos": "",
-    "hasDraw": "",
+    "hasDraw": false,
     "netBody": {
       "segment": 0
     },
@@ -27,7 +27,7 @@
   },
   "sixPieces": {
     "corePos": "",
-    "hasDraw": "",
+    "hasDraw": false,
     "netBody": {
       "segment": 0
     },

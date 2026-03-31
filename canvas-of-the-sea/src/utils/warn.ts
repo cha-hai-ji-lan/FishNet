@@ -31,10 +31,11 @@ export const set_content = (content: string, level: number = 2): void => {
             promptLevel.value = "2"
             break;
     }
+    console.log(content)
     shut_down_note()  // 关闭之前的提示框
     attentionContent.value = content;
     showPromptBox.value = true;
-    console.log(attentionContent.value.length * interfaceStyle.value["atomicTime"])
+    // console.log(attentionContent.value.length * interfaceStyle.value["atomicTime"])
     promptTimer = setTimeout(() => {
         showPromptBox.value = false;
         attentionContent.value = ""
