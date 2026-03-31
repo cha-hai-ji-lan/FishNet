@@ -1,10 +1,7 @@
 # --base-- format edition --base--
 import argparse
 import json
-import os
 from typing import Callable
-
-
 from AcadCore import ACAD
 
 
@@ -16,7 +13,6 @@ class CLIHandler:
         self.running = True
         self.register_default_commands()
         self.acad = ACAD()
-        self.config = None
 
     def register_default_commands(self):
         """注册默认命令"""

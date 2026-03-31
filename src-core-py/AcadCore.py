@@ -5,6 +5,7 @@ import win32com.client as win32
 from typeInfoConfig import (
     config
 )
+from cutSlope import cut_slope, eye_cut_slope
 
 
 class ACADBase:
@@ -12,9 +13,11 @@ class ACADBase:
         self.cad = None  # CAD对象
         self.doc = None  # 当前文档
         self.ven = None  # CAD版本
-        self.oc = None   # 颜色对象
+        self.oc = None  # 颜色对象
         self.msp = None  # 模型空间
         self.cfg = None  # 配置对象
+        self.slope = cut_slope  # 剪裁斜率
+        self.eye_slope = eye_cut_slope  # 宕眼剪裁斜率
         self.template_path = None  # 模板路径
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -299,7 +302,6 @@ class ACAD(AcadDxf):
                 print("-fin-crate-cad")  # 成功创建CAD实例
             except pywintypes.com_error:  # 无法创建新的CAD实例应当重启后尝试
                 print("-fail-crate-cad")  # 创建CAD实例失败
-
 
         # 现在 acad 变量包含对 AutoCAD 应用程序对象的引用
         pref = self.cad.Preferences
