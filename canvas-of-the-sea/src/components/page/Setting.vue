@@ -78,7 +78,7 @@
             </div>
             <div class="setting-item">
                 <div class="setting-title ban-select">重启服务</div>
-                <div class="update-item">
+                <div @click="()=>{reset_cli()}" class="update-item">
                     <div class="set-but ban-select">重启服务端</div>
                 </div>
             </div>
@@ -163,7 +163,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useRouter } from "vue-router"; // 引入 useRoute
 import SelectBar from '../utils/SelectorBar.vue';
 import { themeTypes, cacheRouterPath } from '../../utils/Memory.ts'
-import { themeConfig, interfaceStyle, coreConfig, init_color_palette, write_config, replace_config, init_app } from "../../utils/MainIndex.ts";
+import { themeConfig, interfaceStyle, coreConfig, fishNetEXE, init_color_palette, write_config, replace_config, init_app } from "../../utils/MainIndex.ts";
 
 const focusDraw = ref<string>("启用中")
 const undoMode = ref<string>("段撤销")
@@ -240,7 +240,9 @@ const switch_but = (who: string) => {  // 切换按钮样式
     }
 
 }
-
+const reset_cli = () =>{
+    invoke("reset_cli", { acadToolPath:fishNetEXE.value, command1: ["-config-set",  JSON.stringify(coreConfig.value["defaultParam"])]})
+}
 const save_config = () => {
     console.log(JSON.stringify(coreConfig.value["defaultParam"]))
     invoke("send_param_to_cli", {command: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])]})

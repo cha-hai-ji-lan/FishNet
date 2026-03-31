@@ -292,9 +292,14 @@ class ACAD(AcadDxf):
             # 如果没有运行的实例，则创建一个新的实例
             print("-fail-connect-cad")
             print("-try-crate-cad")
-            self.cad = win32.Dispatch("AutoCAD.Application")
-            self.cad.Visible = True  # 使 AutoCAD 可见
-            print("-fin-crate-cad")  # 成功创建CAD实例
+            try:
+                self.cad = win32.Dispatch("AutoCAD.Application")
+                self.cad.Visible = True  # 使 AutoCAD 可见
+                print("-fin-crate-cad")  # 成功创建CAD实例
+            except pywintypes.com_error:  # 无法创建新的CAD实例应当重启后尝试
+                print("-fail-crate-cad")  # 创建CAD实例失败
+
+
         # 现在 acad 变量包含对 AutoCAD 应用程序对象的引用
         pref = self.cad.Preferences
         # 获取文件设置

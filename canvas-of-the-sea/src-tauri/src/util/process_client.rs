@@ -1,16 +1,20 @@
 use once_cell::sync::OnceCell;
 use std::io;
 use std::io::{BufRead, BufReader, Error, Write};
-use std::process::{ChildStderr, ChildStdin, ChildStdout, Command, Stdio};
+use std::process::{Child, ChildStderr, ChildStdin, ChildStdout, Command, Stdio};
 use std::sync::{Arc, Mutex};
-
-use crate::util::event::{send_start_connect_event, get_app_handle};
+// 事件监听发送器
+use crate::util::event::{
+    get_app_handle, send_cad_ready, send_create_cad_example_event,
+    send_fail_create_cad_example_event, send_start_connect_event,
+};
 
 ///
 /// ### CLI 连接器结构体
 ///
 /// 用于管理主进程与子进程的通信
 pub struct CadCliConnector {
+    pub child_process: Child,
     pub stdin: ChildStdin,
     pub reader: BufReader<ChildStdout>,
     pub stderr: BufReader<ChildStderr>,
@@ -51,13 +55,14 @@ fn wait_for_start(connector: &mut CadCliConnector) -> Result<(), Error> {
 
         // 尝试转换为字符串，忽略无效 UTF-8
         if let Ok(line) = String::from_utf8(buffer.clone()) {
+            let app_handle = get_app_handle().unwrap();
             println!("{}", line);
             match line.trim() {
-                "-start-cad" =>{
-                    let app_handle = get_app_handle().unwrap();
-                    send_start_connect_event(&app_handle)
-                }
+                "-start-cad" => send_start_connect_event(&app_handle),
+                "-try-crate-cad" => send_create_cad_example_event(&app_handle),
+                "-fail-crate-cad" => send_fail_create_cad_example_event(&app_handle),
                 "-start" => {
+                    send_cad_ready(&app_handle);
                     found_start = true;
                     break;
                 }
@@ -142,7 +147,7 @@ pub fn init_connect_cli(
     args_g1: Option<Vec<String>>,
     args_g2: Option<Vec<String>>,
 ) -> Result<(), Error> {
-    let mut child = Command::new(&acad_tool_path)
+    let mut child:Child = Command::new(&acad_tool_path)
         .stdin(Stdio::piped()) // 创建管道捕获 标准输入 [主进程 -> 子进程]
         .stdout(Stdio::piped()) // 创建管道捕获 标准输出 [子进程 -> 主进程]
         .stderr(Stdio::piped()) // 创建管道捕获 错误输出 [子进程 -> 主进程]
@@ -155,6 +160,7 @@ pub fn init_connect_cli(
     let reader = BufReader::new(stdout); // 读取缓冲区，用于读取字节流
     let stderr_reader = BufReader::new(stderr);
     let mut connector = CadCliConnector {
+        child_process: child,
         stdin,
         reader,
         stderr: stderr_reader,
@@ -198,10 +204,13 @@ pub fn init_connect_cli(
 /// ### 监控stdout
 ///
 /// 监控CAD CLI的输出
+/// 
+/// [暂时停用]
+#[allow(unused_variables)]
 pub fn monitor_stdout() -> Result<(), Error> {
     let connector = get_connector()?;
     unsafe {
-        if  !START_MONITOR {
+        if !START_MONITOR {
             return Ok(());
         }
     }
@@ -297,12 +306,26 @@ pub fn close_cli_connection() -> Result<(), Error> {
 
     Ok(())
 }
+///
+/// ### 强制终止子进程
+///
+/// 立即终止 CAD 子进程，不等待优雅退出
+pub fn kill_cad_process() -> Result<(), Error> {
+    println!("正在强制终止 CAD 进程...");
 
+    let connector = get_connector()?;
+    let mut connector_guard = connector
+        .lock()
+        .map_err(|e| Error::new(io::ErrorKind::Other, format!("获取连接器锁失败：{}", e)))?;
+
+    connector_guard.child_process.kill()?;
+
+    println!("CAD 进程已终止");
+    Ok(())
+}
 
 ///
 /// ### 检查连接器是否已初始化
 pub fn is_connected() -> bool {
     CAD_CONNECTOR.get().is_some()
 }
-
-

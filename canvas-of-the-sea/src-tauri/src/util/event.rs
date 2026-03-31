@@ -1,9 +1,9 @@
-use tauri::Emitter;
 use once_cell::sync::OnceCell;
 use std::sync::Arc;
 use tauri::AppHandle;
+use tauri::Emitter;
 
-static APP_HANDLE: OnceCell<Arc<AppHandle>> = OnceCell::new();  // app handle全局实例
+static APP_HANDLE: OnceCell<Arc<AppHandle>> = OnceCell::new(); // app handle全局实例
 
 ///
 /// ### 设置app handle
@@ -32,7 +32,37 @@ pub struct SomePayload {
 ///
 /// 用于在前端提示开始连接CAD实例
 pub fn send_start_connect_event(app: &AppHandle) {
-    app.emit("cli-start-connect", SomePayload {
-        data: "start connect cad".to_string()
-    }).unwrap();
+    app.emit(
+        "start-connect",
+        SomePayload {
+            data: "启动连接CAD".to_string(),
+        },
+    )
+    .unwrap();
+}
+pub fn send_create_cad_example_event(app: &AppHandle) {
+    app.emit(
+        "create-cad-example",
+        SomePayload {
+            data: "启动创建CAD示例".to_string(),
+        },
+    )
+    .unwrap();
+}
+pub fn send_fail_create_cad_example_event(app: &AppHandle) {
+    app.emit(
+        "fail-create-cad-example",
+        SomePayload {
+            data: "CAD示例创建失败".to_string(),
+        },
+    )
+    .unwrap();
+}pub fn send_cad_ready(app: &AppHandle) {
+    app.emit(
+        "cad-ready",
+        SomePayload {
+            data: "cad已准备就绪".to_string(),
+        },
+    )
+    .unwrap();
 }

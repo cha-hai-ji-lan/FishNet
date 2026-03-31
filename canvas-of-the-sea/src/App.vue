@@ -48,7 +48,7 @@ import { useRouter, useRoute ,RouterView } from 'vue-router';
 import { invoke } from "@tauri-apps/api/core";
 import { Window } from "@tauri-apps/api/window";
 import { init_app, fishNetEXE, coreConfig } from "./utils/MainIndex.ts";
-import { listen_start_connect, cleanup_event_listeners} from "./utils/event.ts";
+import { init_cad_listen_group, cleanup_event_listeners} from "./utils/event.ts";
 import { cacheRouterPath } from "./utils/Memory.ts"
 import { attentionContent, showPromptBox, promptLevel, shut_down_note } from "./utils/warn";
 import BaseIcon from "./assets/icons/BaseIcon.vue";
@@ -63,7 +63,7 @@ const route = useRoute()
 
 onMounted(async () => {
   await init_app();
-  listen_start_connect()  // 监控cad启动
+  init_cad_listen_group()
   invoke("connect_cad_cli", { acadToolPath:fishNetEXE.value, command1: ["-config-set",  JSON.stringify(coreConfig.value["defaultParam"])]})
 })
 

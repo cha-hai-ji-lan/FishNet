@@ -1,11 +1,11 @@
 mod util;
 
+use crate::util::event::set_app_handle;
 use serde_json::Value;
 use std::process::Command;
 use std::{fs, thread};
 use tauri::Manager;
-use util::process_client::{init_connect_cli, send_params, monitor_stdout};
-use crate::util::event::set_app_handle;
+use util::process_client::{init_connect_cli, kill_cad_process, send_params};
 
 #[tauri::command]
 fn run_exe(path: String) {
@@ -63,8 +63,21 @@ async fn connect_cad_cli(
     }
 }
 #[tauri::command]
-async  fn send_param_to_cli(command: Vec<String>) -> Result<String, String> {
+async fn send_param_to_cli(command: Vec<String>) -> Result<String, String> {
     let result = send_params(command);
+    match result {
+        Ok(_) => Ok("-success".to_string()),
+        Err(error) => Err(error.to_string()),
+    }
+}
+#[tauri::command]
+async fn reset_cli(
+    acad_tool_path: String,
+    command1: Option<Vec<String>>,
+    command2: Option<Vec<String>>,
+) -> Result<String, String> {
+    let _ = kill_cad_process();
+    let result = init_connect_cli(acad_tool_path, command1, command2);
     match result {
         Ok(_) => Ok("-success".to_string()),
         Err(error) => Err(error.to_string()),
@@ -86,6 +99,7 @@ pub fn run() {
             write_json_file,   // 写入json文件
             connect_cad_cli,   // 连接CAD_Tool_CLI
             send_param_to_cli, // 发送参数给CAD_Tool_CLI
+            reset_cli,         // 杀死CLI链接CAD进程
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
