@@ -5,7 +5,8 @@ use std::sync::{Arc, Mutex};
 // 事件监听发送器
 use crate::util::event::{
     get_app_handle, send_cad_ready, send_create_cad_example_event,
-    send_fail_create_cad_example_event, send_start_connect_event,
+    send_fail_create_cad_example_event, send_fail_ready_event, send_run_cli_event,
+    send_start_connect_event,
 };
 
 ///
@@ -16,6 +17,7 @@ pub struct CadCliConnector {
     pub child_process: Arc<Mutex<Child>>,
     pub stdin: Arc<Mutex<ChildStdin>>,
     pub reader: Arc<Mutex<BufReader<ChildStdout>>>,
+    #[allow(dead_code)]
     pub stderr: Arc<Mutex<BufReader<ChildStderr>>>,
 }
 
@@ -83,6 +85,8 @@ fn wait_for_start(connector: &mut CadCliConnector) -> Result<(), Error> {
     }
 
     if !found_start {
+        let app_handle = get_app_handle().unwrap();
+        send_fail_ready_event(&app_handle);
         return Err(Error::new(
             io::ErrorKind::NotFound,
             "无法找到 -start 起始标志".to_string(),
@@ -164,7 +168,9 @@ pub fn init_connect_cli(
             "CAD CLI 连接器已初始化，无法重复初始化。请先调用 kill_cad_process() 或 close_cli_connection() 清除后再初始化",
         ));
     }
-    drop(global_connector);  // 释放锁
+    drop(global_connector); // 释放锁
+    let app_handle = get_app_handle().unwrap();
+    send_run_cli_event(&app_handle); // 发送运行 CLI 启动事件
     let mut child: Child = Command::new(&acad_tool_path)
         .stdin(Stdio::piped()) // 创建管道捕获 标准输入 [主进程 -> 子进程]
         .stdout(Stdio::piped()) // 创建管道捕获 标准输出 [子进程 -> 主进程]
@@ -219,6 +225,7 @@ pub fn init_connect_cli(
 /// 监控CAD CLI的输出
 ///
 /// [暂时停用]
+#[allow(dead_code)]
 pub fn monitor_stdout() -> Result<(), Error> {
     let connector = get_connector()?;
     unsafe {
@@ -256,7 +263,7 @@ pub fn send_params(params: Vec<String>) -> Result<(), Error> {
         START_MONITOR = false;
     }
     let connector = get_connector()?;
-    let mut connector_guard = connector;
+    let connector_guard = connector;
 
     let mut buffer = Vec::new();
     let mut command = String::new();
@@ -272,7 +279,11 @@ pub fn send_params(params: Vec<String>) -> Result<(), Error> {
     // 读取响应（可以根据需要调整响应处理逻辑）
     loop {
         buffer.clear();
-        let bytes_read = connector_guard.reader.lock().unwrap().read_until(b'\n', &mut buffer)?;
+        let bytes_read = connector_guard
+            .reader
+            .lock()
+            .unwrap()
+            .read_until(b'\n', &mut buffer)?;
         if bytes_read == 0 {
             break; // EOF
         }
@@ -299,12 +310,15 @@ pub fn send_params(params: Vec<String>) -> Result<(), Error> {
 /// ### 关闭 CAD CLI 连接 (使用全局连接器)
 ///
 /// 发送退出命令并清理资源
+///
+/// [暂时停用]
+#[allow(dead_code)]
 pub fn close_cli_connection() -> Result<(), Error> {
     println!("所有文档处理完毕，正在退出程序...");
 
     // 从全局变量获取连接器
     let connector = get_connector()?;
-    let mut connector_guard = connector;
+    let connector_guard = connector;
 
     writeln!(connector_guard.stdin.lock().unwrap(), "-exit")?;
 
@@ -341,6 +355,9 @@ pub fn kill_cad_process() -> Result<(), Error> {
 
 ///
 /// ### 检查连接器是否已初始化
+///
+/// [暂时停用]
+#[allow(dead_code)]
 pub fn is_connected() -> bool {
     CAD_CONNECTOR.lock().unwrap().is_some()
 }
@@ -349,6 +366,9 @@ pub fn is_connected() -> bool {
 /// ### 清除连接器实例
 ///
 /// 手动清除连接器，允许重新初始化
+///
+/// [暂时停用]
+#[allow(dead_code)]
 pub fn clear_connector() -> Result<(), Error> {
     let mut global_connector = CAD_CONNECTOR.lock().unwrap();
     *global_connector = None;

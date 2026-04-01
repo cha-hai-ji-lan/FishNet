@@ -41,7 +41,7 @@
 <script setup lang="ts">
 
 import { ref, onMounted } from 'vue';
-import { invoke } from "@tauri-apps/api/core";
+// import { invoke } from "@tauri-apps/api/core";
 import NetShowIcons from '../../assets/icons/NetShowIcons.vue';
 import TwoPieceBody from '../../components/interface/TwoPieceBody.vue';
 import TwoPieceLeftSleeve from '../../components/interface/TwoPieceLeftSleeve.vue';
@@ -49,7 +49,7 @@ import TwoPieceRightSleeve from '../../components/interface/TwoPieceRightSleeve.
 import { hasChoose, focusPart, netGroup } from '../../utils/core/startdraw.ts'
 import { set_content } from '../../utils/warn.ts'
 import { isNewFile } from '../../utils/Memory.ts'
-import { coreConfig } from '../../utils/MainIndex.ts'
+// import { coreConfig } from '../../utils/MainIndex.ts'
 const choosePart = ref(false)
 const showCanvas = ref(false)
 const showPara = ref(false)
@@ -99,21 +99,15 @@ const choose_part = (who: string) => {
       isNewFile.value = false  // 已进行了一步操作,可看作不是新文件
       hasChoose.value = true;
       focusPart.value = "two-net-body"
-      netGroup.value['netBody']['segment'] += 1
-      netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null)
       break;
     case 'right-sleeve':
       if (hasChoose.value == true) {  // 如果已经有网身段 则侧面印证了可以绘制其他部位
         focusPart.value = "two-right-sleeve"
-        netGroup.value['rightSleeve']['segment'] += 1
-        netGroup.value['rightSleeve'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null)
       }
       break;
     case 'left-sleeve':
       if (hasChoose.value == true) {
         focusPart.value = "two-left-sleeve"
-        netGroup.value['leftSleeve']['segment'] += 1
-        netGroup.value['leftSleeve'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null)
       }
       break;
 

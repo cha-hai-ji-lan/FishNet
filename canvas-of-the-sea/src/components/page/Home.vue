@@ -18,7 +18,8 @@
       </div>新建绘图
     </div>
     <div class="blank-10pe"></div>
-    <div v-if="typeof netGroup !== 'string' && netGroup['hasDraw'] !== false" @click="() => { back_drawing() }" class="flex-r-div but-frame ">
+    <div v-if="typeof netGroup !== 'string' && netGroup['hasDraw'] !== false" @click="() => { back_drawing() }"
+      class="flex-r-div but-frame ">
       <div class="flex-r-div">
         返回绘图
       </div>
@@ -30,7 +31,7 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import { netTypes, isNewFile , cacheRouterPath} from '../../utils/Memory.ts'
+import { netTypes, isNewFile, cacheRouterPath } from '../../utils/Memory.ts'
 import { set_content } from '../../utils/warn.ts'
 import { useRouter } from "vue-router"; // 引入 useRoute
 import { appConfig, twoNetT, fourNetT, sixNetT } from "../../utils/MainIndex.ts";
@@ -53,16 +54,16 @@ onMounted(() => {
 
 watch(drawMode, (NewVal: string) => {
   console.log(netGroup.value)
-  switch (NewVal) {
+  switch (NewVal) {  // 纯数据对象深拷贝
     case '两片式':
-      netGroup.value = twoNetT.value
+      netGroup.value = JSON.parse(JSON.stringify(twoNetT.value))
       break;
     case '四片式':
-      netGroup.value = fourNetT.value
+      netGroup.value = JSON.parse(JSON.stringify(fourNetT.value))
 
       break;
     case '六片式':
-      netGroup.value = sixNetT.value
+      netGroup.value = JSON.parse(JSON.stringify(sixNetT.value))
       break;
 
     default:
@@ -105,7 +106,7 @@ const start_drawing = () => {
 }
 
 const back_drawing = () => {
-  if(cacheRouterPath.value !== '__NULL__'){
+  if (cacheRouterPath.value !== '__NULL__') {
     router.push(cacheRouterPath.value)
   }
 }

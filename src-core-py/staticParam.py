@@ -365,3 +365,10 @@ eye_cut_slope: dict = {
         }
     }
 }
+
+base_param = {
+    "mid_pt": [None] * 3,
+    "mid_li": [None] * 6,
+    "oc_slope": {"N": 0, "T": 0, "B": 0},
+
+}

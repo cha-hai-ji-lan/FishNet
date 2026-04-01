@@ -28,6 +28,18 @@ pub struct SomePayload {
 }
 
 ///
+/// ### 服务端启动事件
+///
+/// 用于在前端提示开始连接CAD实例
+pub fn send_run_cli_event(app: &AppHandle) {
+    app.emit(
+        "cli-connect",
+        SomePayload {
+            data: "FishNet Core服务启动中".to_string(),
+        },
+    )
+    .unwrap();
+}///
 /// ### 发送开始链接CAD实例事件
 ///
 /// 用于在前端提示开始连接CAD实例
@@ -57,7 +69,17 @@ pub fn send_fail_create_cad_example_event(app: &AppHandle) {
         },
     )
     .unwrap();
-}pub fn send_cad_ready(app: &AppHandle) {
+}
+pub fn send_fail_ready_event(app: &AppHandle) {
+    app.emit(
+        "fail-ready",
+        SomePayload {
+            data: "CAD示例创建失败".to_string(),
+        },
+    )
+    .unwrap();
+}
+pub fn send_cad_ready(app: &AppHandle) {
     app.emit(
         "cad-ready",
         SomePayload {

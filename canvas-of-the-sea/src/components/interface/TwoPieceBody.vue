@@ -1,5 +1,5 @@
 <template>
-    <div class="two-piece-body">
+    <div class="two-piece-body" v-if="netGroup['netBody'] && netGroup['netBody']['segment'] > 0">
         <div class="blank-10pe"></div>
         <div class="item">
             <div class="part-title "><span>网身</span></div>
@@ -24,19 +24,19 @@
                     placeholder="剪裁斜率默认 1:0" type="text">
             </div>
             <div class="item">
-                <div @click="() => { next_segment() }" class="item-title item-button">下一段</div>
-                <div class="item-title item-button-give-up">放弃</div>
+                <div @click="() => { next_segment() }" class="item-title item-button ban-select">下一段</div>
+                <div @click="() => { give_up_draw() }" class="item-title item-button-give-up ban-select">放弃</div>
             </div>
             <div class="item">
-                <div class="item-title item-button-warn">清空</div>
-                <div class="item-title item-button-warn">全部重置</div>
+                <div class="item-title item-button-warn ban-select">清空</div>
+                <div class="item-title item-button-warn ban-select">全部重置</div>
             </div>
             <div class="item">
-                <div class="item-title item-button-warn">退一步</div>
-                <div class="item-title item-button-warn">进一步</div>
+                <div class="item-title item-button-warn ban-select">退一步</div>
+                <div class="item-title item-button-warn ban-select">进一步</div>
             </div>
             <div class="item">
-                <div class="item-title item-button-fin"><span>完成</span></div>
+                <div class="item-title item-button-fin ban-select"><span>完成</span></div>
             </div>
 
         </table>
@@ -44,23 +44,40 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { useRoute } from 'vue-router';
-import { cacheRouterPath } from "../../utils/Memory.ts"
+import { invoke } from "@tauri-apps/api/core";
+import { useRoute, useRouter } from 'vue-router';
+import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts";
 import { netGroup, send_parma_to_cli } from "../../utils/core/startdraw.ts";
+import { init_cad_listen_group } from "../../utils/event.ts";
+import { coreConfig, fishNetEXE } from "../../utils/MainIndex.ts";
+
 const segment = ref<number>(1)
 const route = useRoute()
+const router = useRouter()
 onMounted(() => {
-    console.log(netGroup.value)
-    segment.value = netGroup.value['netBody']['segment']
+    if (netGroup.value['netBody'] && netGroup.value['netBody']['segment'] === 0) {
+        netGroup.value['netBody']['segment'] += 1;
+        netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null);
+    };
+    segment.value = netGroup.value['netBody']?.['segment'] || 0;
 })
 const next_segment = () => {
-    cacheRouterPath.value = route.path
-    netGroup.value["hasDraw"] = true
-    send_parma_to_cli(["-i", netGroup.value['netBody'][`${segment.value}`].toString()])
-    netGroup.value['netBody']['segment'] += 1
-    segment.value = netGroup.value['netBody']['segment']
-    netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null)
+    cacheRouterPath.value = route.path;
+    netGroup.value["hasDraw"] = true;
+    send_parma_to_cli(["-i", `[${netGroup.value['netBody'][`${segment.value}`]}]`]);
+    netGroup.value['netBody']['segment'] += 1;
+    segment.value = netGroup.value['netBody']['segment'];
+    netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null);
 }
+
+const give_up_draw = () => {
+    router.push('/')  // 返回首页
+    isNewFile.value = true; // 放弃绘制意味着本项目结束,后续操作可视为一个新文件
+    netGroup.value = "__NET_TEMPLATE__"  // 清空组
+    init_cad_listen_group()
+    invoke("reset_cli", { acadToolPath: fishNetEXE.value, command1: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])] })
+}
+
 
 </script>
 <style scoped>

@@ -16,9 +16,10 @@ class CLIHandler:
 
     def register_default_commands(self):
         """注册默认命令"""
-        self.register_command('-help', self.help_command, "显示帮助信息")
-        self.register_command('-config-set', self.set_config_command, "绘制一段拖网")
-        self.register_command('-i', self.echo_command, "绘制一段拖网")
+        self.register_command('-help', self.help_command, "show help information")
+        self.register_command('-config-set', self.set_config_command, "Set the configuration parameters")
+        self.register_command('-i', self.echo_command, "echo input command")
+        self.register_command('-i-tb', self.echo_command, "draw Two-piece mesh body")
 
     def register_command(self, name: str, func: Callable, description: str = ""):
         """注册新命令"""

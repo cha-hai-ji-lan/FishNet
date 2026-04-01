@@ -5,7 +5,7 @@ import win32com.client as win32
 from typeInfoConfig import (
     config
 )
-from cutSlope import cut_slope, eye_cut_slope
+from staticParam import cut_slope, eye_cut_slope, base_param
 
 
 class ACADBase:
@@ -18,7 +18,9 @@ class ACADBase:
         self.cfg = None  # 配置对象
         self.slope = cut_slope  # 剪裁斜率
         self.eye_slope = eye_cut_slope  # 宕眼剪裁斜率
+        self.param = base_param  # 参数对象
         self.template_path = None  # 模板路径
+        self.s_pos = [None] * 12
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
@@ -38,7 +40,6 @@ class ACADBase:
             if config["FIN_QUIT_CAD"] and self.cad:  # 退出关闭 AutoCAD
                 # 退出 AutoCAD 应用程序
                 self.cad.Quit()
-
             # 释放 COM 对象引用
             self.doc = None
             self.cad = None
@@ -159,8 +160,24 @@ class ACADBase:
             print(f"重做时发生意外错误：{str(e)}")
             return False
 
+    def clean_model(self):
+        """
+        清除模型空间中的所有对象
+        :return:
+        """
+        # 获取模型空间中的所有对象
+        try:
+            self.doc.SendCommand(f"_.AI_SELALL\n")
+            self.doc.SendCommand(f"_.ERASE\n")
+        except pywintypes.com_error as _:
+            print("-clean-err")
+
 
 class AcadDxf(ACADBase):
+    """
+    AutoCAD DXF数据处理
+    """
+
     def get_all_entities(self) -> list:
         """
         获取模型空间中所有绘制的元素（实体对象）
@@ -286,7 +303,12 @@ class ACAD(AcadDxf):
         self.connectCAD()
         print("-finish-start-cad")
 
-    def connectCAD(self):
+    def connectCAD(self) -> None:
+        """
+        连接到 AutoCAD
+        如果失败就创建AutoCAD实例
+        :return: None
+        """
         try:  # 尝试获得当前活动的CAD实例
             print("-try-connect-cad")
             self.cad = win32.GetActiveObject("AutoCAD.Application")
@@ -321,3 +343,10 @@ class ACAD(AcadDxf):
         self.msp = self.doc.ModelSpace
         self.doc.Application.Visible = True
         self.load_line_type("ACAD_ISO04W100")  # 加载线型
+
+    def draw_two_piece_body(self, args: list) -> None:
+        """
+        绘制两片式网身
+        :return: None
+        """
+        pass

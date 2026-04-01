@@ -1,52 +1,81 @@
 <template>
-    <div class="two-piece-body">
+    <div class="two-piece-body" v-if="netGroup['leftSleeve'] && netGroup['leftSleeve']['segment'] > 0">
         <div class="blank-10pe"></div>
         <div class="item">
             <div class="part-title "><span>上网翼</span></div>
-            <div class="part-title segments"><span>第{{ twoNetT['leftSleeve']['segment'] }}段</span></div>
-            <div v-if="twoNetT['leftSleeve']['segment'] === 1" class="part-title segments-port"><span>网口段</span></div>
+            <div class="part-title segments"><span>第{{ segment }}段</span></div>
+            <div v-if="segment === 1" class="part-title segments-port"><span>网口段</span></div>
         </div>
 
         <table>
             <div class="item">
-                <div class="item-title">网身目大:</div><input placeholder="目大" type="number">
+                <div class="item-title">网身目大:</div><input v-model="netGroup['leftSleeve'][`${segment}`][0]"
+                    placeholder="目大" type="number">
             </div>
             <div class="item">
-                <div class="item-title">网身纵向目数:</div><input placeholder="纵向目数" type="number">
+                <div class="item-title">网身纵向目数:</div><input v-model="netGroup['leftSleeve'][`${segment}`][1]"
+                    placeholder="纵向目数" type="number">
             </div>
             <div class="item">
-                <div class="item-title">网身横向目数:</div><input placeholder="横向目数" type="number">
+                <div class="item-title">网身横向目数:</div><input v-model="netGroup['leftSleeve'][`${segment}`][2]"
+                    placeholder="横向目数" type="number">
             </div>
             <div class="item">
-                <div class="item-title">边旁剪裁斜率:</div><input placeholder="剪裁斜率默认 1:0" type="number">
+                <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['leftSleeve'][`${segment}`][3]"
+                    placeholder="剪裁斜率默认 1:0" type="number">
             </div>
             <div class="item">
-                <div class="item-title item-button">下一段</div>
-                <div class="item-title item-button-give-up">放弃</div>
+                <div @click="() => { next_segment() }" class="item-title item-button ban-select">下一段</div>
+                <div @click="() => { give_up_draw() }" class="item-title item-button-give-up ban-select">放弃</div>
             </div>
             <div class="item">
-                <div class="item-title item-button-warn">清空</div>
-                <div class="item-title item-button-warn">全部重置</div>
+                <div class="item-title item-button-warn ban-select">清空</div>
+                <div class="item-title item-button-warn ban-select">全部重置</div>
             </div>
             <div class="item">
-                <div class="item-title item-button-warn">退一步</div>
-                <div class="item-title item-button-warn">进一步</div>
+                <div class="item-title item-button-warn ban-select">退一步</div>
+                <div class="item-title item-button-warn ban-select">进一步</div>
             </div>
             <div class="item">
-                <div class="item-title item-button-fin"><span>完成</span></div>
+                <div class="item-title item-button-fin ban-select"><span>完成</span></div>
             </div>
 
         </table>
     </div>
 </template>
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { twoNetT } from "../../utils/MainIndex.ts";
+import { ref, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
+import { useRoute, useRouter } from 'vue-router';
+import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts"
+import { netGroup, send_parma_to_cli } from "../../utils/core/startdraw.ts";
+import { init_cad_listen_group } from "../../utils/event.ts";
+import { coreConfig, fishNetEXE } from "../../utils/MainIndex.ts";
+const segment = ref<number>(1)
+const route = useRoute()
+const router = useRouter()
 onMounted(() => {
-    if (twoNetT.value['leftSleeve']['segment'] === 0) {
-        twoNetT.value['leftSleeve']['segment'] += 1
+    if ( netGroup.value['leftSleeve'] && netGroup.value['leftSleeve']['segment'] === 0) {
+        netGroup.value['leftSleeve']['segment'] += 1
+        netGroup.value['leftSleeve'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null)
     }
+    segment.value = netGroup.value['leftSleeve']?.['segment'] || 0
 })
+const next_segment = () => {
+    cacheRouterPath.value = route.path
+    netGroup.value["hasDraw"] = true
+    send_parma_to_cli(["-i", `[${netGroup.value['leftSleeve'][`${segment.value}`]}]`])
+    netGroup.value['leftSleeve']['segment'] += 1
+    segment.value = netGroup.value['leftSleeve']['segment']
+    netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`] = Array(4).fill(null)
+}
+const give_up_draw = () => {
+    router.push('/')  // 返回首页
+    isNewFile.value = true; // 放弃绘制意味着本项目结束,后续操作可视为一个新文件
+    netGroup.value = "__NET_TEMPLATE__"  // 清空组
+    init_cad_listen_group()
+    invoke("reset_cli", { acadToolPath: fishNetEXE.value, command1: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])] })
+}
 </script>
 <style scoped>
 .two-piece-body {
@@ -69,7 +98,7 @@ onMounted(() => {
         align-items: start;
         flex-direction: row;
         width: 100%;
-        border-bottom: 2px solid rgba(var(--button),var(--transparency));
+        border-bottom: 2px solid rgba(var(--button), var(--transparency));
         padding-top: 1vmin;
         padding-bottom: 1vmin;
 
@@ -88,7 +117,7 @@ onMounted(() => {
             -moz-appearance: none;
 
             /* 重置边框和背景 */
-            border: 2px solid rgba(var(--title),var(--transparency));
+            border: 2px solid rgba(var(--title), var(--transparency));
             ;
             outline: none;
             background: transparent;
@@ -103,7 +132,7 @@ onMounted(() => {
 
             width: 50%;
             max-width: 400px;
-            background-color: rgba(var(--border-line),var(--transparency));
+            background-color: rgba(var(--border-line), var(--transparency));
             border-radius: 1vmin;
             text-align: center;
             height: 3vmin;
@@ -137,6 +166,7 @@ onMounted(() => {
             background-color: rgba(var(--normal-note), var(--pTransparency));
             border-radius: 2vmin;
         }
+
         & .segments-port {
             margin-left: 2vmin;
             padding: 0.5vmin 1vmin;
