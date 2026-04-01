@@ -83,6 +83,8 @@ const show_table = (who: string) => {
         setTimeout(()=>{
           console.log("设置画布尺寸")
           canvasRenderer.resize()
+          canvasRenderer.drawline()
+
         },2000)
       }
       break;
