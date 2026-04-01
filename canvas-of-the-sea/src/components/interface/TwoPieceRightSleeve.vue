@@ -10,19 +10,19 @@
         <table>
             <div class="item">
                 <div class="item-title">网身目大:</div><input v-model="netGroup['rightSleeve'][`${segment}`][0]"
-                    placeholder="目大" type="number">
+                :placeholder="netGroup['rightSleeve'][`${segment - 1}`]?.[0] || '目大'" type="number">
             </div>
             <div class="item">
                 <div class="item-title">网身纵向目数:</div><input v-model="netGroup['rightSleeve'][`${segment}`][1]"
-                    placeholder="纵向目数" type="number">
+                :placeholder="netGroup['rightSleeve'][`${segment - 1}`]?.[1] || '纵向目数'" type="number">
             </div>
             <div class="item">
                 <div class="item-title">网身横向目数:</div><input v-model="netGroup['rightSleeve'][`${segment}`][2]"
-                    placeholder="横向目数" type="number">
+                :placeholder="netGroup['rightSleeve'][`${segment - 1}`]?.[2] || '横向目数'"  type="number">
             </div>
             <div class="item">
                 <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['rightSleeve'][`${segment}`][3]"
-                    placeholder="剪裁斜率默认 1:0" type="number">
+                    placeholder="剪裁斜率默认 1:0" type="text">
             </div>
             <div class="item">
                 <div @click="() => { next_segment() }" class="item-title item-button ban-select">下一段</div>
@@ -57,13 +57,14 @@ const router = useRouter()
 onMounted(() => {
     if (netGroup.value['rightSleeve'] && netGroup.value['rightSleeve']['segment'] === 0) {
         netGroup.value['rightSleeve']['segment'] += 1
-        netGroup.value['rightSleeve'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null)
+        netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`] = Array(4).fill(null)
     }
     segment.value = netGroup.value['rightSleeve']?.['segment'] || 0
 })
 const next_segment = () => {
     cacheRouterPath.value = route.path
     netGroup.value["hasDraw"] = true
+    check_pre_segment()
     send_parma_to_cli(["-i", `[${netGroup.value['rightSleeve'][`${segment.value}`]}]`])
     netGroup.value['rightSleeve']['segment'] += 1
     segment.value = netGroup.value['rightSleeve']['segment']
@@ -75,6 +76,14 @@ const give_up_draw = () => {
     netGroup.value = "__NET_TEMPLATE__"  // 清空组
     init_cad_listen_group()
     invoke("reset_cli", { acadToolPath: fishNetEXE.value, command1: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])] })
+}
+const check_pre_segment = () => {
+    if (!netGroup.value['rightSleeve'][`${segment.value - 1}`]) return;
+    netGroup.value['rightSleeve'][`${segment.value}`].forEach((val: string | number | null, index: number) => {
+        if (val === null && netGroup.value['rightSleeve'][`${segment.value - 1}`][index] !== null) {
+            netGroup.value['rightSleeve'][`${segment.value}`][index] = netGroup.value['rightSleeve'][`${segment.value - 1}`][index]
+        }
+    });
 }
 </script>
 <style scoped>

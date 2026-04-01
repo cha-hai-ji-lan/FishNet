@@ -9,15 +9,15 @@
         <table>
             <div class="item">
                 <div class="item-title">网身目大:</div><input v-model="netGroup['netBody'][`${segment}`][0]"
-                    placeholder="目大" type="number">
+                    :placeholder="netGroup['netBody'][`${segment - 1}`]?.[0] || '目大'" type="number">
             </div>
             <div class="item">
                 <div class="item-title">网身纵向目数:</div><input v-model="netGroup['netBody'][`${segment}`][1]"
-                    placeholder="纵向目数" type="number">
+                    :placeholder="netGroup['netBody'][`${segment - 1}`]?.[1] || '纵向目数'" type="number">
             </div>
             <div class="item">
                 <div class="item-title">网身横向目数:</div><input v-model="netGroup['netBody'][`${segment}`][2]"
-                    placeholder="横向目数" type="number">
+                    :placeholder="netGroup['netBody'][`${segment - 1}`]?.[2] || '横向目数'" type="number">
             </div>
             <div class="item">
                 <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['netBody'][`${segment}`][3]"
@@ -64,10 +64,20 @@ onMounted(() => {
 const next_segment = () => {
     cacheRouterPath.value = route.path;
     netGroup.value["hasDraw"] = true;
+    check_pre_segment()
     send_parma_to_cli(["-i", `[${netGroup.value['netBody'][`${segment.value}`]}]`]);
     netGroup.value['netBody']['segment'] += 1;
     segment.value = netGroup.value['netBody']['segment'];
     netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null);
+}
+
+const check_pre_segment = () => {
+    if (!netGroup.value['netBody'][`${segment.value - 1}`]) return;
+    netGroup.value['netBody'][`${segment.value}`].forEach((val: string | number | null, index: number) => {
+        if (val === null && netGroup.value['netBody'][`${segment.value - 1}`][index] !== null) {
+            netGroup.value['netBody'][`${segment.value}`][index] = netGroup.value['netBody'][`${segment.value - 1}`][index]
+        }
+    });
 }
 
 const give_up_draw = () => {
