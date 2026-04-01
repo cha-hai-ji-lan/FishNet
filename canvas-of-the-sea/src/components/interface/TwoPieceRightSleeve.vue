@@ -44,7 +44,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useRoute, useRouter } from 'vue-router';
 import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts"
@@ -61,6 +61,9 @@ onMounted(() => {
     }
     segment.value = netGroup.value['rightSleeve']?.['segment'] || 0
 })
+// watch(() => netGroup.value['rightSleeve'], () => {
+//     canvasRenderer.drawFromNetGroup(netGroup.value, 'rightSleeve')
+// }, { deep: true })
 const next_segment = () => {
     cacheRouterPath.value = route.path
     netGroup.value["hasDraw"] = true

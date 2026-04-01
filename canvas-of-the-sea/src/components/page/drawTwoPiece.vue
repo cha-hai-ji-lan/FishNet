@@ -13,7 +13,7 @@
     <div class="right-part" :class="{ 'show-canvas': showCanvas }">
       <div class="canvas-switch ban-select" @click="() => { show_table('canvas') }">{{ showCanvas ? "隐藏画布" : "显示画布" }}
       </div>
-      <canvas class="two-piece-canvas"></canvas>
+      <canvas id="two-piece-canvas" class="two-piece-canvas"></canvas>
     </div>
   </div>
   <div class="float-option-version" :class="{ 'show-option-version': choosePart }">
@@ -49,12 +49,15 @@ import TwoPieceRightSleeve from '../../components/interface/TwoPieceRightSleeve.
 import { hasChoose, focusPart, netGroup } from '../../utils/core/startdraw.ts'
 import { set_content } from '../../utils/warn.ts'
 import { isNewFile } from '../../utils/Memory.ts'
+import { canvasRenderer } from "../../utils/canvasRenderer.ts";
+
 // import { coreConfig } from '../../utils/MainIndex.ts'
 const choosePart = ref(false)
 const showCanvas = ref(false)
 const showPara = ref(false)
 
 onMounted(() => {
+    canvasRenderer.init('two-piece-canvas')  // 创建画布
   if (isNewFile.value === true) {
     console.log(netGroup.value)
     show_table('part')  // 新文件进入后显示 部位选择
@@ -77,6 +80,10 @@ const show_table = (who: string) => {
         showCanvas.value = false;
       } else {
         showCanvas.value = true;
+        setTimeout(()=>{
+          console.log("设置画布尺寸")
+          canvasRenderer.resize()
+        },2000)
       }
       break;
     case 'para':
@@ -267,6 +274,7 @@ const choose_part = (who: string) => {
   &.show-canvas {
     & .two-piece-canvas {
       transition: width 0.75s ease;
+      height: 100%;
       width: 40vmin;
     }
   }
