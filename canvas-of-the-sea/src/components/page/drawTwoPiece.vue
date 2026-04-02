@@ -84,8 +84,9 @@ const show_table = (who: string) => {
           console.log("设置画布尺寸")
           canvasRenderer.resize()
           canvasRenderer.drawline()
+          canvasRenderer.drawCoordinateSystem()
 
-        },2000)
+        },750)
       }
       break;
     case 'para':

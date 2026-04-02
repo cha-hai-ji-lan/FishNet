@@ -53,7 +53,6 @@ class CanvasRenderer {
     this.canvas.width = rect.width
     this.canvas.height = rect.height
     console.log(this.canvas.width, this.canvas.height)
-    this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
     this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2)
     
   }
@@ -62,17 +61,60 @@ class CanvasRenderer {
     if (!this.ctx || !this.canvas) return
     this.ctx.clearRect(0, 0, this.canvas.width / window.devicePixelRatio, this.canvas.height / window.devicePixelRatio)
   }
+  /**
+   * 绘制中心坐标系
+  */
+  drawCoordinateSystem(size?: number) {
+    if (!this.ctx || !this.canvas) return
+    
+    const width = this.canvas.width * 2
+    const height = this.canvas.height * 2
+    const axisSize = size || Math.max(width, height) / 2
+    
+    this.ctx.save()
+    // 这段代码调用 Canvas 2D 渲染上下文的 save() 方法，
+    // 用于保存当前画布状态（包括变换矩阵、裁剪区域、样式属性等）到状态栈中，
+    // 以便后续可以通过 restore() 方法恢复到这个保存的状态。
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0)
+    // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+    this.ctx.restore()
+    
+    this.ctx.beginPath()
+    this.ctx.moveTo(-axisSize, 0)
+    this.ctx.lineTo(axisSize, 0)
+    this.ctx.moveTo(0, -axisSize)
+    this.ctx.lineTo(0, axisSize)
+    this.ctx.strokeStyle = '#157eb4'
+    this.ctx.lineWidth = 1
+    this.ctx.stroke()
+    
+    this.ctx.beginPath()
+    this.ctx.moveTo(-axisSize + 10, -5)
+    this.ctx.lineTo(-axisSize, 0)
+    this.ctx.lineTo(-axisSize + 10, 5)
+    this.ctx.moveTo(5, -axisSize + 10)
+    this.ctx.lineTo(0, -axisSize)
+    this.ctx.lineTo(-5, -axisSize + 10)
+    this.ctx.fillStyle = '#0d56a0'
+    this.ctx.fill()
+    
+    this.ctx.font = '14px Arial'
+    this.ctx.fillStyle = '#333333'
+    this.ctx.fillText('X', axisSize - 20, -5)
+    this.ctx.fillText('Y', 5, -axisSize + 20)
+  }
 
   drawline(){
     if (this.ctx) {
       this.ctx.beginPath()           // 开始路径
       this.ctx.moveTo(0, 0)         // 移动到起点 (0,0)
       this.ctx.lineTo(10, 10)       // 绘制到终点 (10,10)
-      this.ctx.strokeStyle = '#000000'  // 设置线条颜色（黑色）
+      this.ctx.strokeStyle = '#FFFFFF'  // 设置线条颜色（黑色）
       this.ctx.lineWidth = 1        // 设置线条宽度
       this.ctx.stroke()             // 绘制路径
     }
   }
+
 
 }
 
