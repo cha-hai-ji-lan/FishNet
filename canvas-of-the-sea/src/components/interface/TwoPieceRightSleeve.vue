@@ -7,7 +7,7 @@
             <!-- <div v-if="netGroup['two-net-body']['segment'] === 1" class="part-title segments-port"><span>网口段</span></div> -->
         </div>
 
-        <table>
+        <div class="w100">
             <div class="item">
                 <div class="item-title">网身目大:</div><input v-model="netGroup['rightSleeve'][`${segment}`][0]"
                 :placeholder="netGroup['rightSleeve'][`${segment - 1}`]?.[0] || '目大'" type="number">
@@ -40,7 +40,7 @@
                 <div class="item-title item-button-fin ban-select"><span>完成</span></div>
             </div>
 
-        </table>
+        </div>
     </div>
 </template>
 <script setup lang="ts">

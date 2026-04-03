@@ -28,3 +28,7 @@
     -moz-user-select: none;
     -ms-user-select: none;
 }
+
+.of-x-hid{
+    overflow-x: hidden;
+}

@@ -60,7 +60,6 @@ watch(drawMode, (NewVal: string) => {
       break;
     case '四片式':
       netGroup.value = JSON.parse(JSON.stringify(fourNetT.value))
-
       break;
     case '六片式':
       netGroup.value = JSON.parse(JSON.stringify(sixNetT.value))
@@ -97,11 +96,28 @@ const updateTime = () => {
 };
 
 const start_drawing = () => {
-  if (drawMode.value === "") {
-    set_content("请选择绘图类型后再开始绘制拖网.", 2)
-  } else {
-    isNewFile.value = true
-    router.push("/draw-two-piece")
+  switch (drawMode.value) {
+    case '两片式':
+      isNewFile.value = true
+      router.push("/draw-two-piece")
+      break;
+    case '四片式':
+      set_content("四片式逻辑开发中...", 2)
+      // isNewFile.value = true
+      // router.push("/draw-four-piece")
+      break;
+    case '六片式':
+      set_content("六片式逻辑开发中...", 2)
+      // isNewFile.value = true
+      // router.push("/draw-six-piece")
+      break;
+
+    default:
+      set_content("请选择绘图类型后再开始绘制拖网.", 2)
+      break;
+  }
+  if(netGroup.value['corePos'] === ""){
+    netGroup.value['corePos'] = "0,0"
   }
 }
 

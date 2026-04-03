@@ -1,7 +1,33 @@
 <template>
   <div class="draw-two-piece-main">
     <div class="left-part">
-      <div class="parameters-table" :class="{ 'show-para': showPara }"></div>
+      <div class="parameters-table of-x-hid" :class="{ 'show-para': showPara }">
+        <div class="design-tree-head of-x-hid">设计树</div>
+        <div class=" design-tree-datail w100">
+          <details id="two-net-body" class="design-tree of-x-hid ban-select">
+            <summary class="design-summary of-x-hid"><span>网身</span></summary>
+            <details>
+              <summary>1111</summary>
+              <div>1-111</div>
+            </details>
+            <details>
+              <summary>2222</summary>
+              <div>2-222</div>
+            </details>
+            <details>
+              <summary>3333</summary>
+              <div>3-333</div>
+            </details>
+          </details>
+          <details id="two-left-sleeve" class="design-tree of-x-hid">
+            <summary class="design-summary of-x-hid">上网翼</summary>
+          </details>
+          <details id="two-right-sleeve" class="design-tree of-x-hid">
+            <summary class="design-summary of-x-hid">下网翼</summary>
+          </details>
+        </div>
+
+      </div>
       <div class="parameters-switch ban-select" @click="() => { show_table('para') }">{{ showPara ? "隐藏特征树" : "显示特征树" }}
       </div>
     </div>
@@ -57,7 +83,7 @@ const showCanvas = ref(false)
 const showPara = ref(false)
 
 onMounted(() => {
-    canvasRenderer.init('two-piece-canvas')  // 创建画布
+  canvasRenderer.init('two-piece-canvas')  // 创建画布
   if (isNewFile.value === true) {
     console.log(netGroup.value)
     show_table('part')  // 新文件进入后显示 部位选择
@@ -80,13 +106,13 @@ const show_table = (who: string) => {
         showCanvas.value = false;
       } else {
         showCanvas.value = true;
-        setTimeout(()=>{
+        setTimeout(() => {
           console.log("设置画布尺寸")
           canvasRenderer.resize()
           canvasRenderer.drawline()
           canvasRenderer.drawCoordinateSystem()
 
-        },750)
+        }, 750)
       }
       break;
     case 'para':
@@ -250,11 +276,93 @@ const choose_part = (who: string) => {
       linear-gradient(to bottom, rgba(var(--title), var(--transparency)) 1px, transparent 1px);
     /* 创建虚线网格 */
     background-size: var(--grid-size) var(--grid-size);
+    overflow-y: auto;
 
     &.show-para {
       transition: width 0.75s ease;
       width: 30vmin;
     }
+
+    & .design-tree-head {
+      width: 100%;
+      height: 5vmin;
+      display: flex;
+      justify-content: start;
+      justify-self: center;
+      align-items: center;
+      flex-direction: row;
+      background-color: rgba(var(--title), var(--transparency));
+      border-top: 2px solid rgba(var(--font), var(--transparency));
+      border-bottom: 2px solid rgba(var(--font), var(--transparency));
+    }
+    & .design-tree-datail {
+      max-height: 90vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+
+      
+        &::-webkit-scrollbar {
+            width: 1vmin;
+            /* 垂直滚动条宽度 */
+            height: 1vmin;
+            /* 水平滚动条高度 */
+
+        }
+
+        &::-webkit-scrollbar-track {
+            background: rgba(var(--title), var(--pTransparency));
+            /* 滚动条轨道背景色 */
+            border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: rgba(var(--button), var(--pTransparency));
+            /* 滚动条滑块颜色 */
+            border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb:hover {
+            filter: brightness(1.2);
+            /* 滑块悬停时的颜色 */
+        }
+      & .design-tree {
+      display: flex;
+      justify-content: start;
+      align-items: center;
+      flex-direction: column;
+      font-size: 3vmin;
+      width: 30vmin;
+      text-align: center;
+      border: 1px solid rgba(var(--border-line), var(--transparency));
+      border-radius: 1vmin;
+      background-color: rgba(var(--background), var(--transparency));
+
+      & .design-summary {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 80%;
+        /* height: 5vmin; */
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        border-radius: 1vmin;
+        border: 1px dashed rgba(var(--normal-note), var(--transparency));
+        background-color: rgba(var(--title), var(--pTransparency));
+      }
+
+      &[open] {
+        border: 1px solid rgba(var(--font), var(--transparency));
+
+        & .design-summary {
+          border: 2px solid rgba(var(--normal-note), var(--transparency));
+        }
+      }
+
+    }
+    }
+
   }
 
 
@@ -310,6 +418,7 @@ const choose_part = (who: string) => {
   }
 
 }
+
 
 
 @keyframes active-icon {

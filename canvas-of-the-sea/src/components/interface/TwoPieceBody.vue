@@ -6,7 +6,7 @@
             <div class="part-title segments"><span>第{{ segment }}段</span></div>
         </div>
 
-        <table>
+        <div class="w100">
             <div class="item">
                 <div class="item-title">网身目大:</div><input v-model="netGroup['netBody'][`${segment}`][0]"
                     :placeholder="netGroup['netBody'][`${segment - 1}`]?.[0] || '目大'" type="number">
@@ -39,7 +39,7 @@
                 <div class="item-title item-button-fin ban-select"><span>完成</span></div>
             </div>
 
-        </table>
+        </div>
     </div>
 </template>
 <script setup lang="ts">
