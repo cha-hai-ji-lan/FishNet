@@ -6,18 +6,6 @@
         <div class=" design-tree-datail w100">
           <details id="two-net-body" class="design-tree of-x-hid ban-select">
             <summary class="design-summary of-x-hid"><span>网身</span></summary>
-            <details>
-              <summary>1111</summary>
-              <div>1-111</div>
-            </details>
-            <details>
-              <summary>2222</summary>
-              <div>2-222</div>
-            </details>
-            <details>
-              <summary>3333</summary>
-              <div>3-333</div>
-            </details>
           </details>
           <details id="two-left-sleeve" class="design-tree of-x-hid">
             <summary class="design-summary of-x-hid">上网翼</summary>
@@ -76,13 +64,14 @@ import { hasChoose, focusPart, netGroup } from '../../utils/core/startdraw.ts'
 import { set_content } from '../../utils/warn.ts'
 import { isNewFile } from '../../utils/Memory.ts'
 import { canvasRenderer } from "../../utils/canvasRenderer.ts";
-
+import {design_tree_ctr} from "../../utils/core/startdraw.ts"
 // import { coreConfig } from '../../utils/MainIndex.ts'
 const choosePart = ref(false)
 const showCanvas = ref(false)
 const showPara = ref(false)
 
 onMounted(() => {
+  design_tree_ctr("两片式", ["two-net-body", "two-left-sleeve", "two-right-sleeve"])
   canvasRenderer.init('two-piece-canvas')  // 创建画布
   if (isNewFile.value === true) {
     console.log(netGroup.value)

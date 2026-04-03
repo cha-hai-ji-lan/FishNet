@@ -28,8 +28,8 @@
                 <div @click="() => { give_up_draw() }" class="item-title item-button-give-up ban-select">放弃</div>
             </div>
             <div class="item">
-                <div class="item-title item-button-warn ban-select">清空</div>
-                <div class="item-title item-button-warn ban-select">全部重置</div>
+                <div @click="() => { clean_param() }" class="item-title item-button-warn ban-select">清空</div>
+                <div @click="() => { clean_param() }" class="item-title item-button-warn ban-select">全部重置</div>
             </div>
             <div class="item">
                 <div class="item-title item-button-warn ban-select">退一步</div>
@@ -43,14 +43,14 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted} from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useRoute, useRouter } from 'vue-router';
 import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts";
 import { netGroup, send_parma_to_cli } from "../../utils/core/startdraw.ts";
 import { init_cad_listen_group } from "../../utils/event.ts";
 import { coreConfig, fishNetEXE } from "../../utils/MainIndex.ts";
-
+import {DTC} from "../../utils/core/startdraw.ts"
 const segment = ref<number>(1)
 const route = useRoute()
 const router = useRouter()
@@ -72,6 +72,7 @@ const next_segment = () => {
     netGroup.value['netBody']['segment'] += 1;
     segment.value = netGroup.value['netBody']['segment'];
     netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null);
+    DTC.value?.flesh_node()
 }
 
 const check_pre_segment = () => {
@@ -89,6 +90,10 @@ const give_up_draw = () => {
     netGroup.value = "__NET_TEMPLATE__"  // 清空组
     init_cad_listen_group()
     invoke("reset_cli", { acadToolPath: fishNetEXE.value, command1: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])] })
+}
+
+const clean_param =() =>{
+    netGroup.value['netBody'][`${segment.value}`].fill(null)
 }
 
 

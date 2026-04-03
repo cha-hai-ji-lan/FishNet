@@ -29,8 +29,8 @@
                 <div @click="() => { give_up_draw() }" class="item-title item-button-give-up ban-select">放弃</div>
             </div>
             <div class="item">
-                <div class="item-title item-button-warn ban-select">清空</div>
-                <div class="item-title item-button-warn ban-select">全部重置</div>
+                <div @click="() => { clean_param() }" class="item-title item-button-warn ban-select">清空</div>
+                <div @click="() => { clean_param() }" class="item-title item-button-warn ban-select">全部重置</div>
             </div>
             <div class="item">
                 <div class="item-title item-button-warn ban-select">退一步</div>
@@ -88,6 +88,9 @@ const check_pre_segment = () => {
             netGroup.value['leftSleeve'][`${segment.value}`][index] = netGroup.value['leftSleeve'][`${segment.value - 1}`][index]
         }
     });
+}
+const clean_param =() =>{
+    netGroup.value['leftSleeve'][`${segment.value}`].fill(null)
 }
 </script>
 <style scoped>
