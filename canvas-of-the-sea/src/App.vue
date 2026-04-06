@@ -239,31 +239,4 @@ body {
   margin: 0;
 }
 
-.base-icon {
-  height: 4vmin;
-  max-height: 30px;
-  width: 4vmin;
-  max-width: 30px;
-  margin-right: 2.5vmin;
-  stroke: rgba(var(--button), 1);
-  fill: rgba(var(--button), 1);
-
-  &:hover {
-    height: 3.5vmin;
-    width: 3.5vmin;
-    border: 0.25vmin dashed rgba(var(--button), 1);
-  }
-
-  &:active {
-    stroke: rgba(var(--font), 1);
-
-  }
-}
-
-.mid-icon {
-  height: 8vmin;
-  width: 8vmin;
-  stroke: rgba(var(--button), var(--transparency));
-  fill: rgba(var(--button), var(--transparency));
-}
 </style>

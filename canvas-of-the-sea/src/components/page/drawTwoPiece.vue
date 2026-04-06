@@ -2,7 +2,11 @@
   <div class="draw-two-piece-main">
     <div class="left-part">
       <div class="parameters-table of-x-hid" :class="{ 'show-para': showPara }">
-        <div class="design-tree-head of-x-hid">设计树</div>
+        <div class="design-tree-head of-x-hid">
+          <div class="tolerate" @click="() =>{design_redraw()}">
+            <NormalIcons whichIcon="redraw"></NormalIcons>
+          </div>
+        </div>
         <div class=" design-tree-datail w100">
           <details id="two-net-body" class="design-tree of-x-hid ban-select">
             <summary class="design-summary of-x-hid"><span>网身</span></summary>
@@ -60,11 +64,13 @@ import NetShowIcons from '../../assets/icons/NetShowIcons.vue';
 import TwoPieceBody from '../../components/interface/TwoPieceBody.vue';
 import TwoPieceLeftSleeve from '../../components/interface/TwoPieceLeftSleeve.vue';
 import TwoPieceRightSleeve from '../../components/interface/TwoPieceRightSleeve.vue';
+import NormalIcons from '../../assets/icons/NormalIcons.vue';
+
 import { hasChoose, focusPart, netGroup } from '../../utils/core/startdraw.ts'
 import { set_content } from '../../utils/warn.ts'
 import { isNewFile } from '../../utils/Memory.ts'
 import { canvasRenderer } from "../../utils/canvasRenderer.ts";
-import {design_tree_ctr} from "../../utils/core/startdraw.ts"
+import { design_tree_ctr } from "../../utils/core/startdraw.ts"
 import { DTC } from "../../utils/core/startdraw.ts"
 // import { coreConfig } from '../../utils/MainIndex.ts'
 const choosePart = ref(false)
@@ -123,7 +129,7 @@ const choose_part = (who: string) => {
   // invoke("send_param_to_cli", {command:["-i",JSON.stringify(coreConfig.value)]})
   switch (who) {
     case 'net-body':
-      
+
       isNewFile.value = false  // 已进行了一步操作,可看作不是新文件
       hasChoose.value = true;
       focusPart.value = "two-net-body"
@@ -147,6 +153,12 @@ const choose_part = (who: string) => {
   } else {
     set_content("请在第一步选择绘制网身,否则无法参数化建模", 2)
   }
+}
+
+const design_redraw = () => {
+  DTC.value?.flesh_node()  // 触发重绘前刷新设计树
+  console.log("触发重绘")
+  DTC.value?.flesh_node()  // 触发重绘后刷新设计树
 }
 </script>
 <style scoped>
@@ -287,72 +299,74 @@ const choose_part = (who: string) => {
       border-top: 2px solid rgba(var(--font), var(--transparency));
       border-bottom: 2px solid rgba(var(--font), var(--transparency));
     }
+
     & .design-tree-datail {
       max-height: 90vh;
       overflow-y: auto;
       overflow-x: hidden;
 
-      
-        &::-webkit-scrollbar {
-            width: 1vmin;
-            /* 垂直滚动条宽度 */
-            height: 1vmin;
-            /* 水平滚动条高度 */
 
-        }
+      &::-webkit-scrollbar {
+        width: 1vmin;
+        /* 垂直滚动条宽度 */
+        height: 1vmin;
+        /* 水平滚动条高度 */
 
-        &::-webkit-scrollbar-track {
-            background: rgba(var(--title), var(--pTransparency));
-            /* 滚动条轨道背景色 */
-            border-radius: 4px;
-        }
-
-        &::-webkit-scrollbar-thumb {
-            background: rgba(var(--button), var(--pTransparency));
-            /* 滚动条滑块颜色 */
-            border-radius: 4px;
-        }
-
-        &::-webkit-scrollbar-thumb:hover {
-            filter: brightness(1.2);
-            /* 滑块悬停时的颜色 */
-        }
-      & .design-tree {
-      display: flex;
-      justify-content: start;
-      align-items: center;
-      flex-direction: column;
-      font-size: 3vmin;
-      width: 30vmin;
-      text-align: center;
-      border: 1px solid rgba(var(--border-line), var(--transparency));
-      border-radius: 1vmin;
-      background-color: rgba(var(--background), var(--transparency));
-
-      & .design-summary {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 80%;
-        /* height: 5vmin; */
-        user-select: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        border-radius: 1vmin;
-        border: 1px dashed rgba(var(--normal-note), var(--transparency));
-        background-color: rgba(var(--title), var(--pTransparency));
       }
 
-      &[open] {
-        border: 1px solid rgba(var(--font), var(--transparency));
+      &::-webkit-scrollbar-track {
+        background: rgba(var(--title), var(--pTransparency));
+        /* 滚动条轨道背景色 */
+        border-radius: 4px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba(var(--button), var(--pTransparency));
+        /* 滚动条滑块颜色 */
+        border-radius: 4px;
+      }
+
+      &::-webkit-scrollbar-thumb:hover {
+        filter: brightness(1.2);
+        /* 滑块悬停时的颜色 */
+      }
+
+      & .design-tree {
+        display: flex;
+        justify-content: start;
+        align-items: center;
+        flex-direction: column;
+        font-size: 3vmin;
+        width: 30vmin;
+        text-align: center;
+        border: 1px solid rgba(var(--border-line), var(--transparency));
+        border-radius: 1vmin;
+        background-color: rgba(var(--background), var(--transparency));
 
         & .design-summary {
-          border: 2px solid rgba(var(--normal-note), var(--transparency));
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 80%;
+          /* height: 5vmin; */
+          user-select: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          border-radius: 1vmin;
+          border: 1px dashed rgba(var(--normal-note), var(--transparency));
+          background-color: rgba(var(--title), var(--pTransparency));
         }
-      }
 
-    }
+        &[open] {
+          border: 1px solid rgba(var(--font), var(--transparency));
+
+          & .design-summary {
+            border: 2px solid rgba(var(--normal-note), var(--transparency));
+          }
+        }
+
+      }
     }
 
   }

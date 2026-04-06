@@ -13,6 +13,10 @@
 .w100{
     width: 100%;
 }
+.tolerate{
+    height: fit-content;
+    width: fit-content;
+}
 .flex-ccr{
     display: flex;
     justify-content: center;
