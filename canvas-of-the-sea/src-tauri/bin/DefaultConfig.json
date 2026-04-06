@@ -1,10 +1,10 @@
 {
   "app": {
-    "version": "0.1.41"
+    "version": "0.1.45"
   },
   "core": {
     "focusDraw": true,
-    "backUpMode":"single-step",
+    "backUpMode": "single-step",
     "defaultParam": {
       "zoom": 0.01,
       "tableOffset": 100,
@@ -25,7 +25,6 @@
         "font": "245,245,245",
         "title": "60,63,65"
       },
-      "errorNote": "229,16,80",
       "light": {
         "background": "247,247,247",
         "borderLine": "220,220,220",
@@ -33,8 +32,10 @@
         "font": "43,43,43",
         "title": "193,193,193"
       },
+      "readyNote": "63, 195, 112",
       "normalNote": "6,150,215",
-      "warnNote": "255,241,77"
+      "warnNote": "255,241,77",
+      "errorNote": "229,16,80"
     }
   },
   "interfaceSetting": {

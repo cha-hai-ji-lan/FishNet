@@ -1,5 +1,7 @@
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import { set_content } from '../utils/warn.ts'
+import { CADToolState} from '../utils/Memory.ts'
+
 
 let unlisten_cli_connect: UnlistenFn | null = null  // 开始启动服务端监听器
 let unlisten_start_connect: UnlistenFn | null = null  // 开始链接监听器
@@ -60,7 +62,8 @@ export const listen_fail_ready = async () => {
     unlisten_fail_ready = await listen('fail-ready', (event) => {
         console.log('收到 Rust 消息:', event.payload)
         // 在这里调用你的 TypeScript 函数
-        set_content("AutoCAD连接无法就绪, 请在设置中重启服务端", 3)
+        CADToolState.value = "__FAIL__"
+        set_content("AutoCAD连接无法就绪, 请重启服务端", 3)
         cleanup_cad_listen_group()  // 清理监听组，停止监听后续事件
     })
 }
@@ -72,6 +75,7 @@ export const listen_fail_create_cad_example = async () => {
     unlisten_fail_create_cad_example = await listen('fail-create-cad-example', (event) => {
         console.log('收到 Rust 消息:', event.payload)
         // 在这里调用你的 TypeScript 函数
+        CADToolState.value = "__FAIL__"
         set_content("AutoCAD实例创建失败...请重启软件", 3)
         cleanup_cad_listen_group()  // 清理监听组，停止监听后续事件
     })
@@ -84,6 +88,7 @@ export const listen_cad_ready = async () => {
     unlisten_cad_ready = await listen('cad-ready', (event) => {
         console.log('收到 Rust 消息:', event.payload)
         // 在这里调用你的 TypeScript 函数
+        CADToolState.value = "__READY__"
         set_content("AutoCAD准备就绪", 1)
         cleanup_cad_listen_group()  // 清理监听组，停止监听后续事件
     })

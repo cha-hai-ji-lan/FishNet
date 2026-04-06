@@ -12,11 +12,22 @@
     </div>
     <input v-if="drawMode !== ''" v-model="netGroup['corePos']" type="text" placeholder="原点默认: 0 , 0">
     <div class="blank-10pe"></div>
-    <div @click="() => { start_drawing() }" class="flex-r-div but-frame ban-select">
-      <div class="flex-r-div">
-        <NormalIcons whichIcon="newFile"></NormalIcons>
-      </div>新建绘图
+    <div class="enter-frame">
+      <div @click="() => { start_drawing() }" class="flex-r-div but-frame ban-select">
+        <div class="flex-r-div">
+          <NormalIcons whichIcon="newFile"></NormalIcons>
+        </div>
+        <div>新建绘图</div>
+      </div>
+      <div class="ready-info ban-select"
+        :class="{ 'cadtool-ready': CADToolState === '__READY__', 'cadtool-wait': CADToolState === '__WAIT__', 'cadtool-fail': CADToolState === '__FAIL__' }">
+        <div>
+          <div>{{ CADToolStateInfo[CADToolState as keyof typeof CADToolStateInfo] }}</div>
+          <div></div>
+        </div>
+      </div>
     </div>
+
     <div class="blank-10pe"></div>
     <div v-if="typeof netGroup !== 'string' && netGroup['hasDraw'] !== false" @click="() => { back_drawing() }"
       class="flex-r-div but-frame ">
@@ -31,7 +42,7 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import { netTypes, isNewFile, cacheRouterPath } from '../../utils/Memory.ts'
+import { netTypes, isNewFile, cacheRouterPath, CADToolState, CADToolStateInfo } from '../../utils/Memory.ts'
 import { set_content } from '../../utils/warn.ts'
 import { useRouter } from "vue-router"; // 引入 useRoute
 import { appConfig, twoNetT, fourNetT, sixNetT } from "../../utils/MainIndex.ts";
@@ -116,7 +127,7 @@ const start_drawing = () => {
       set_content("请选择绘图类型后再开始绘制拖网.", 2)
       break;
   }
-  if(netGroup.value['corePos'] === ""){
+  if (netGroup.value['corePos'] === "") {
     netGroup.value['corePos'] = "0,0"
   }
 }
@@ -201,6 +212,50 @@ h1 {
 .main-icon {
   width: 20vmin;
   height: 20vmin;
+}
+
+.enter-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+
+  & .ready-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    font-size: 2vmin;
+    margin-left: 2vmin;
+    width: 12vmin;
+    height: 5vmin;
+    border-radius: 1.25vmin;
+    border-top: 1px dashed rgba(var(--warn-note), var(--transparency));
+    border-bottom: 1px dashed rgba(var(--warn-note), var(--transparency));
+    background-color: rgba(var(--warn-note), var(--pTransparency));
+
+    &.cadtool-ready {
+      border-top: 1px dashed rgba(var(--ready-note), var(--transparency));
+      border-bottom: 1px dashed rgba(var(--ready-note), var(--transparency));
+      background-color: rgba(var(--ready-note), var(--pTransparency));
+    }
+
+    &.cadtool-wait {
+      border-top: 1px dashed rgba(var(--warn-note), var(--transparency));
+      border-bottom: 1px dashed rgba(var(--warn-note), var(--transparency));
+      background-color: rgba(var(--warn-note), var(--pTransparency));
+
+    }
+
+    &.cadtool-fail {
+      border-top: 1px dashed rgba(var(--error-note), var(--transparency));
+      border-bottom: 1px dashed rgba(var(--error-note), var(--transparency));
+      background-color: rgba(var(--error-note), var(--pTransparency));
+
+    }
+  }
+
+
 }
 
 .flex-r-div {
