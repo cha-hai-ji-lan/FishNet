@@ -21,9 +21,8 @@
       </div>
       <div class="ready-info ban-select"
         :class="{ 'cadtool-ready': CADToolState === '__READY__', 'cadtool-wait': CADToolState === '__WAIT__', 'cadtool-fail': CADToolState === '__FAIL__' }">
-        <div>
+        <div @click="reset_server()">
           <div>{{ CADToolStateInfo[CADToolState as keyof typeof CADToolStateInfo] }}</div>
-          <div></div>
         </div>
       </div>
     </div>
@@ -42,13 +41,15 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
+import { invoke } from "@tauri-apps/api/core";
+import NormalIcons from '../../assets/icons/NormalIcons.vue';
+import SelectBar from '../utils/SelectorBar.vue';
 import { netTypes, isNewFile, cacheRouterPath, CADToolState, CADToolStateInfo } from '../../utils/Memory.ts'
 import { set_content } from '../../utils/warn.ts'
 import { useRouter } from "vue-router"; // 引入 useRoute
-import { appConfig, twoNetT, fourNetT, sixNetT } from "../../utils/MainIndex.ts";
+import { appConfig, coreConfig, fishNetEXE, twoNetT, fourNetT, sixNetT } from "../../utils/MainIndex.ts";
 import { netGroup } from '../../utils/core/startdraw.ts'
-import NormalIcons from '../../assets/icons/NormalIcons.vue';
-import SelectBar from '../utils/SelectorBar.vue';
+import { init_cad_listen_group } from "../../utils/event.ts";
 
 // 响应式变量存储当前时间
 const currentTime = ref('');
@@ -137,6 +138,14 @@ const back_drawing = () => {
     router.push(cacheRouterPath.value)
   }
 }
+
+const reset_server = () => {
+  if (CADToolState.value === "__FAIL__") {
+    init_cad_listen_group()
+    invoke("reset_cli", { acadToolPath: fishNetEXE.value, command1: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])] })
+  }
+}
+
 
 </script>
 <style scoped>
@@ -251,7 +260,17 @@ h1 {
       border-top: 1px dashed rgba(var(--error-note), var(--transparency));
       border-bottom: 1px dashed rgba(var(--error-note), var(--transparency));
       background-color: rgba(var(--error-note), var(--pTransparency));
+      box-shadow: 0 0 1.5vmin rgba(var(--error-note), 0.75);
+      transition: transform 100ms;
 
+      &:hover {
+        filter: brightness(1.25);
+      }
+
+      &:active {
+        filter: brightness(1.5);
+        transform: scale(0.8);
+      }
     }
   }
 

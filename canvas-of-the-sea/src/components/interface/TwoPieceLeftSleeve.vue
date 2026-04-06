@@ -44,13 +44,14 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useRoute, useRouter } from 'vue-router';
 import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts"
 import { netGroup, send_parma_to_cli } from "../../utils/core/startdraw.ts";
 import { init_cad_listen_group } from "../../utils/event.ts";
 import { coreConfig, fishNetEXE } from "../../utils/MainIndex.ts";
+import { DTC } from "../../utils/core/startdraw.ts"
 const segment = ref<number>(1)
 const route = useRoute()
 const router = useRouter()
@@ -60,6 +61,7 @@ onMounted(() => {
         netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`] = Array(4).fill(null)
     }
     segment.value = netGroup.value['leftSleeve']?.['segment'] || 0
+    DTC.value?.flesh_node()  // 刷新设计树
 })
 // watch(() => netGroup.value['leftSleeve'], () => {
 //     canvasRenderer.drawFromNetGroup(netGroup.value, 'leftSleeve')
@@ -72,6 +74,7 @@ const next_segment = () => {
     netGroup.value['leftSleeve']['segment'] += 1
     segment.value = netGroup.value['leftSleeve']['segment']
     netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`] = Array(4).fill(null)
+    DTC.value?.flesh_node()
 }
 const give_up_draw = () => {
     router.push('/')  // 返回首页

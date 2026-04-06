@@ -51,6 +51,7 @@ import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts"
 import { netGroup, send_parma_to_cli } from "../../utils/core/startdraw.ts";
 import { init_cad_listen_group } from "../../utils/event.ts";
 import { coreConfig, fishNetEXE } from "../../utils/MainIndex.ts";
+import { DTC } from "../../utils/core/startdraw.ts"
 const segment = ref<number>(1)
 const route = useRoute()
 const router = useRouter()
@@ -60,6 +61,7 @@ onMounted(() => {
         netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`] = Array(4).fill(null)
     }
     segment.value = netGroup.value['rightSleeve']?.['segment'] || 0
+    DTC.value?.flesh_node()  // 刷新设计树
 })
 // watch(() => netGroup.value['rightSleeve'], () => {
 //     canvasRenderer.drawFromNetGroup(netGroup.value, 'rightSleeve')
@@ -72,6 +74,7 @@ const next_segment = () => {
     netGroup.value['rightSleeve']['segment'] += 1
     segment.value = netGroup.value['rightSleeve']['segment']
     netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`] = Array(4).fill(null)
+    DTC.value?.flesh_node()
 }
 const give_up_draw = () => {
     router.push('/')  // 返回首页

@@ -65,6 +65,7 @@ import { set_content } from '../../utils/warn.ts'
 import { isNewFile } from '../../utils/Memory.ts'
 import { canvasRenderer } from "../../utils/canvasRenderer.ts";
 import {design_tree_ctr} from "../../utils/core/startdraw.ts"
+import { DTC } from "../../utils/core/startdraw.ts"
 // import { coreConfig } from '../../utils/MainIndex.ts'
 const choosePart = ref(false)
 const showCanvas = ref(false)
@@ -81,6 +82,7 @@ onMounted(() => {
   }
 })
 const show_table = (who: string) => {
+  DTC.value?.flesh_node()  // 打开设计树就刷新节点
   switch (who) {
     case 'part':
       if (choosePart.value) {
@@ -121,6 +123,7 @@ const choose_part = (who: string) => {
   // invoke("send_param_to_cli", {command:["-i",JSON.stringify(coreConfig.value)]})
   switch (who) {
     case 'net-body':
+      
       isNewFile.value = false  // 已进行了一步操作,可看作不是新文件
       hasChoose.value = true;
       focusPart.value = "two-net-body"

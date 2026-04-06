@@ -19,7 +19,7 @@ export const CADToolState = ref("__WAIT__")
 export const CADToolStateInfo = ref({
   "__READY__":"CAD就绪",
   "__WAIT__":"CAD连接中",
-  "__FAIL__":"CAD失败",
+  "__FAIL__":"CAD连接失败",
 
 })
 

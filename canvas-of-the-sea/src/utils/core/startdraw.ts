@@ -69,7 +69,7 @@ class DesignTreeCtr {
                this.tree_node[2].push(`下袖段${key}`)
                const div_element = document.createElement("div")
                div_element.innerHTML = `下袖段${key}`
-               this.id_obj[1].appendChild(div_element)
+               this.id_obj[2].appendChild(div_element)
             }
 
             break;

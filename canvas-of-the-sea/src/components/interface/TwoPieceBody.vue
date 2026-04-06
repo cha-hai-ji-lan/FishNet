@@ -43,14 +43,14 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted} from "vue";
+import { ref, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useRoute, useRouter } from 'vue-router';
 import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts";
 import { netGroup, send_parma_to_cli } from "../../utils/core/startdraw.ts";
 import { init_cad_listen_group } from "../../utils/event.ts";
 import { coreConfig, fishNetEXE } from "../../utils/MainIndex.ts";
-import {DTC} from "../../utils/core/startdraw.ts"
+import { DTC } from "../../utils/core/startdraw.ts"
 const segment = ref<number>(1)
 const route = useRoute()
 const router = useRouter()
@@ -60,6 +60,8 @@ onMounted(() => {
         netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null);
     };
     segment.value = netGroup.value['netBody']?.['segment'] || 0;
+    DTC.value?.flesh_node()  // 刷新设计树
+
 })
 // watch(() => netGroup.value['netBody'], () => {
 //     // canvasRenderer.drawFromNetGroup(netGroup.value, 'netBody')
@@ -92,7 +94,7 @@ const give_up_draw = () => {
     invoke("reset_cli", { acadToolPath: fishNetEXE.value, command1: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])] })
 }
 
-const clean_param =() =>{
+const clean_param = () => {
     netGroup.value['netBody'][`${segment.value}`].fill(null)
 }
 

@@ -249,8 +249,6 @@ const save_config = () => {
     console.log(JSON.stringify(coreConfig.value["defaultParam"]))
     invoke("send_param_to_cli", {command: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])]})
     write_config()
-
-
 }
 const replace_default_config = async () => {
     await replace_config()
