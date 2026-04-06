@@ -11,10 +11,10 @@
           <details id="two-net-body" class="design-tree of-x-hid ban-select">
             <summary class="design-summary of-x-hid"><span>网身</span></summary>
           </details>
-          <details id="two-left-sleeve" class="design-tree of-x-hid">
+          <details id="two-left-sleeve" class="design-tree of-x-hid ban-select">
             <summary class="design-summary of-x-hid">上网翼</summary>
           </details>
-          <details id="two-right-sleeve" class="design-tree of-x-hid">
+          <details id="two-right-sleeve" class="design-tree of-x-hid ban-select">
             <summary class="design-summary of-x-hid">下网翼</summary>
           </details>
         </div>
