@@ -29,7 +29,7 @@
 
     <div class="blank-10pe"></div>
     <div v-if="typeof netGroup !== 'string' && netGroup['hasDraw'] !== false" @click="() => { back_drawing() }"
-      class="flex-r-div but-frame ">
+      class="flex-r-div but-frame ban-select">
       <div class="flex-r-div">
         返回绘图
       </div>

@@ -1,13 +1,13 @@
 <template>
     <div class="two-piece-body" v-if="netGroup['netBody'] && netGroup['netBody']['segment'] > 0">
         <div class="blank-10pe"></div>
-        <div class="item">
+        <div class="item ban-select">
             <div class="part-title "><span>网身</span></div>
             <div class="part-title segments"><span>第{{ segment }}段</span></div>
         </div>
 
-        <div class="w100">
-            <div class="item">
+        <div class="w100 ban-select">
+            <div class="item ">
                 <div class="item-title">网身目大:</div><input v-model="netGroup['netBody'][`${segment}`][0]"
                     :placeholder="netGroup['netBody'][`${segment - 1}`]?.[0] || '目大'" type="number">
             </div>

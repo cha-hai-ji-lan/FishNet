@@ -7,14 +7,14 @@
             <NormalIcons whichIcon="redraw"></NormalIcons>
           </div>
         </div>
-        <div class=" design-tree-datail w100">
-          <details id="two-net-body" class="design-tree of-x-hid ban-select">
+        <div class=" design-tree-datail w100 ban-select">
+          <details id="two-net-body" class="design-tree of-x-hid">
             <summary class="design-summary of-x-hid"><span>网身</span></summary>
           </details>
-          <details id="two-left-sleeve" class="design-tree of-x-hid ban-select">
+          <details id="two-left-sleeve" class="design-tree of-x-hid">
             <summary class="design-summary of-x-hid">上网翼</summary>
           </details>
-          <details id="two-right-sleeve" class="design-tree of-x-hid ban-select">
+          <details id="two-right-sleeve" class="design-tree of-x-hid">
             <summary class="design-summary of-x-hid">下网翼</summary>
           </details>
         </div>
