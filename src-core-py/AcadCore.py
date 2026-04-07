@@ -21,6 +21,9 @@ class ACADBase:
         self.cfg = None  # 配置对象
         self.slope = []  # 剪裁斜率
         self.eye_slope = []  # 宕眼剪裁斜率
+        self.cycles = 0  # 续剪 循环次数
+        self.shears: dict = {"N": 0, "T": 0, "B": 0}  # 边旁 起剪 续剪 落剪参数
+        self.eye_shears: dict = {"N": 0, "T": 0, "B": 0}  # 宕眼 起剪 续剪 落剪参数
         self.param = base_param  # 参数对象
         self.template_path = None  # 模板路径
         self.s_pos = [None] * 12  # 存储四点坐标组
@@ -50,10 +53,10 @@ class ACADBase:
             self.msp = None
             self.oc = None
 
-            print("AutoCAD 连接已断开，资源已释放")
+            print("--break-lnk-AutoCAD-free-resource")
 
         except Exception as e:
-            print(f"清理 AutoCAD 资源时出错：{str(e)}")
+            print(f"--free-resource-err--{str(e)}")
             raise
 
     def _save_document(self, file_path: str) -> bool:
@@ -68,13 +71,10 @@ class ACADBase:
                 file_path += '.dwg'
 
             self.doc.SaveAs(file_path)
-            print(f"文档已保存到：{file_path}")
+            print(f"--file-save-in--{file_path}")
             return True
         except pywintypes.com_error as e:
-            print(f"保存文档失败：{str(e)}")
-            return False
-        except Exception as e:
-            print(f"保存文档时发生意外错误：{str(e)}")
+            print(f"--file-save-err--{str(e)}")
             return False
 
     def save_as(self, file_path: str) -> bool:
@@ -136,13 +136,13 @@ class ACADBase:
         try:
             for _ in range(steps):
                 self.doc.Undo()
-            print(f"已成功撤销 {steps} 步操作")
+            print(f"--has-undo--{steps}--step-opr")
             return True
         except pywintypes.com_error as e:
-            print(f"撤销操作失败：{str(e)}")
+            print(f"--undo-err--{str(e)}")
             return False
         except Exception as e:
-            print(f"撤销时发生意外错误：{str(e)}")
+            print(f"--undo-err--{str(e)}")
             return False
 
     def redo(self, steps: int = 1) -> bool:
@@ -155,13 +155,10 @@ class ACADBase:
         try:
             for _ in range(steps):
                 self.doc.Redo()
-            print(f"已成功重做 {steps} 步操作")
+            print(f"--has-redo-{steps}--step-opr")
             return True
         except pywintypes.com_error as e:
-            print(f"重做操作失败：{str(e)}")
-            return False
-        except Exception as e:
-            print(f"重做时发生意外错误：{str(e)}")
+            print(f"--redo-err--{str(e)}")
             return False
 
     def clean_model(self):
@@ -192,10 +189,10 @@ class AcadDxf(ACADBase):
             entities = []
             for entity in self.msp:
                 entities.append(entity)
-            print(f"共找到 {len(entities)} 个实体对象")
+            print(f"--find--{len(entities)}--entities")
             return entities
         except Exception as e:
-            print(f"获取实体对象时出错：{str(e)}")
+            print(f"--get-entities-err--{str(e)}")
             return []
 
     def get_entities_by_type(self, entity_type: str) -> list:
@@ -210,10 +207,10 @@ class AcadDxf(ACADBase):
             for entity in self.msp:
                 if entity.ObjectName == entity_type:
                     entities.append(entity)
-            print(f"共找到 {len(entities)} 个 '{entity_type}' 类型的对象")
+            print(f"--find--{len(entities)}--{entity_type}")
             return entities
         except Exception as e:
-            print(f"获取实体对象时出错：{str(e)}")
+            print(f"--get-entities-err--{str(e)}")
             return []
 
     @staticmethod
@@ -257,7 +254,7 @@ class AcadDxf(ACADBase):
 
             return info
         except Exception as e:
-            print(f"获取实体信息时出错：{str(e)}")
+            print(f"--get-entity-info-err--{str(e)}")
             return {}
 
     def count_entities(self) -> dict:
@@ -272,10 +269,10 @@ class AcadDxf(ACADBase):
                 obj_name = entity.ObjectName
                 count_dict[obj_name] = count_dict.get(obj_name, 0) + 1
 
-            print(f"实体统计结果：{count_dict}")
+            print(f"--count--{count_dict}")
             return count_dict
         except Exception as e:
-            print(f"统计实体时出错：{str(e)}")
+            print(f"--count-entities-err--{str(e)}")
             return {}
 
 
@@ -311,11 +308,12 @@ class AcadTool(AcadDxf):
     def __init__(self):
         super().__init__()
 
-    def collate_param(self, arg: str) -> None:
+    def collate_param(self, arg) -> None:
         """
         整理参数,用于把传来的参数规整成可用的参数类型
         :return: None
         """
+        print(f"-arg-org-st--{arg}--{type(arg)}")
         result = arg.split(",")
         for single_param in result:
             if single_param in ["", "null", None]:
@@ -328,14 +326,13 @@ class AcadTool(AcadDxf):
                 try:
                     single_param = float(single_param)
                 except ValueError:
-                    single_param = re.findall(r'\d+\.\d+|\d+', single_param)
+                    single_param = [float(x) for x in re.findall(r'\d+\.\d+|\d+', single_param)]
             self.i_arg.append(single_param)
-        pass
+        print(self.i_arg)
 
     def confirm_the_clipping_slope__two(self) -> None:
         """
         通过比率计算拖网剪裁斜率
-        :param args: 用户输入参数
         :return:
         """
         tmp_slope1 = self.i_arg[-1][0]
@@ -351,6 +348,7 @@ class AcadTool(AcadDxf):
                     self.slope = cut_slope["2-1"]["2"]["1.5"][:]
                 else:
                     self.slope = ["null"]
+                    print("-null-slope")
             case 3:
                 if tmp_slope2 == 1:
                     if self.i_arg[1] % tmp_slope1 <= 0.5:
@@ -361,6 +359,7 @@ class AcadTool(AcadDxf):
                         self.slope = cut_slope["3-1"]["3"]["2.5"][:]
                     else:
                         self.slope = ["null"]
+                        print("-null-slope")
                 elif tmp_slope2 == 2:
                     if self.i_arg[1] % tmp_slope1 <= 0.5:
                         self.slope = cut_slope["3-2"]["3"]["0.5"][:]
@@ -370,8 +369,9 @@ class AcadTool(AcadDxf):
                         self.slope = cut_slope["3-2"]["3"]["2.5"][:]
                     else:
                         self.slope = ["null"]
+                        print("-null-slope")
                 else:
-                    print("暂不支持该剪切斜率")
+                    print("-shear-slope-support-err")
             case 4:
                 if tmp_slope2 == 1:
                     if self.i_arg[1] % tmp_slope1 <= 0.5:
@@ -384,6 +384,7 @@ class AcadTool(AcadDxf):
                         self.slope = cut_slope["4-1"]["4"]["3.5"][:]
                     else:
                         self.slope = ["null"]
+                        print("-null-slope")
 
                 elif tmp_slope2 == 3:
                     if self.i_arg[1] % tmp_slope1 <= 0.5:
@@ -396,8 +397,9 @@ class AcadTool(AcadDxf):
                         self.slope = cut_slope["4-3"]["4"]["3.5"][:]
                     else:
                         self.slope = ["null"]
+                        print("-null-slope")
                 else:
-                    print("暂不支持该剪切斜率")
+                    print("-shear-slope-support-err")
             case 5:
                 if tmp_slope2 == 1:
                     if self.i_arg[1] % tmp_slope1 <= 0.5:
@@ -412,6 +414,7 @@ class AcadTool(AcadDxf):
                         self.slope = cut_slope["5-1"]["5"]["4.5"][:]
                     else:
                         self.slope = ["null"]
+                        print("-null-slope")
                 elif tmp_slope2 == 3:
                     if self.i_arg[1] % tmp_slope1 <= 0.5:
                         self.slope = cut_slope["5-3"]["5"]["0.5"][:]
@@ -425,6 +428,9 @@ class AcadTool(AcadDxf):
                         self.slope = cut_slope["5-3"]["5"]["4.5"][:]
                     else:
                         self.slope = ["null"]
+                        print("-null-slope")
+                else:
+                    print("-shear-slope-support-err")
             case 7:
                 if tmp_slope2 == 1:
                     if self.i_arg[1] % tmp_slope1 <= 0.5:
@@ -443,6 +449,9 @@ class AcadTool(AcadDxf):
                         self.slope = cut_slope["7-1"]["7"]["6.5"][:]
                     else:
                         self.slope = ["null"]
+                        print("-null-slope")
+                else:
+                    print("-shear-slope-support-err")
 
             case 8:
                 if tmp_slope2 == 1:
@@ -464,126 +473,134 @@ class AcadTool(AcadDxf):
                         self.slope = cut_slope["8-1"]["8"]["7.5"][:]
                     else:
                         self.slope = ["null"]
+                        print("-null-slope")
+                else:
+                    print("-shear-slope-support-err")
 
     def confirm_the_eye_clipping_slope__two(self, args: dict = None) -> None:
-        tmp_slope1 = int(args["EyeCuttingSlope"][0])
-        tmp_slope2 = int(args["EyeCuttingSlope"][-1])
+        tmp_slope1 = self.i_arg[-2][0]
+        tmp_slope2 = self.i_arg[-2][-1]
         match tmp_slope1:
             case 1:
                 if tmp_slope2 == 1:
-                    self.eye_cutting_slope_data = eye_cut_slope["1-1"]["1"]["NAN"][:]
+                    self.eye_slope = eye_cut_slope["1-1"]["1"]["NAN"][:]
                 elif tmp_slope2 == 2:
                     if self.i_arg[1] % tmp_slope1 <= 0.5:
-                        self.eye_cutting_slope_data = eye_cut_slope["1-2"]["1"]["0.5"][:]
+                        self.eye_slope = eye_cut_slope["1-2"]["1"]["0.5"][:]
                     else:
-                        self.eye_cutting_slope_data = ["null"]
-                        print("self.eye_cutting_slope_data = ['null']")
+                        self.eye_slope = ["null"]
+                        print("-null-eye-slope")
                 elif tmp_slope2 == 3:
                     if self.i_arg[1] % tmp_slope1 <= 0.5:
-                        self.eye_cutting_slope_data = eye_cut_slope["1-3"]["1"]["0.5"][:]
+                        self.eye_slope = eye_cut_slope["1-3"]["1"]["0.5"][:]
                     else:
-                        self.eye_cutting_slope_data = ["null"]
-                        print("self.eye_cutting_slope_data = ['null']")
+                        self.eye_slope = ["null"]
+                        print("-null-eye-slope")
+                else:
+                    print("-shear-slope-support-err")
 
             case 2:
                 if self.i_arg[1] % tmp_slope1 <= 0.5:
-                    self.eye_cutting_slope_data = eye_cut_slope["2-3"]["2"]["0.5"][:]
+                    self.eye_slope = eye_cut_slope["2-3"]["2"]["0.5"][:]
                 elif self.i_arg[1] % tmp_slope1 <= 1.5:
-                    self.eye_cutting_slope_data = eye_cut_slope["2-3"]["2"]["1.5"][:]
+                    self.eye_slope = eye_cut_slope["2-3"]["2"]["1.5"][:]
                 else:
-                    self.eye_cutting_slope_data = ["null"]
-                    print("self.eye_cutting_slope_data = ['null']")
+                    self.eye_slope = ["null"]
+                    print("-null-eye-slope")
 
-    def calculate_the_ratio(self, args):
+    def calculate_the_ratio(self):
         # 计算起剪数据
+        print(self.slope)
         if isinstance(self.slope[0], str):
-            number_list = re.findall(r'\d+\.\d+|\d+', self.slope[0])
+            number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.slope[0])]
             if "N" in self.slope[0]:
-                self.cut_start_to_end_dict["N"] += float(number_list[0])
+                self.shears["N"] += number_list[0]
             if "T" in self.slope[0]:
-                self.cut_start_to_end_dict["T"] += float(number_list[0])
+                self.shears["T"] += number_list[0]
             if "B" in self.slope[0]:
-                self.cut_start_to_end_dict["B"] += float(number_list[1]) / 2
-                self.cut_start_to_end_dict["N"] += float(number_list[1]) / 2
+                self.shears["B"] += number_list[1] / 2
+                self.shears["N"] += number_list[1] / 2
         elif isinstance(self.slope[0], list):
             for cut_slope_obj in self.slope[0]:
                 if isinstance(cut_slope_obj, str):
-                    number_list = re.findall(r'\d+\.\d+|\d+', cut_slope_obj)
+                    number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', cut_slope_obj)]
                     if "N" in cut_slope_obj:
-                        self.cut_start_to_end_dict["N"] += float(number_list[0])
+                        self.shears["N"] += number_list[0]
                     if "T" in cut_slope_obj:
-                        self.cut_start_to_end_dict["T"] += float(number_list[0])
+                        self.shears["T"] += number_list[0]
                     if "B" in cut_slope_obj:
-                        self.cut_start_to_end_dict["B"] += float(number_list[1]) / 2
-                        self.cut_start_to_end_dict["N"] += float(number_list[1]) / 2
+                        self.shears["B"] += number_list[1] / 2
+                        self.shears["N"] += number_list[1] / 2
         # 计算落剪数据
         if isinstance(self.slope[2], str) and len(self.slope[2]) > 2:
-            number_list = re.findall(r'\d+\.\d+|\d+', self.slope[2])
+            number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.slope[2])]
             if "N" in self.slope[2]:
-                self.cut_start_to_end_dict["N"] += float(number_list[0])
+                self.shears["N"] += number_list[0]
             if "T" in self.slope[2]:
-                self.cut_start_to_end_dict["T"] += float(number_list[0])
+                self.shears["T"] += number_list[0]
             if "B" in self.slope[2]:
-                self.cut_start_to_end_dict["B"] += float(number_list[1]) / 2
-                self.cut_start_to_end_dict["N"] += float(number_list[1]) / 2
+                self.shears["B"] += number_list[1] / 2
+                self.shears["N"] += number_list[1] / 2
         elif isinstance(self.slope[2], str) and len(self.slope[2]) <= 2:
-            number_list = re.findall(r'\d+\.\d+|\d+', self.slope[2])
+            number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.slope[2])]
             if "N" in self.slope[2]:
-                self.cut_start_to_end_dict["N"] += float(number_list[0])
+                self.shears["N"] += number_list[0]
             if "T" in self.slope[2]:
-                self.cut_start_to_end_dict["T"] += float(number_list[0])
+                self.shears["T"] += number_list[0]
             if "B" in self.slope[2]:
-                self.cut_start_to_end_dict["B"] += float(number_list[0]) / 2
-                self.cut_start_to_end_dict["N"] += float(number_list[0]) / 2
+                self.shears["B"] += number_list[0] / 2
+                self.shears["N"] += number_list[0] / 2
         elif isinstance(self.slope[2], list):
             for cut_slope_obj in self.slope[2]:
                 if isinstance(cut_slope_obj, str):
-                    number_list = re.findall(r'\d+\.\d+|\d+', cut_slope_obj)
+                    number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', cut_slope_obj)]
                     if "N" in cut_slope_obj:
-                        self.cut_start_to_end_dict["N"] += float(number_list[0])
+                        self.shears["N"] += number_list[0]
                     if "T" in cut_slope_obj:
-                        self.cut_start_to_end_dict["T"] += float(number_list[0])
+                        self.shears["T"] += number_list[0]
                     if "B" in cut_slope_obj:
-                        self.cut_start_to_end_dict["B"] += float(number_list[1]) / 2
-                        self.cut_start_to_end_dict["N"] += float(number_list[1]) / 2
+                        self.shears["B"] += number_list[1] / 2
+                        self.shears["N"] += number_list[1] / 2
                     self.cycles += 1
         # 计算续剪数据
-        cycles_total_len = (self.i_arg[1]
-                            - self.cut_start_to_end_dict["N"])
+        cycles_total_len = self.i_arg[1] - self.shears["N"]  # 续剪数据总长度
+        # 如果剪数据为字符串，并且续剪标志字符长度大于2 (例如 1N2B)，则计算续剪数据
         if isinstance(self.slope[1], str) and len(self.slope[1]) > 2:
+
             self.cycles = 0
             temp_one_cycles_len = 0
-            number_list = re.findall(r'\d+\.\d+|\d+', self.slope[1])
+            number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.slope[1])]
             while True:
                 if "N" in self.slope[1]:
-                    self.cut_start_to_end_dict["N"] += float(number_list[0])
-                    temp_one_cycles_len += float(number_list[0])
+                    self.shears["N"] += number_list[0]
+                    temp_one_cycles_len += number_list[0]
                 if "T" in self.slope[1]:
-                    self.cut_start_to_end_dict["T"] += float(number_list[0])
+                    self.shears["T"] += number_list[0]
                 if "B" in self.slope[1]:
-                    self.cut_start_to_end_dict["B"] += (float(number_list[1]) / 2)
-                    self.cut_start_to_end_dict["N"] += (float(number_list[1]) / 2)
-                    temp_one_cycles_len += (float(number_list[1]) / 2)
+                    self.shears["B"] += number_list[1] / 2
+                    self.shears["N"] += number_list[1] / 2
+                    temp_one_cycles_len += number_list[1] / 2
                 self.cycles += 1
                 if temp_one_cycles_len >= cycles_total_len:
                     break
 
             self.slope[1] += F"({self.cycles})"
             self.cycles = 0
+        # 如果剪数据为字符串，并且续剪标志字符长度小于2 (例如 1N)，则计算续剪数据
         elif isinstance(self.slope[1], str) and len(self.slope[1]) <= 2:
             self.cycles = 0
             temp_one_cycles_len = 0
-            number_list = re.findall(r'\d+\.\d+|\d+', self.slope[1])
+            number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.slope[1])]
             while True:
                 if "N" in self.slope[1]:
-                    self.cut_start_to_end_dict["N"] += float(number_list[0])
-                    temp_one_cycles_len += float(number_list[0])
+                    self.shears["N"] += number_list[0]
+                    temp_one_cycles_len += number_list[0]
                 if "T" in self.slope[1]:
-                    self.cut_start_to_end_dict["T"] += float(number_list[0])
+                    self.shears["T"] += number_list[0]
                 if "B" in self.slope[1]:
-                    self.cut_start_to_end_dict["B"] += (float(number_list[0]) / 2)
-                    self.cut_start_to_end_dict["N"] += (float(number_list[0]) / 2)
-                    temp_one_cycles_len += (float(number_list[0]) / 2)
+                    self.shears["B"] += number_list[0] / 2
+                    self.shears["N"] += number_list[0] / 2
+                    temp_one_cycles_len += number_list[0] / 2
                 self.cycles += 1
                 if temp_one_cycles_len >= cycles_total_len:
                     break
@@ -595,101 +612,101 @@ class AcadTool(AcadDxf):
             while True:
                 for cut_slope_obj in self.slope[1]:
                     if isinstance(cut_slope_obj, str):
-                        number_list = re.findall(r'\d+\.\d+|\d+', cut_slope_obj)
+                        number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', cut_slope_obj)]
                         if "N" in cut_slope_obj:
-                            self.cut_start_to_end_dict["N"] += float(number_list[0])
-                            temp_one_cycles_len += float(number_list[0])
+                            self.shears["N"] += number_list[0]
+                            temp_one_cycles_len += number_list[0]
                         if "T" in cut_slope_obj:
-                            self.cut_start_to_end_dict["T"] += float(number_list[0])
+                            self.shears["T"] += number_list[0]
                         if "B" in cut_slope_obj:
-                            self.cut_start_to_end_dict["B"] += float(number_list[1]) / 2
-                            self.cut_start_to_end_dict["N"] += float(number_list[1]) / 2
-                            temp_one_cycles_len += float(number_list[1]) / 2.
+                            self.shears["B"] += number_list[1] / 2
+                            self.shears["N"] += number_list[1] / 2
+                            temp_one_cycles_len += number_list[1] / 2.
                 self.cycles += 1
                 if temp_one_cycles_len >= cycles_total_len:
                     break
             self.slope[1][-1] += F"({self.cycles})"
 
-    def calculate_the_eye_ratio(self, args):
-        if isinstance(self.eye_cutting_slope_data[0], str):
-            number_list = re.findall(r'\d+\.\d+|\d+', self.eye_cutting_slope_data[0])
-            if "N" in self.eye_cutting_slope_data[0]:
-                self.eye_cut_start_to_end_dict["N"] += float(number_list[0])
-            if "T" in self.eye_cutting_slope_data[0]:
-                self.eye_cut_start_to_end_dict["T"] += float(number_list[0])
-            if "B" in self.eye_cutting_slope_data[0]:
-                self.eye_cut_start_to_end_dict["B"] += float(number_list[1]) / 2
-                self.eye_cut_start_to_end_dict["N"] += float(number_list[1]) / 2
+    def calculate_the_eye_ratio(self):
+        if isinstance(self.eye_slope[0], str):
+            number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.eye_slope[0])]
+            if "N" in self.eye_slope[0]:
+                self.eye_shears["N"] += number_list[0]
+            if "T" in self.eye_slope[0]:
+                self.eye_shears["T"] += number_list[0]
+            if "B" in self.eye_slope[0]:
+                self.eye_shears["B"] += number_list[1] / 2
+                self.eye_shears["N"] += number_list[1] / 2
         else:
-            print("宕眼剪裁斜率参数错误1")
-        if isinstance(self.eye_cutting_slope_data[2], str) and len(self.eye_cutting_slope_data[2]) > 2:
-            number_list = re.findall(r'\d+\.\d+|\d+', self.eye_cutting_slope_data[2])
-            if "N" in self.eye_cutting_slope_data[2]:
-                self.eye_cut_start_to_end_dict["N"] += float(number_list[0])
-            if "T" in self.eye_cutting_slope_data[2]:
-                self.eye_cut_start_to_end_dict["T"] += float(number_list[0])
-            if "B" in self.eye_cutting_slope_data[2]:
-                self.eye_cut_start_to_end_dict["B"] += float(number_list[1]) / 2
-                self.eye_cut_start_to_end_dict["N"] += float(number_list[1]) / 2
-        elif isinstance(self.eye_cutting_slope_data[2], str) and len(self.eye_cutting_slope_data[2]) <= 2:
-            number_list = re.findall(r'\d+\.\d+|\d+', self.eye_cutting_slope_data[2])
-            if "N" in self.eye_cutting_slope_data[2]:
-                self.eye_cut_start_to_end_dict["N"] += float(number_list[0])
-            if "T" in self.eye_cutting_slope_data[2]:
-                self.eye_cut_start_to_end_dict["T"] += float(number_list[0])
-            if "B" in self.eye_cutting_slope_data[2]:
-                self.eye_cut_start_to_end_dict["B"] += float(number_list[0]) / 2
-                self.eye_cut_start_to_end_dict["N"] += float(number_list[0]) / 2
+            print("-eye-shears-err")
+        if isinstance(self.eye_slope[2], str) and len(self.eye_slope[2]) > 2:
+            number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.eye_slope[2])]
+            if "N" in self.eye_slope[2]:
+                self.eye_shears["N"] += number_list[0]
+            if "T" in self.eye_slope[2]:
+                self.eye_shears["T"] += number_list[0]
+            if "B" in self.eye_slope[2]:
+                self.eye_shears["B"] += number_list[1] / 2
+                self.eye_shears["N"] += number_list[1] / 2
+        elif isinstance(self.eye_slope[2], str) and len(self.eye_slope[2]) <= 2:
+            number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.eye_slope[2])]
+            if "N" in self.eye_slope[2]:
+                self.eye_shears["N"] += number_list[0]
+            if "T" in self.eye_slope[2]:
+                self.eye_shears["T"] += number_list[0]
+            if "B" in self.eye_slope[2]:
+                self.eye_shears["B"] += number_list[0] / 2
+                self.eye_shears["N"] += number_list[0] / 2
         else:
-            print("宕眼剪裁斜率参数错误2")
+            print("-eye-shears-err")
         cycles_total_len = (self.i_arg[1]
-                            - self.eye_cut_start_to_end_dict["N"])
-        if isinstance(self.eye_cutting_slope_data[1], str) and len(self.eye_cutting_slope_data[1]) > 2:
+                            - self.eye_shears["N"])
+        if isinstance(self.eye_slope[1], str) and len(self.eye_slope[1]) > 2:
             self.cycles = 0
             temp_one_cycles_len = 0
-            number_list = re.findall(r'\d+\.\d+|\d+', self.eye_cutting_slope_data[1])
+            number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.eye_slope[1])]
             while True:
-                if "N" in self.eye_cutting_slope_data[1]:
-                    self.eye_cut_start_to_end_dict["N"] += float(number_list[0])
-                    temp_one_cycles_len += float(number_list[0])
-                if "T" in self.eye_cutting_slope_data[1]:
-                    self.eye_cut_start_to_end_dict["T"] += float(number_list[0])
-                if "B" in self.eye_cutting_slope_data[1]:
-                    self.eye_cut_start_to_end_dict["B"] += (float(number_list[1]) / 2)
-                    self.eye_cut_start_to_end_dict["N"] += (float(number_list[1]) / 2)
-                    temp_one_cycles_len += (float(number_list[1]) / 2)
+                if "N" in self.eye_slope[1]:
+                    self.eye_shears["N"] += number_list[0]
+                    temp_one_cycles_len += number_list[0]
+                if "T" in self.eye_slope[1]:
+                    self.eye_shears["T"] += number_list[0]
+                if "B" in self.eye_slope[1]:
+                    self.eye_shears["B"] += (number_list[1] / 2)
+                    self.eye_shears["N"] += (number_list[1] / 2)
+                    temp_one_cycles_len += (number_list[1] / 2)
                 self.cycles += 1
                 if temp_one_cycles_len >= cycles_total_len:
                     break
-            if self.eye_cutting_slope_data[1] == self.eye_cutting_slope_data[-1]:
+            if self.eye_slope[1] == self.eye_slope[-1]:
                 self.cycles += 1
-                del self.eye_cutting_slope_data[-1]
-            self.eye_cutting_slope_data[1] += F"({self.cycles})"
+                del self.eye_slope[-1]
+            self.eye_slope[1] += F"({self.cycles})"
             self.cycles = 0
-        elif isinstance(self.eye_cutting_slope_data[1], str) and len(self.eye_cutting_slope_data[1]) <= 2:
+        elif isinstance(self.eye_slope[1], str) and len(self.eye_slope[1]) <= 2:
             self.cycles = 0
             temp_one_cycles_len = 0
-            number_list = re.findall(r'\d+\.\d+|\d+', self.eye_cutting_slope_data[1])
+            number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.eye_slope[1])]
             while True:
-                if "N" in self.eye_cutting_slope_data[1]:
-                    self.eye_cut_start_to_end_dict["N"] += float(number_list[0])
-                    temp_one_cycles_len += float(number_list[0])
-                if "T" in self.eye_cutting_slope_data[1]:
-                    self.eye_cut_start_to_end_dict["T"] += float(number_list[0])
-                if "B" in self.eye_cutting_slope_data[1]:
-                    self.eye_cut_start_to_end_dict["B"] += (float(number_list[0]) / 2)
-                    self.eye_cut_start_to_end_dict["N"] += (float(number_list[0]) / 2)
-                    temp_one_cycles_len += (float(number_list[0]) / 2)
+                if "N" in self.eye_slope[1]:
+                    self.eye_shears["N"] += number_list[0]
+                    temp_one_cycles_len += number_list[0]
+                if "T" in self.eye_slope[1]:
+                    self.eye_shears["T"] += number_list[0]
+                if "B" in self.eye_slope[1]:
+                    self.eye_shears["B"] += (number_list[0] / 2)
+                    self.eye_shears["N"] += (number_list[0] / 2)
+                    temp_one_cycles_len += (number_list[0] / 2)
                 self.cycles += 1
                 if temp_one_cycles_len >= cycles_total_len:
                     break
-            if self.eye_cutting_slope_data[1] == self.eye_cutting_slope_data[-1]:
+            if self.eye_slope[1] == self.eye_slope[-1]:
                 self.cycles += 1
-                del self.eye_cutting_slope_data[-1]
-            self.eye_cutting_slope_data[1] += F"({self.cycles})"
+                del self.eye_slope[-1]
+            self.eye_slope[1] += F"({self.cycles})"
             self.cycles = 0
         else:
-            print("宕眼剪裁斜率参数错误3")
+            print("-eye-shears-err")
 
 
 class ACAD(AcadTool):
@@ -745,6 +762,8 @@ class ACAD(AcadTool):
         绘制两片式网身
         :return: None
         """
-        self.collate_param(arg)
-        self.confirm_the_clipping_slope__two(arg)
+        self.collate_param(arg[0])
+        self.confirm_the_clipping_slope__two()
+        self.calculate_the_ratio()
+
         pass

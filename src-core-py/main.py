@@ -11,8 +11,8 @@ class CLIHandler:
     def __init__(self):
         self.commands = {}
         self.running = True
-        self.register_default_commands()
         self.acad = ACAD()
+        self.register_default_commands()
 
     def register_default_commands(self):
         """注册默认命令"""
@@ -46,11 +46,11 @@ class CLIHandler:
         # 查找并执行命令
         if cmd_name in self.commands:
             try:
-                print(f"执行命令: {cmd_name}")
+                print(f"--exe-command--{cmd_name}")
                 result = self.commands[cmd_name]['function'](args)
                 return result if result is not None else True
             except Exception as e:
-                print(f"执行命令 '{cmd_name}' 时出错: {str(e)}")
+                print(f"--exe-err--{e}")
                 return False
         else:
             print(f"未知命令: {cmd_name}")
@@ -86,7 +86,6 @@ class CLIHandler:
             print("-fin-set-", self.acad.cfg, type(self.acad.cfg))
         else:
             print("请输入要设置的配置参数")
-
 
     @staticmethod
     def cleanup():
