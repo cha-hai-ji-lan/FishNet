@@ -103,6 +103,12 @@
                     <!-- <div @click="() => { init_color_palette() }" class="set-but ban-select">设置</div> -->
                 </div>
                 <div class="setting-item">
+                    <div class="setting-title ban-select">原点坐标</div>
+                    <div class="update-item nor-input">
+                        <input v-model="CoreConfig['originPosition']" type="text" :placeholder="CoreConfig['originPosition']">
+                    </div>
+                </div>
+                <div class="setting-item">
                     <div class="setting-title ban-select">全局缩放</div>
                     <div class="update-item nor-input">
                         <input v-model="CoreConfig['zoom']" type="number" :placeholder="CoreConfig['zoom']">
@@ -136,14 +142,14 @@
                 <div class="setting-item">
                     <div class="setting-title ban-select">表 格 字 高</div>
                     <div class="update-item nor-input">
-                        <input v-model="CoreConfig['commentOffset']" type="number"
-                            :placeholder="CoreConfig['commentOffset']">
+                        <input v-model="CoreConfig['sheetTextHeight']" type="number"
+                            :placeholder="CoreConfig['sheetTextHeight']">
                     </div>
                 </div>
                 <div class="setting-item">
                     <div class="setting-title ban-select">制 网 材 料</div>
                     <div class="update-item nor-input">
-                        <input v-model="CoreConfig['materal']" type="text" :placeholder="CoreConfig['materal']">
+                        <input v-model="CoreConfig['material']" type="text" :placeholder="CoreConfig['materal']">
                     </div>
                 </div>
             </div>

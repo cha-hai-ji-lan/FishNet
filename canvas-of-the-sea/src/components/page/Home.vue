@@ -10,7 +10,7 @@
     <div class="select-bar-frame">
       <SelectBar v-model="drawMode" :options="netTypes" placeholder="拖网类型"></SelectBar>
     </div>
-    <input v-if="drawMode !== ''" v-model="netGroup['corePos']" type="text" placeholder="原点默认: 0 , 0">
+    <input v-if="drawMode !== ''" v-model="netGroup['corePos']" type="text" :placeholder="'原点默认:' + coreConfig['defaultParam']['originPosition']">
     <div class="blank-10pe"></div>
     <div class="enter-frame">
       <div @click="() => { start_drawing() }" class="flex-r-div but-frame ban-select">
@@ -129,7 +129,7 @@ const start_drawing = () => {
       break;
   }
   if (netGroup.value['corePos'] === "") {
-    netGroup.value['corePos'] = "0,0"
+    netGroup.value['corePos'] = coreConfig.value['defaultParam']['originPosition']
   }
 }
 

@@ -70,7 +70,7 @@ const next_segment = () => {
     cacheRouterPath.value = route.path
     netGroup.value["hasDraw"] = true
     check_pre_segment()
-    send_parma_to_cli(["-i", `[${netGroup.value['leftSleeve'][`${segment.value}`]}]`])
+    send_parma_to_cli(["-i", `${netGroup.value['leftSleeve'][`${segment.value}`]}`])
     netGroup.value['leftSleeve']['segment'] += 1
     segment.value = netGroup.value['leftSleeve']['segment']
     netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`] = Array(4).fill(null)
