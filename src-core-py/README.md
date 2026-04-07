@@ -48,3 +48,20 @@
 > 2.输入参数顺序起始必须以**网身目大 ,网身纵向目数 ,网身横向目数**的顺序作为起始
 > 
 > 3.末尾参数必须以 **宕眼剪裁斜率**,**边旁剪裁斜率**的顺序结尾
+> 
+
+## undo 撤回操作
+```python
+self.doc.SendCommand("_.UNDO\n_MARK\n")  # 撤销标记
+self.doc.SendCommand("_.UNDO\n_BACK\n")  # 撤销
+self.doc.StartUndoMark()  # 原子操作开始标记
+self.doc.EndUndoMark()  # 原子操作结束标记
+# 回退一步（即回退 StartUndoMark/EndUndoMark 之间的所有操作）
+self.doc.SendCommand("_.UNDO\n1\n")
+# 或者使用 COM API
+self.doc.Undo(1)  # 参数表示撤销步
+# ✅ 正确：重做一步
+self.doc.SendCommand("_.REDO\n")
+# ✅ 正确：重做多步
+self.doc.SendCommand("_.REDO\n3\n")
+```

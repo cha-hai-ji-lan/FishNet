@@ -1,6 +1,7 @@
 # --base-- format edition --base--
 import argparse
 import json
+import re
 from typing import Callable
 from AcadCore import ACAD
 
@@ -81,8 +82,11 @@ class CLIHandler:
     def set_config_command(self, args):
         """设置配置命令"""
         if args:
-            print("-set-config:")
             self.acad.cfg = json.loads(" ".join(args))
+            self.acad.cfg["originPosition"] = [
+                float(x) for x in re.findall(r'\d+\.\d+|\d+', self.acad.cfg["originPosition"])
+            ]
+            self.acad.set_core_config_encapsulation()  # 设置核心封装
             print("-fin-set-", self.acad.cfg, type(self.acad.cfg))
         else:
             print("请输入要设置的配置参数")

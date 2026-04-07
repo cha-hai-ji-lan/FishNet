@@ -1,12 +1,12 @@
-import asyncio
-import json
 import re
-
+from typing import Callable, Any
+from functools import wraps
 import pywintypes
 import win32com.client as win32
 
 from typeInfoConfig import (
-    config
+    config,
+    listTOFloatVT as l2F,
 )
 from staticParam import cut_slope, eye_cut_slope, base_param
 
@@ -26,7 +26,7 @@ class ACADBase:
         self.eye_shears: dict = {"N": 0, "T": 0, "B": 0}  # 宕眼 起剪 续剪 落剪参数
         self.param = base_param  # 参数对象
         self.template_path = None  # 模板路径
-        self.s_pos = [None] * 12  # 存储四点坐标组
+        self.s_pos = []  # 存储坐标组
         self.i_arg = []  # 用户输入的一组参数
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -179,6 +179,10 @@ class AcadDxf(ACADBase):
     AutoCAD DXF数据处理
     """
 
+    def __init__(self):
+        super().__init__()
+        self.has_draw_first_segment = False  # 是否绘制了网身第一段
+
     def get_all_entities(self) -> list:
         """
         获取模型空间中所有绘制的元素（实体对象）
@@ -275,6 +279,20 @@ class AcadDxf(ACADBase):
             print(f"--count-entities-err--{str(e)}")
             return {}
 
+    def pos_write_to_adoc(self, pos_list: list, close_flag: bool = True):
+        rectangle = self.msp.AddLightWeightPolyline(l2F(pos_list))
+        if close_flag:
+            rectangle.Closed = True
+        print(self.msp.Count)
+
+    def focus_interface(self):
+        """
+        聚焦界面绘图元素
+        :return:
+        """
+        self.doc.SendCommand("_.REGEN\n")  # 下划线确保命令识别，\n表示回车执行 刷新界面
+        self.doc.SendCommand("_.ZOOM E\n")  # 下划线确保命令识别，\n表示回车执行 刷新界面
+
 
 # # 创建 CAD 实例
 # acad = ACAD()
@@ -307,6 +325,11 @@ class AcadTool(AcadDxf):
 
     def __init__(self):
         super().__init__()
+        # 封装核心参数
+        self.ORI = None  # 原点坐标
+        self.ZX = None  # 经过全局缩放后并横向缩放标尺值
+        self.ZY = None  # 经过全局缩放后并纵向缩放标尺值
+        self.pos_record = {}
 
     def collate_param(self, arg) -> None:
         """
@@ -477,7 +500,7 @@ class AcadTool(AcadDxf):
                 else:
                     print("-shear-slope-support-err")
 
-    def confirm_the_eye_clipping_slope__two(self, args: dict = None) -> None:
+    def confirm_the_eye_clipping_slope__two(self) -> None:
         tmp_slope1 = self.i_arg[-2][0]
         tmp_slope2 = self.i_arg[-2][-1]
         match tmp_slope1:
@@ -708,6 +731,26 @@ class AcadTool(AcadDxf):
         else:
             print("-eye-shears-err")
 
+    def ori_mir(self, pos_val, mirror_type="x"):
+        """
+        坐标单值 关于原点的镜像
+        :param pos_val: 坐标单值
+        :param mirror_type: 镜像类型 x/y
+        :return:
+        """
+        if mirror_type == "x":
+            return self.ORI[0] * 2 - pos_val
+        else:
+            return self.ORI[1] * 2 - pos_val
+
+    def ori_p_mir(self, pos):
+        return [self.ori_mir(pos[0]), self.ori_mir(pos[1], "y")]
+
+    def set_core_config_encapsulation(self):
+        self.ORI = self.cfg["originPosition"]
+        self.ZX = self.cfg["zoom"] * self.cfg["scaleX"]  # 经过全局缩放后并横向缩放标尺值
+        self.ZY = self.cfg["zoom"] * self.cfg["scaleY"]  # 经过全局缩放后并纵向缩放标尺值
+
 
 class ACAD(AcadTool):
     def __init__(self):
@@ -757,13 +800,45 @@ class ACAD(AcadTool):
         self.doc.Application.Visible = True
         self.load_line_type("ACAD_ISO04W100")  # 加载线型
 
-    def draw_two_piece_body(self, arg, *args, **kwargs) -> None:
+    def draw_two_piece_body(self, arg) -> None:
         """
         绘制两片式网身
+        self.i_arg index
+        0:  网身目大 
+        1:  网身纵向目数 
+        2:  网身横向目数
+        3:  边旁剪裁斜率
         :return: None
         """
+        self.doc.StartUndoMark()
         self.collate_param(arg[0])
         self.confirm_the_clipping_slope__two()
         self.calculate_the_ratio()
-
-        pass
+        # 计算裁剪后的横向目数
+        mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
+        if not self.has_draw_first_segment:
+            self.s_pos.extend([
+                self.ORI[0]
+                - (self.i_arg[0]  # 目大参数
+                   * self.i_arg[2]  # 横向目数
+                   * self.ZX  # X尺寸比例缩放
+                   * 0.5  # 取长度一半
+                   ), self.ORI[1]])
+            self.s_pos.extend([self.ori_mir(self.s_pos[0]), self.s_pos[1]])
+            self.s_pos.extend([
+                self.ORI[0]
+                + (mesh_len / 2),
+                self.s_pos[3]
+                - (self.i_arg[0] * self.i_arg[1] * self.ZY)
+            ])
+            self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
+            print(self.s_pos)
+            self.pos_write_to_adoc(self.s_pos)
+            self.focus_interface()  # 聚焦
+            self.pos_record["netBody"] = self.s_pos
+            self.pos_record["preSegment"] = self.s_pos
+            self.s_pos = []  # 清空s_pos
+            self.has_draw_first_segment = True
+        else:
+            pass
+        self.doc.EndUndoMark()
