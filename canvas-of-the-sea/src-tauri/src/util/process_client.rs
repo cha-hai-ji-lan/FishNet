@@ -35,6 +35,8 @@ static mut START_MONITOR: bool = false;
 fn get_connector() -> Result<Arc<CadCliConnector>, Error> {
     let connector = CAD_CONNECTOR.lock().unwrap();
     connector.clone().ok_or_else(|| {
+        let app_handle = get_app_handle().unwrap();
+        send_fail_create_cad_example_event(app_handle);  // 发送创建 CAD 示例失败事件
         Error::new(
             io::ErrorKind::NotConnected,
             "CAD CLI 连接器未初始化，请先调用 init_connect_cli()",
@@ -44,6 +46,8 @@ fn get_connector() -> Result<Arc<CadCliConnector>, Error> {
 
 ///
 /// ### 等待启动标志
+///
+/// 等待子进程回复 -start 并且监听各个生命周期标志位
 fn wait_for_start(connector: &mut CadCliConnector) -> Result<(), Error> {
     let mut buffer = Vec::new();
     let mut found_start = false;
@@ -98,6 +102,7 @@ fn wait_for_start(connector: &mut CadCliConnector) -> Result<(), Error> {
 
 ///
 /// ### 发送初始参数
+///
 fn send_initial_params(
     connector: &mut CadCliConnector,
     command1: &str,
@@ -163,6 +168,8 @@ pub fn init_connect_cli(
     // 检查是否已经初始化
     let global_connector = CAD_CONNECTOR.lock().unwrap();
     if global_connector.is_some() {
+        let app_handle = get_app_handle().unwrap();
+        send_fail_create_cad_example_event(app_handle);  // 发送创建 CAD 示例失败事件
         return Err(Error::new(
             io::ErrorKind::AlreadyExists,
             "CAD CLI 连接器已初始化，无法重复初始化。请先调用 kill_cad_process() 或 close_cli_connection() 清除后再初始化",

@@ -69,7 +69,7 @@ import NormalIcons from '../../assets/icons/NormalIcons.vue';
 import { hasChoose, focusPart, netGroup } from '../../utils/core/startdraw.ts'
 import { set_content } from '../../utils/warn.ts'
 import { isNewFile } from '../../utils/Memory.ts'
-import { canvasRenderer } from "../../utils/canvasRenderer.ts";
+import { canvasRenderer, CR } from "../../utils/canvasRenderer.ts";
 import { design_tree_ctr } from "../../utils/core/startdraw.ts"
 import { DTC } from "../../utils/core/startdraw.ts"
 // import { coreConfig } from '../../utils/MainIndex.ts'
@@ -79,7 +79,7 @@ const showPara = ref(false)
 
 onMounted(() => {
   design_tree_ctr("两片式", ["two-net-body", "two-left-sleeve", "two-right-sleeve"])
-  canvasRenderer.init('two-piece-canvas')  // 创建画布
+  canvasRenderer('two-piece-canvas')  // 创建画布
   if (isNewFile.value === true) {
     console.log(netGroup.value)
     show_table('part')  // 新文件进入后显示 部位选择
@@ -100,16 +100,13 @@ const show_table = (who: string) => {
 
     case 'canvas':
       if (showCanvas.value) {
+        CR.value?.set_canvas_size(false)
         showCanvas.value = false;
       } else {
         showCanvas.value = true;
-        setTimeout(() => {
-          console.log("设置画布尺寸")
-          canvasRenderer.resize()
-          canvasRenderer.drawline()
-          canvasRenderer.drawCoordinateSystem()
-
-        }, 750)
+        setTimeout(()=>{
+          CR.value?.set_canvas_size(true)
+        }, 800)
       }
       break;
     case 'para':

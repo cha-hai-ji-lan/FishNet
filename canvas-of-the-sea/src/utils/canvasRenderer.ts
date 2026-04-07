@@ -1,183 +1,46 @@
-// ... existing code ...
+import { ref } from "vue";
+export const CR = ref<CanvasRenderer | null>(null)
 
 class CanvasRenderer {
   private canvas: HTMLCanvasElement | null = null
   private ctx: CanvasRenderingContext2D | null = null
-  // 在类中添加平移偏移量
-  private offsetX: number = 0;
-  private offsetY: number = 0;
-  private zoom: number = 1.0
-  private drawItems: Array<() => void> = []
+  private canvas_type: string = "__NULL__"
 
 
-  constructor(canvasId?: string) {
-    if (canvasId) {
-      this.init(canvasId)
-    }
+  constructor(canvasId: string) {
+    this.init(canvasId)
   }
 
   init(canvasId: string): boolean {
+    this.canvas_type = canvasId
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement
-    if (!this.canvas) {
-      console.error(`未找到 id 为 "${canvasId}" 的 canvas 元素`)
-      return false
-    }
-
-    const computedStyle = window.getComputedStyle(this.canvas)
-    if (computedStyle.height === 'auto' || computedStyle.height === '') {
-      const parent = this.canvas.parentElement
-      if (parent) {
-        const parentStyle = window.getComputedStyle(parent)
-        this.canvas.style.height = parentStyle.height
-        this.canvas.style.width = parentStyle.width
-      } else {
-        this.canvas.style.height = '100vh'
-        this.canvas.style.width = '100vw'
-      }
-    }
-
     this.ctx = this.canvas.getContext('2d')
-    this.initWheelListener()
-    this.addDrawItem(() => this.drawCoordinateSystem)
-    this.addDrawItem(() => this.drawline)
-    if (!this.ctx) {
-      console.error('无法获取 2D 渲染上下文')
-      return false
-    }
 
-    return true
+    return false
   }
-  // 初始化时添加事件监听
-  initWheelListener() {
-    if (!this.canvas || !this.ctx) return
-    this.canvas.addEventListener('wheel', (e: WheelEvent) => {
-      e.preventDefault();
 
-      const zoomSpeed = 0.1;
+  set_canvas_size(states: boolean) {
+    if (!this.canvas) return
+    if (states) {
+      switch (this.canvas_type) {
+        case 'two-piece-canvas':
+          this.canvas.style.width = "40vmin"
+          this.canvas.style.height = "100%"
+          console.log(this.canvas.style.width)
+          console.log(this.canvas.style.height)
+          break;
 
-      if (e.ctrlKey || e.metaKey) {
-        // Ctrl+滚轮：缩放
-        const delta = -e.deltaY * zoomSpeed;
-        this.zoom += delta;
-        this.zoom = Math.max(0.1, Math.min(this.zoom, 5));
-      } else {
-        // 滚轮：平移
-        this.offsetX -= e.deltaX;
-        this.offsetY -= e.deltaY;
+        default:
+          break;
       }
-
-      this.render();
-    }, { passive: false });
-  }
-  // 修改渲染方法，应用偏移量
-  render() {
-    if (!this.canvas || !this.ctx) return
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // 保存当前状态
-    this.ctx.save();
-
-    // 应用平移变换
-    this.ctx.translate(this.offsetX, this.offsetY);
-    
-    // 应用缩放变换
-    this.ctx.scale(this.zoom, this.zoom);
-
-    // 执行所有绘制的项
-    this.drawItems.forEach(drawFn => drawFn());
-
-    // 恢复状态
-    this.ctx.restore();
-  }
-
-  addDrawItem(drawFn: () => void) {
-    this.drawItems.push(drawFn);
-    this.render();
-  }
-
-  // 清除所有绘制项
-  clearDrawItems() {
-    this.drawItems = [];
-    this.render();
-  }
-
-  resize() {
-    if (!this.canvas || !this.ctx) return
-
-    const rect = this.canvas.getBoundingClientRect()
-
-    if (rect.width === 0 || rect.height === 0) {
-      console.warn('Canvas 尺寸为 0 跳过 resize')
-      return
-    }
-
-    this.canvas.width = rect.width
-    this.canvas.height = rect.height
-    console.log(this.canvas.width, this.canvas.height)
-    this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2)
-
-  }
-
-  clear() {
-    if (!this.ctx || !this.canvas) return
-    this.ctx.clearRect(0, 0, this.canvas.width / window.devicePixelRatio, this.canvas.height / window.devicePixelRatio)
-  }
-  /**
-   * 绘制中心坐标系
-  */
-  drawCoordinateSystem(size?: number) {
-    if (!this.ctx || !this.canvas) return
-
-    const width = this.canvas.width * 2
-    const height = this.canvas.height * 2
-    const axisSize = size || Math.max(width, height) / 2
-
-    this.ctx.save()
-    // 这段代码调用 Canvas 2D 渲染上下文的 save() 方法，
-    // 用于保存当前画布状态（包括变换矩阵、裁剪区域、样式属性等）到状态栈中，
-    // 以便后续可以通过 restore() 方法恢复到这个保存的状态。
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0)
-    // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    this.ctx.restore()
-
-    this.ctx.beginPath()
-    this.ctx.moveTo(-axisSize, 0)
-    this.ctx.lineTo(axisSize, 0)
-    this.ctx.moveTo(0, -axisSize)
-    this.ctx.lineTo(0, axisSize)
-    this.ctx.strokeStyle = '#157eb4'
-    this.ctx.lineWidth = 1
-    this.ctx.stroke()
-
-    this.ctx.beginPath()
-    this.ctx.moveTo(-axisSize + 10, -5)
-    this.ctx.lineTo(-axisSize, 0)
-    this.ctx.lineTo(-axisSize + 10, 5)
-    this.ctx.moveTo(5, -axisSize + 10)
-    this.ctx.lineTo(0, -axisSize)
-    this.ctx.lineTo(-5, -axisSize + 10)
-    this.ctx.fillStyle = '#0d56a0'
-    this.ctx.fill()
-
-    this.ctx.font = '14px Arial'
-    this.ctx.fillStyle = '#333333'
-    this.ctx.fillText('X', axisSize - 20, -5)
-    this.ctx.fillText('Y', 5, -axisSize + 20)
-  }
-
-  drawline() {
-    if (this.ctx) {
-      this.ctx.beginPath()           // 开始路径
-      this.ctx.moveTo(0, 0)         // 移动到起点 (0,0)
-      this.ctx.lineTo(10, 10)       // 绘制到终点 (10,10)
-      this.ctx.strokeStyle = '#FFFFFF'  // 设置线条颜色（黑色）
-      this.ctx.lineWidth = 1        // 设置线条宽度
-      this.ctx.stroke()             // 绘制路径
+    } else {
+      this.canvas.style.width = ""
+      this.canvas.style.height = ""
     }
   }
-
-
 }
 
-export const canvasRenderer = new CanvasRenderer()
+export const canvasRenderer = (type: string) => {
+  CR.value = new CanvasRenderer(type)
+}
 export default CanvasRenderer
