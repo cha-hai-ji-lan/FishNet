@@ -1,3 +1,4 @@
+import math
 import re
 from typing import Callable, Any
 from functools import wraps
@@ -298,6 +299,203 @@ class AcadDxf(ACADBase):
         if close_flag:
             rectangle.Closed = True
         print(self.msp.Count)
+
+    def mk_txt(self, content: str, position: list, word_height: float = 7,
+               insert_mode: int = 0, label_offset: list | None = None, rotary: tuple = (0, []),
+               mirror=(0, [])):
+        """
+        进行文本标注
+        :param content: 标注内容
+        :param position: 标注位置
+        :param word_height: 标注字高
+        :param insert_mode: 标注模式
+         0：左下对齐\n   1：中下对齐\n
+         2：右下对齐\n   3：正中对齐\n
+         4：中心对齐\n   5：顶部居中对齐\n
+         6：左上对齐\n   7：中上对齐\n
+         8：右上对齐\n   9：左中对齐\n
+         10：中心对齐\n  11：右中对齐\n
+         12：左下对齐\n
+        :param label_offset: 标注偏移量 -- 默认不偏移
+        [
+        arg 1 : 偏移的距离 mm
+        rag 2 ： 偏移的方向 1：上偏  2：下偏  3：左偏  4：右偏
+        ]
+        :param rotary: 是否旋转文字
+        0：不旋转
+        1：按剪裁斜率缺角度旋转  --常用
+        2：按剪裁斜率 补角 度旋转  --不常用
+        []: 包含模块 高度 和 右侧两点距离用于计算 tan值
+        :param mirror: 是否将标注镜像 传入 带有 模式 与一个坐标向量的元组例如 (1,[10, 10])
+        0：不镜像
+        1：镜像但不删除原文字对象
+        2：镜像并且删除原文字对象
+        :return:
+        """
+        if len(position) == 2:
+            position.append(0)
+
+        if label_offset is not None:
+            if label_offset[1] == 1:
+                position[1] += label_offset[0]
+            elif label_offset[1] == 2:
+                position[1] -= label_offset[0]
+            elif label_offset[1] == 3:
+                position[0] -= label_offset[0]
+            elif label_offset[1] == 4:
+                position[0] += label_offset[0]
+        # 设置文本插入点
+        insert_pos = l2F(position)
+        text_obj = self.msp.AddText(content, insert_pos, word_height)
+        text_obj.Height = word_height
+        text_obj.Alignment = insert_mode
+        text_obj.TextAlignmentPoint = insert_pos
+        match rotary[0]:
+            case 1:  # 按剪裁斜率缺角度旋转
+                radians = 0
+                if isinstance(rotary[1], list):
+                    radians = math.atan(rotary[1][0] / rotary[1][1])
+                elif isinstance(rotary[1], float):
+                    radians = rotary[1]
+                rotation_angle = math.radians(90 - radians)
+                text_obj.Rotate(insert_pos, rotation_angle)
+            case 2:  # 按剪裁斜率补 角度旋转
+                radians = 0
+                if isinstance(rotary[1], list):
+                    radians = math.atan(rotary[1][0] / rotary[1][1])
+                elif isinstance(rotary[1], float):
+                    radians = rotary[1]
+                rotation_angle = math.radians(90 + radians)
+                text_obj.Rotate(insert_pos, rotation_angle)
+            case 3:  # 按剪裁斜率补 角度 翻转旋转
+                radians = 0
+                if isinstance(rotary[1], list):
+                    radians = math.atan(rotary[1][0] / rotary[1][1])
+                elif isinstance(rotary[1], float):
+                    radians = rotary[1]
+                rotation_angle = math.radians(90 + radians + 180)
+                text_obj.Rotate(insert_pos, rotation_angle)
+            case _:
+                pass
+
+        match mirror[0]:  # Copy的时候，要注意不要出现浅拷贝问题。
+            case 1:  # 镜像文字对象但不删除原文字对象
+                if len(mirror[1]) == 2:
+                    mirror[1].append(0)
+                mid_temp: list = mirror[1][:]
+                mid_temp[1] += 10
+                text_obj.Mirror(l2F(mirror[1]), l2F(mid_temp))
+            case 2:  # 镜像文字对象后删除原文字对象
+                if len(mirror[1]) == 2:
+                    mirror[1].append(0)
+                mid_temp: list = mirror[1][:]
+                mid_temp[1] += 10
+                text_obj.Mirror(l2F(mirror[1]), l2F(mid_temp))
+                text_obj.Delete()
+            case _:
+                pass
+
+    def mmk_txt(self, content: str | list, position: list, word_height: float = None,
+                insert_mode: int = 0, label_offset: list | None = None, rotary: tuple = (0, []),
+                mirror=(0, [])):
+        if type(content) is str:
+            self.mk_txt(content, position, word_height, insert_mode, label_offset, rotary, mirror)
+        elif type(content) is list:
+            temp_x_pos = 0
+            loop = -1
+            for i in content:
+                if loop == -1:
+                    loop += 1
+                    if isinstance(i, str):
+                        self.mk_txt(i, position, word_height, insert_mode, label_offset, rotary, mirror)
+                        temp_x_pos = position[0]
+                        position[1] -= word_height
+                    elif isinstance(i, list):
+                        line_loop = -1
+                        for one_piece in i:
+                            if line_loop == -1:
+
+                                self.mk_txt(one_piece, position, word_height, insert_mode, label_offset, rotary,
+                                            mirror)
+                                line_loop = len(one_piece)
+                                temp_x_pos = position[0]
+                            else:
+                                self.mk_txt(one_piece, position, word_height, insert_mode,
+                                            [line_loop * 2, label_offset[1]], rotary,
+                                            mirror)
+                                line_loop = len(one_piece)
+                        position[1] -= word_height
+                else:
+                    if isinstance(i, str):
+                        position[0] = temp_x_pos
+                        self.mk_txt(i, position, word_height, insert_mode, None, rotary, mirror)
+                        position[1] -= word_height
+                    elif isinstance(i, list):
+                        line_loop = -1
+                        for one_piece in i:
+                            if line_loop == -1:
+                                position[0] = temp_x_pos
+                                self.mk_txt(one_piece, position, word_height, insert_mode,
+                                            None, rotary,
+                                            mirror)
+                                line_loop = len(one_piece)
+                            else:
+                                self.mk_txt(one_piece, position, word_height, insert_mode,
+                                            [line_loop * 2, label_offset[1]], rotary, mirror)
+                                line_loop = len(one_piece)
+                        position[1] -= word_height
+
+    def me_mk_txt(self, content: str | list, position: list, word_height: float = None,
+                  insert_mode: int = 0, label_offset: list | None = None, rotary: tuple = (0, []),
+                  mirror=(0, [])):
+        if type(content) is str:
+            self.mk_txt(content, position, word_height, insert_mode, label_offset, rotary, mirror)
+        elif type(content) is list:
+            temp_x_pos = 0
+            loop = -1
+            for i in content:
+                if loop == -1:
+                    loop += 1
+                    if isinstance(i, str):
+                        self.mk_txt(i, position, word_height, insert_mode, label_offset, rotary, mirror)
+                        temp_x_pos = position[0]
+                        position[1] -= word_height + self.drawingConfig["ANNOTATED_OFFSETS"]
+                    elif isinstance(i, list):
+                        line_loop = -1
+                        for one_piece in i:
+                            if line_loop == -1:
+
+                                self.mk_txt(one_piece, position, word_height, insert_mode, label_offset, rotary,
+                                            mirror)
+                                line_loop = len(one_piece)
+                                temp_x_pos = position[0]
+                            else:
+                                self.mk_txt(one_piece, position, word_height, insert_mode,
+                                            [line_loop * 2, label_offset[1]], rotary,
+                                            mirror)
+                                line_loop = len(one_piece)
+                        position[1] -= word_height + self.drawingConfig["ANNOTATED_OFFSETS"]
+                else:
+                    if isinstance(i, str):
+                        position[0] = temp_x_pos
+                        self.mk_txt(i, position, word_height, insert_mode, None, rotary, mirror)
+                        position[1] -= word_height + self.drawingConfig["ANNOTATED_OFFSETS"]
+                    elif isinstance(i, list):
+                        line_loop = -1
+                        for one_piece in i:
+                            if line_loop == -1:
+                                position[0] = temp_x_pos
+                                self.mk_txt(one_piece, position, word_height, insert_mode,
+                                            None, rotary,
+                                            mirror)
+                                line_loop = len(one_piece)
+                            else:
+                                self.mk_txt(one_piece, position, word_height, insert_mode,
+                                            [line_loop * 2, label_offset[1]], rotary, mirror)
+                                line_loop = len(one_piece)
+                        position[1] -= word_height + self.drawingConfig["ANNOTATED_OFFSETS"]
+            self.eye_cut_slope_mark_data[0] = position
+            self.eye_cut_slope_mark_data[0][1] -= 2 * self.drawingConfig["FORM_WORD_HEIGHT"]
 
     def refresh_pos(self) -> None:
         """
