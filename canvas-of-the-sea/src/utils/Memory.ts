@@ -14,12 +14,14 @@ export const themeTypes = [  // 主题可选样式
  * __WAIT__ : 等待连接操作
  * __READY__: 已连接就绪
  * __FAIL__ : 连接失败
+ * __OUT_CONNECT__: 开机断连
 */
 export const CADToolState = ref("__WAIT__")
 export const CADToolStateInfo = ref({
   "__READY__":"CAD就绪",
   "__WAIT__":"CAD连接中",
   "__FAIL__":"CAD连接失败",
+  "__OUT_CONNECT__": "开机断连"
 
 })
 

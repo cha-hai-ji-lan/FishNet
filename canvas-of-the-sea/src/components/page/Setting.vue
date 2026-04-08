@@ -77,15 +77,23 @@
                 <span id="app-core-setting" class="position-title ban-select">服务设置</span>
             </div>
             <div class="setting-item">
+                <div class="setting-title ban-select">CADTool连接</div>
+                <div @click="() => { switch_but('bootLink') }" class="update-item">
+                    <div class="set-but ban-select" :class="{ 'lost-color': coreConfig['bootLink'] === false }">{{
+                        bootLink }}</div>
+                </div>
+            </div>
+            <div class="setting-item">
                 <div class="setting-title ban-select">重启服务</div>
-                <div @click="()=>{reset_cli()}" class="update-item">
+                <div @click="() => { reset_cli() }" class="update-item">
                     <div class="set-but ban-select">重启服务端</div>
                 </div>
             </div>
             <div class="setting-item">
                 <div class="setting-title ban-select">聚焦绘图</div>
                 <div class="update-item" @click="() => { switch_but('focusDraw') }">
-                    <div class="set-but ban-select" :class="{ 'lost-color': focusDraw === '禁用中' }">{{ focusDraw }}</div>
+                    <div class="set-but ban-select" :class="{ 'lost-color': CoreConfig['focusDraw'] === false }">{{
+                        focusDraw }}</div>
                 </div>
             </div>
             <div class="setting-item">
@@ -105,7 +113,8 @@
                 <div class="setting-item">
                     <div class="setting-title ban-select">原点坐标</div>
                     <div class="update-item nor-input">
-                        <input v-model="CoreConfig['originPosition']" type="text" :placeholder="CoreConfig['originPosition']">
+                        <input v-model="CoreConfig['originPosition']" type="text"
+                            :placeholder="CoreConfig['originPosition']">
                     </div>
                 </div>
                 <div class="setting-item">
@@ -164,18 +173,23 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { invoke } from "@tauri-apps/api/core";
 import { useRouter } from "vue-router"; // 引入 useRoute
 import SelectBar from '../utils/SelectorBar.vue';
-import { themeTypes, cacheRouterPath } from '../../utils/Memory.ts'
-import { init_cad_listen_group} from "../../utils/event.ts";
+import { themeTypes, cacheRouterPath} from '../../utils/Memory.ts'
+import { init_cad_listen_group } from "../../utils/event.ts";
 import { themeConfig, interfaceStyle, coreConfig, fishNetEXE, init_color_palette, write_config, replace_config, init_app } from "../../utils/MainIndex.ts";
 
+const bootLink = ref<string>("开机连接")
 const focusDraw = ref<string>("启用中")
 const undoMode = ref<string>("段撤销")
 
 const router = useRouter()
+
+onMounted(()=>{
+    set_info()  // 设置界面加载时各状态信息
+})
 
 // 创建可写的计算属性
 const transparencyValue = computed({
@@ -242,18 +256,45 @@ const switch_but = (who: string) => {  // 切换按钮样式
                 undoMode.value = "段撤销"
             }
             break;
+        case "bootLink":
+            if (bootLink.value === "开机连接") {
+                coreConfig.value["bootLink"] = false;
+                bootLink.value = "开机断连"
+            } else if ((bootLink.value === "开机断连")) {
+                coreConfig.value["bootLink"] = true;
+                bootLink.value = "开机连接"
+            }
+            break;
         default:
             break;
     }
 
 }
-const reset_cli = () =>{
+const set_info = () =>{
+    if ( CoreConfig.value['focusDraw'] === false){
+        focusDraw.value = "禁用中";
+    } else{
+        focusDraw.value = "启用中";
+    }
+    if (CoreConfig.value["backUpMode"] === "single-step"){
+        undoMode.value = "步撤销"
+    }else{
+        undoMode.value = "段撤销"
+    }
+    if(coreConfig.value["bootLink"] === false){
+        bootLink.value = "开机断连"
+    } else {
+        bootLink.value = "开机连接"
+    }
+}
+
+const reset_cli = () => {
     init_cad_listen_group()
-    invoke("reset_cli", { acadToolPath:fishNetEXE.value, command1: ["-config-set",  JSON.stringify(coreConfig.value["defaultParam"])]})
+    invoke("reset_cli", { acadToolPath: fishNetEXE.value, command1: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])] })
 }
 const save_config = () => {
     console.log(JSON.stringify(coreConfig.value["defaultParam"]))
-    invoke("send_param_to_cli", {command: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])]})
+    invoke("send_param_to_cli", { command: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])] })
     write_config()
 }
 const replace_default_config = async () => {

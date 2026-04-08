@@ -44,12 +44,12 @@
 <script setup lang="ts">
 
 import { ref, onMounted, onUnmounted } from "vue";
-import { useRouter, useRoute ,RouterView } from 'vue-router';
+import { useRouter, useRoute, RouterView } from 'vue-router';
 import { invoke } from "@tauri-apps/api/core";
 import { Window } from "@tauri-apps/api/window";
 import { init_app, fishNetEXE, coreConfig } from "./utils/MainIndex.ts";
-import { init_cad_listen_group, cleanup_event_listeners} from "./utils/event.ts";
-import { cacheRouterPath } from "./utils/Memory.ts"
+import { init_cad_listen_group, cleanup_event_listeners } from "./utils/event.ts";
+import { cacheRouterPath, CADToolState } from "./utils/Memory.ts"
 import { attentionContent, showPromptBox, promptLevel, shut_down_note } from "./utils/warn";
 import BaseIcon from "./assets/icons/BaseIcon.vue";
 
@@ -63,11 +63,15 @@ const route = useRoute()
 
 onMounted(async () => {
   await init_app();
-  init_cad_listen_group()
-  invoke("connect_cad_cli", { acadToolPath:fishNetEXE.value, command1: ["-config-set",  JSON.stringify(coreConfig.value["defaultParam"])]})
+  if (coreConfig.value["bootLink"]) {
+    init_cad_listen_group()
+    invoke("connect_cad_cli", { acadToolPath: fishNetEXE.value, command1: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])] })
+  } else{
+    CADToolState.value = "__OUT_CONNECT__"
+  }
 })
 
-onUnmounted(async ()=>{
+onUnmounted(async () => {
   cleanup_event_listeners()
 })
 
@@ -238,5 +242,4 @@ body {
   padding: 0;
   margin: 0;
 }
-
 </style>

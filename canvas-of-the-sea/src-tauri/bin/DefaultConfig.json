@@ -1,11 +1,11 @@
 {
   "app": {
-    "version": "0.1.52"
+    "version": "0.1.56"
   },
   "core": {
-
+    "bootLink": true,
     "defaultParam": {
-      "originPosition":"0,0",
+      "originPosition": "0,0",
       "zoom": 0.01,
       "tableOffset": 100,
       "scaleX": 0.5,

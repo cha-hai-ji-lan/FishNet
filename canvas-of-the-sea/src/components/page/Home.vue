@@ -20,7 +20,7 @@
         <div>新建绘图</div>
       </div>
       <div class="ready-info ban-select"
-        :class="{ 'cadtool-ready': CADToolState === '__READY__', 'cadtool-wait': CADToolState === '__WAIT__', 'cadtool-fail': CADToolState === '__FAIL__' }">
+        :class="{ 'cadtool-ready': CADToolState === '__READY__', 'cadtool-wait': CADToolState === '__WAIT__', 'cadtool-fail': CADToolState === '__FAIL__', 'cadtool-out': CADToolState === '__OUT_CONNECT__' }">
         <div @click="reset_server()">
           <div>{{ CADToolStateInfo[CADToolState as keyof typeof CADToolStateInfo] }}</div>
         </div>
@@ -253,6 +253,13 @@ h1 {
       border-top: 1px dashed rgba(var(--warn-note), var(--transparency));
       border-bottom: 1px dashed rgba(var(--warn-note), var(--transparency));
       background-color: rgba(var(--warn-note), var(--pTransparency));
+
+    }
+
+    &.cadtool-out {
+      border-top: 1px dashed rgba(var(--normal-note), var(--transparency));
+      border-bottom: 1px dashed rgba(var(--normal-note), var(--transparency));
+      background-color: rgba(var(--normal-note), var(--pTransparency));
 
     }
 
