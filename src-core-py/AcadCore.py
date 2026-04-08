@@ -181,6 +181,7 @@ class AcadDxf(ACADBase):
 
     def __init__(self):
         super().__init__()
+        self.pos_record = {}  # 坐标缓存记录
         self.has_draw_first_segment = False  # 是否绘制了网身第一段
 
     def get_all_entities(self) -> list:
@@ -280,12 +281,33 @@ class AcadDxf(ACADBase):
             return {}
 
     def pos_write_to_adoc(self, pos_list: list, close_flag: bool = True):
+        """
+        AutoCAD上绘制多段线
+        绘制结束后可选
+        1.聚焦绘图
+        2.闭合回路
+        :param pos_list:
+        :param close_flag:
+        :return:
+        """
         rectangle = self.msp.AddLightWeightPolyline(l2F(pos_list))
+        if self.cfg["backUpMode"] == "single-step":
+            self.doc.SendCommand("_.UNDO\n_MARK\n")  # 撤销标记
+        if self.cfg["focusDraw"]:
+            self.focus_interface()  # 聚焦
         if close_flag:
             rectangle.Closed = True
         print(self.msp.Count)
 
-    def focus_interface(self):
+    def refresh_pos(self) -> None:
+        """
+        刷新坐标,用于缓存上一段坐标数据,并且清空上一段坐标组数据
+        :return: None
+        """
+        self.pos_record["preSegment"] = self.s_pos
+        self.s_pos = []  # 清空s_pos
+
+    def focus_interface(self) -> None:
         """
         聚焦界面绘图元素
         :return:
@@ -329,7 +351,6 @@ class AcadTool(AcadDxf):
         self.ORI = None  # 原点坐标
         self.ZX = None  # 经过全局缩放后并横向缩放标尺值
         self.ZY = None  # 经过全局缩放后并纵向缩放标尺值
-        self.pos_record = {}
 
     def collate_param(self, arg) -> None:
         """
@@ -834,11 +855,21 @@ class ACAD(AcadTool):
             self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
             print(self.s_pos)
             self.pos_write_to_adoc(self.s_pos)
-            self.focus_interface()  # 聚焦
             self.pos_record["netBody"] = self.s_pos
-            self.pos_record["preSegment"] = self.s_pos
-            self.s_pos = []  # 清空s_pos
+
+            self.refresh_pos()  # 刷新坐标
             self.has_draw_first_segment = True
         else:
-            pass
+            self.s_pos.extend(self.pos_record["preSegment"][6:])
+            self.s_pos.extend(self.pos_record["preSegment"][4:6])
+            self.s_pos.extend([
+                self.ORI[0]
+                + (mesh_len / 2),
+                self.s_pos[3]
+                - (self.i_arg[0] * self.i_arg[1] * self.ZY)
+            ])
+            self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
+            print(self.s_pos)
+            self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
+            self.refresh_pos()  # 刷新坐标
         self.doc.EndUndoMark()

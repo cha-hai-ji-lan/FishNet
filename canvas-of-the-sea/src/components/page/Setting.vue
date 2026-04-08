@@ -225,20 +225,20 @@ const switch_but = (who: string) => {  // 切换按钮样式
     switch (who) {
         case "focusDraw":
             if (focusDraw.value === "启用中") {
-                coreConfig.value["focusDraw"] = false;
+                CoreConfig.value['focusDraw'] = false;
                 focusDraw.value = "禁用中";
             } else if ((focusDraw.value === "禁用中")) {
-                coreConfig.value["focusDraw"] = true;
+                CoreConfig.value['focusDraw'] = true;
                 focusDraw.value = "启用中";
 
             }
             break;
         case "undoMode":
             if (undoMode.value === "段撤销") {
-                coreConfig.value["backUpMode"] = "single-step";
+                CoreConfig.value["backUpMode"] = "single-step";
                 undoMode.value = "步撤销"
             } else if ((undoMode.value === "步撤销")) {
-                coreConfig.value["backUpMode"] = "segment-step";
+                CoreConfig.value["backUpMode"] = "segment-step";
                 undoMode.value = "段撤销"
             }
             break;

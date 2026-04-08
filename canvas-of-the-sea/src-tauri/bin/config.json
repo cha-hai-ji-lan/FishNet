@@ -3,8 +3,6 @@
     "version": "0.1.52"
   },
   "core": {
-    "focusDraw": true,
-    "backUpMode": "segment-step",
     "defaultParam": {
       "originPosition":"0,0",
       "zoom": 0.01,
@@ -13,7 +11,9 @@
       "scaleY": 1,
       "textHeight": 7,
       "sheetTextHeight": 2,
-      "material": "PA6"
+      "material": "PA6",
+      "focusDraw": true,
+      "backUpMode": "segment-step"
     }
   },
   "colorPalette": {

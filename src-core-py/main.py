@@ -86,6 +86,8 @@ class CLIHandler:
             self.acad.cfg["originPosition"] = [
                 float(x) for x in re.findall(r'\d+\.\d+|\d+', self.acad.cfg["originPosition"])
             ]
+            self.acad.cfg["originPosition"].extend(
+                [self.acad.cfg["originPosition"][0] + 10000000.0, self.acad.cfg["originPosition"][1]])
             self.acad.set_core_config_encapsulation()  # 设置核心封装
             print("-fin-set-", self.acad.cfg, type(self.acad.cfg))
         else:
