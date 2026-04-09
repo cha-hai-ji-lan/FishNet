@@ -27,6 +27,7 @@ class ACADBase:
         self.eye_shears: dict = {"N": 0, "T": 0, "B": 0}  # 宕眼 起剪 续剪 落剪参数
         self.param = base_param  # 参数对象
         self.template_path = None  # 模板路径
+        self.part_obj = None  # 部件对象
         self.s_pos = []  # 存储坐标组
         self.i_arg = []  # 用户输入的一组参数
 
@@ -281,6 +282,28 @@ class AcadDxf(ACADBase):
             print(f"--count-entities-err--{str(e)}")
             return {}
 
+    @staticmethod
+    def mid_val(pos_val1: float, pos_val2: float) -> float:
+        """
+        坐标两单值 ,之间的中点值
+        :param pos_val1: 坐标单值1
+        :param pos_val2: 坐标单值2
+        :return: float: mid_val
+        """
+        return (pos_val1 + pos_val2) / 2
+
+    def mid_pos(self, pos_list1: list, pos_list2: list) -> list:
+        """
+        坐标两列表之间的中点值
+        :param pos_list1:  坐标列表1
+        :param pos_list2:  坐标列表2
+        :return:
+        """
+        temp: list = []
+        for i in range(len(pos_list1)):
+            temp.append(self.mid_val(pos_list1[i], pos_list2[i]))
+        return temp
+
     def pos_write_to_adoc(self, pos_list: list, close_flag: bool = True):
         """
         AutoCAD上绘制多段线
@@ -300,7 +323,7 @@ class AcadDxf(ACADBase):
             rectangle.Closed = True
         print(self.msp.Count)
 
-    def mk_txt(self, content: str, position: list, word_height: float = 7,
+    def mk_txt(self, content: str, position: list, word_height: float = 0,
                insert_mode: int = 0, label_offset: list | None = None, rotary: tuple = (0, []),
                mirror=(0, [])):
         """
@@ -334,7 +357,8 @@ class AcadDxf(ACADBase):
         """
         if len(position) == 2:
             position.append(0)
-
+        if word_height == 0:  # 如果字高为0，则使用默认表格字高
+            word_height = self.cfg["sheetTextHeight"]
         if label_offset is not None:
             if label_offset[1] == 1:
                 position[1] += label_offset[0]
@@ -395,7 +419,7 @@ class AcadDxf(ACADBase):
             case _:
                 pass
 
-    def mmk_txt(self, content: str | list, position: list, word_height: float = None,
+    def mmk_txt(self, content: str | list, position: list, word_height: float = 0,
                 insert_mode: int = 0, label_offset: list | None = None, rotary: tuple = (0, []),
                 mirror=(0, [])):
         if type(content) is str:
@@ -459,7 +483,7 @@ class AcadDxf(ACADBase):
                     if isinstance(i, str):
                         self.mk_txt(i, position, word_height, insert_mode, label_offset, rotary, mirror)
                         temp_x_pos = position[0]
-                        position[1] -= word_height + self.drawingConfig["ANNOTATED_OFFSETS"]
+                        position[1] -= word_height + self.cfg["annotationOffset"]
                     elif isinstance(i, list):
                         line_loop = -1
                         for one_piece in i:
@@ -474,12 +498,12 @@ class AcadDxf(ACADBase):
                                             [line_loop * 2, label_offset[1]], rotary,
                                             mirror)
                                 line_loop = len(one_piece)
-                        position[1] -= word_height + self.drawingConfig["ANNOTATED_OFFSETS"]
+                        position[1] -= word_height + self.cfg["annotationOffset"]
                 else:
                     if isinstance(i, str):
                         position[0] = temp_x_pos
                         self.mk_txt(i, position, word_height, insert_mode, None, rotary, mirror)
-                        position[1] -= word_height + self.drawingConfig["ANNOTATED_OFFSETS"]
+                        position[1] -= word_height + self.cfg["annotationOffset"]
                     elif isinstance(i, list):
                         line_loop = -1
                         for one_piece in i:
@@ -493,9 +517,9 @@ class AcadDxf(ACADBase):
                                 self.mk_txt(one_piece, position, word_height, insert_mode,
                                             [line_loop * 2, label_offset[1]], rotary, mirror)
                                 line_loop = len(one_piece)
-                        position[1] -= word_height + self.drawingConfig["ANNOTATED_OFFSETS"]
+                        position[1] -= word_height + self.cfg["annotationOffset"]
             self.eye_cut_slope_mark_data[0] = position
-            self.eye_cut_slope_mark_data[0][1] -= 2 * self.drawingConfig["FORM_WORD_HEIGHT"]
+            self.eye_cut_slope_mark_data[0][1] -= 2 * self.cfg["sheetTextHeight"]
 
     def refresh_pos(self) -> None:
         """
@@ -965,6 +989,273 @@ class AcadTool(AcadDxf):
     def ori_p_mir(self, pos):
         return [self.ori_mir(pos[0]), self.ori_mir(pos[1], "y")]
 
+    @staticmethod
+    def s(val1, val2):
+        """
+        获取间隔值即两值的距离
+        :param val1: 值1
+        :param val2: 值2
+        :return: 两值的距离
+        """
+        return abs(val1 - val2)
+
+    def draw_sheet_two(self, left_sheet=True):
+        """
+        绘制两片式拖网左侧表格
+        :param left_sheet:
+        :return:
+        """
+        pr = self.pos_record["preSegment"]  # pr: pos_record的前一段线段坐标点集
+        # self.doc.ActiveLayer.Linetype = "ByLayer"
+        if left_sheet:
+            # 表格注释起始点
+            mark_start_pos = [
+                self.ORI[0] - (1.5 * self.cfg["tableOffset"]),
+                self.mid_val(pr[1], pr[7])
+            ]
+            self.mk_txt(
+                self.i_arg[0],
+                mark_start_pos[:],
+                0, 1,
+                [self.cfg["sheetTextHeight"] / 2, 2]
+            )
+            if self.part_obj == "tl" and self.i_arg[-1][0] == self.i_arg[-1][1]:
+                self.mk_txt(
+                    "2a",
+                    [mark_start_pos[0], pr[3]],
+                    0, 1,
+                    [self.cfg["textHeight"], 1]
+
+                )
+                line1 = self.msp.AddLightWeightPolyline(l2F([
+                    pr[4] + (0.5 * self.cfg["tableOffset"]),
+                    pr[5],  # 0
+                    pr[4] + (0.5 * self.cfg["tableOffset"]),
+                    pr[5] + abs(pr[1] - pr[3]) / 3 * 2,  # 1
+                    pr[4] + (0.5 * self.cfg["tableOffset"]),
+                    pr[5] + abs(pr[1] - pr[3]),  # 2
+                    pr[4] + (0.4 * self.cfg["tableOffset"]),
+                    pr[5] + abs(pr[1] - pr[3]),  # 3
+                    pr[4] + (0.6 * self.cfg["tableOffset"]),
+                    pr[5] + abs(pr[1] - pr[3]),  # 4
+                ]))
+                line1.SetWidth(1, 2.0, 0.1)
+                self.mk_txt("长度1",
+                            [
+                                pr[4] + (0.5 * self.cfg["tableOffset"]),
+                                pr[5] + abs(pr[1] - pr[3])
+                            ],
+                            self.cfg["sheetTextHeight"],
+                            1)
+            mark_start_pos[0] -= 0.25 * self.cfg["tableOffset"]
+            self.mk_txt(
+                self.cfg["material"],
+                mark_start_pos[:],
+                self.cfg["sheetTextHeight"],
+                1,
+                [self.cfg["sheetTextHeight"] / 2, 2]
+            )
+            if self.part_obj == "tl" and self.i_arg[-1][0] != self.i_arg[-1][1]:
+                self.mk_txt(
+                    "MAT",
+                    [mark_start_pos[0], pr[1]],
+                    self.cfg["sheetTextHeight"],
+                    1,
+                    [self.cfg["textHeight"], 1]
+
+                )
+            mark_start_pos[0] -= 0.25 * self.cfg["tableOffset"]
+            self.mk_txt(
+                f"{abs(pr[1] - pr[3]) / 10:.3f}",
+                mark_start_pos[:],
+                self.cfg["sheetTextHeight"],
+                1,
+                [self.cfg["sheetTextHeight"] / 2, 2]
+            )
+            if self.part_obj == "tl" and self.i_arg[-1][0] == self.i_arg[-1][1]:
+                self.mk_txt(
+                    "NL",
+                    [mark_start_pos[0], pr[1]],
+                    self.cfg["sheetTextHeight"],
+                    1,
+                    [self.cfg["textHeight"], 1]
+                )
+            mark_start_pos[0] -= 0.25 * self.cfg["tableOffset"]
+            self.mk_txt(
+                self.i_arg[1],
+                mark_start_pos[:],
+                self.cfg["sheetTextHeight"],
+                1,
+                [self.cfg["sheetTextHeight"] / 2, 2]
+            )
+            if self.part_obj == "tl" and self.i_arg[-1][0] == self.i_arg[-1][1]:
+                point = self.msp.AddPoint(l2F(
+                    [mark_start_pos[0], pr[1] + self.cfg["textHeight"], 0]))
+                point.Rotate(l2F(
+                    [mark_start_pos[0], pr[1] + self.cfg["textHeight"], 0]),
+                    35)
+                self.doc.SetVariable("PDMODE", 65)
+                self.doc.SetVariable("PDSIZE", self.cfg["textHeight"])
+
+            self.doc.ActiveLayer.Linetype = "Continuous"
+            ori_layer = self.doc.ActiveLayer
+            dot_layer = self.doc.Layers.Add("DottedLineLayer")
+            self.doc.ActiveLayer = dot_layer
+            self.doc.ActiveLayer.Linetype = "ACAD_ISO04W100"
+            self.msp.AddLightWeightPolyline(l2F([
+                pr[0] - (0.5 * self.cfg["tableOffset"]),
+                pr[1],
+                self.ORI[0] - (2.25 * self.cfg["tableOffset"]),
+                pr[1]
+            ]))
+            if self.i_arg[-1][0] == self.i_arg[-1][1]:
+                self.msp.AddLightWeightPolyline(l2F([
+                    pr[6] - (0.5 * self.cfg["tableOffset"]),
+                    pr[7],
+                    self.ORI[0] - (2.25 * self.cfg["tableOffset"]),
+                    pr[7]
+                ]))
+            self.doc.ActiveLayer = ori_layer
+            self.msp.AddLightWeightPolyline(l2F([
+                self.ORI[0] - (2.125 * self.cfg["tableOffset"]),
+                pr[1],
+                self.ORI[0] - (2.125 * self.cfg["tableOffset"]),
+                pr[7],
+            ]))
+            if (self.part_obj == "tl" and
+                    self.i_arg[-2][0] != self.i_arg[-2][-1] and
+                    self.i_arg[-2] not in self.eye_cut_slope_mark_data[1]):
+                if not self.eye_cut_slope_mark_data[0]:
+                    self.eye_cut_slope_mark_data[0] = [
+                        self.ORI[0] + (1.75 * self.cfg["tableOffset"]),
+                        self.ORI[1] - self.cfg["sheetTextHeight"]
+                    ]
+                self.eye_cutting_slope_data.insert(0, self.i_arg[-2])
+                self.eye_cutting_slope_data.insert(0, "上袖")
+                self.me_mk_txt(
+                    self.eye_cutting_slope_data,
+                    self.eye_cut_slope_mark_data[0],
+                    self.cfg["textHeight"],
+                    9,
+                )
+                self.eye_cut_slope_mark_data[1].append(self.i_arg[-2])
+        else:
+            mark_start_pos = [
+                self.ORI[0] + (1.5 * self.cfg["tableOffset"]),
+                self.pre_draw_data["tilesRightLineMidPoint"][1]
+            ]
+            self.mk_txt(
+                self.cfg["material"],
+                mark_start_pos[:],
+                self.cfg["sheetTextHeight"],
+                1,
+                [self.cfg["sheetTextHeight"] / 2, 2]
+            )
+            if self.part_obj == "tr" and self.i_arg[-1][0] == self.i_arg[-1][1]:
+                self.mk_txt(
+                    "MAT",
+                    [mark_start_pos[0], pr[1]],
+                    self.cfg["sheetTextHeight"],
+                    1,
+                    [self.cfg["textHeight"], 1]
+
+                )
+                line1 = self.msp.AddLightWeightPolyline(l2F([
+                    pr[2] - (0.5 * self.cfg["tableOffset"]),
+                    pr[3],  # 0
+                    pr[2] - (0.5 * self.cfg["tableOffset"]),
+                    pr[3] - ((abs(pr[1] - pr[3]) / 3) * 2),  # 1
+                    pr[2] - (0.5 * self.cfg["tableOffset"]),
+                    pr[3] - abs(pr[1] - pr[3]),  # 2
+                    pr[2] - (0.4 * self.cfg["tableOffset"]),
+                    pr[3] - abs(pr[1] - pr[3]),  # 3
+                    pr[2] - (0.6 * self.cfg["tableOffset"]),
+                    pr[3] - abs(pr[1] - pr[3]),  # 4
+                ]))
+                line1.SetWidth(1, 2.0, 0.1)
+                self.mk_txt("长度2",
+                            [
+                                pr[2] - (0.5 * self.cfg["tableOffset"]),
+                                pr[3] - abs(pr[1] - pr[3])
+                            ],
+                            self.cfg["sheetTextHeight"],
+                            7)
+            mark_start_pos[0] += 0.25 * self.cfg["tableOffset"]
+            self.mk_txt(
+                abs(pr[1] - pr[3]) / 10,
+                mark_start_pos[:],
+                self.cfg["sheetTextHeight"],
+                1,
+                [self.cfg["sheetTextHeight"] / 2, 2]
+            )
+            if self.part_obj == "tr" and self.i_arg[-1][0] == self.i_arg[-1][1]:
+                self.mk_txt(
+                    "NL",
+                    [mark_start_pos[0], pr[1]],
+                    self.cfg["sheetTextHeight"],
+                    1,
+                    [self.cfg["textHeight"], 1]
+                )
+            mark_start_pos[0] += 0.25 * self.cfg["tableOffset"]
+            self.mk_txt(
+                args["VerticalMesh"],
+                mark_start_pos[:],
+                self.cfg["sheetTextHeight"],
+                1,
+                [self.cfg["sheetTextHeight"] / 2, 2]
+            )
+            if self.part_obj == "tr" and self.i_arg[-1][0] == self.i_arg[-1][1]:
+                point = self.msp.AddPoint(l2F(
+                    [mark_start_pos[0], pr[1] + self.cfg["textHeight"], 0]))
+                point.Rotate(l2F(
+                    [mark_start_pos[0], pr[1] + self.cfg["textHeight"], 0]),
+                    35)
+                self.doc.SetVariable("PDMODE", 65)
+                self.doc.SetVariable("PDSIZE", self.cfg["textHeight"])
+
+            self.doc.ActiveLayer.Linetype = "Continuous"
+            ori_layer = self.doc.ActiveLayer
+            dot_layer = self.doc.Layers.Add("DottedLineLayer")
+            self.doc.ActiveLayer = dot_layer
+            self.doc.ActiveLayer.Linetype = "ACAD_ISO04W100"
+            self.msp.AddLightWeightPolyline(l2F([
+                pr[2] + (0.5 * self.cfg["tableOffset"]),
+                pr[3],
+                self.ORI[0] + (2.25 * self.cfg["tableOffset"]),
+                pr[3]
+            ]))
+            if int(args["CurrentNumberOfSegments"]) == 1:
+                self.msp.AddLightWeightPolyline(l2F([
+                    pr[4] + (0.5 * self.cfg["tableOffset"]),
+                    self.pre_draw_data["tilesPoss"][2][1],
+                    self.ORI[0] + (2.25 * self.cfg["tableOffset"]),
+                    self.pre_draw_data["tilesPoss"][2][1]
+                ]))
+            self.doc.ActiveLayer = ori_layer
+            self.msp.AddLightWeightPolyline(l2F([
+                self.ORI[0] + (1.875 * self.cfg["tableOffset"]),
+                pr[1],
+                self.ORI[0] + (1.875 * self.cfg["tableOffset"]),
+                pr[7],
+            ]))
+            if (self.part_obj == "tr" and
+                    self.i_arg[-2][0] != self.i_arg[-2][-1] and
+                    self.i_arg[-2] not in self.eye_cut_slope_mark_data[2]):
+                if not self.eye_cut_slope_mark_data[0]:
+                    self.eye_cut_slope_mark_data[0] = [
+                        self.ORI[0] + (1.75 * self.cfg["tableOffset"]),
+                        self.ORI[1] - self.cfg["sheetTextHeight"]
+                    ]
+                self.eye_cutting_slope_data.insert(0, self.i_arg[-2])
+                self.eye_cutting_slope_data.insert(0, "下袖")
+                self.mult_eye_mk_txt(
+                    self.eye_cutting_slope_data,
+                    self.eye_cut_slope_mark_data[0],
+                    self.cfg["textHeight"],
+                    9,
+                )
+                self.eye_cut_slope_mark_data[2].append(self.i_arg[-2])
+
     def set_core_config_encapsulation(self):
         self.ORI = self.cfg["originPosition"]
         self.ZX = self.cfg["zoom"] * self.cfg["scaleX"]  # 经过全局缩放后并横向缩放标尺值
@@ -1029,6 +1320,7 @@ class ACAD(AcadTool):
         3:  边旁剪裁斜率
         :return: None
         """
+        self.part_obj = "tb"  # 网身 two-body
         self.doc.StartUndoMark()
         self.collate_param(arg[0])
         self.confirm_the_clipping_slope__two()

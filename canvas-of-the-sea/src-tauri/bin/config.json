@@ -5,13 +5,14 @@
   "core": {
     "bootLink": true,
     "defaultParam": {
-      "originPosition":"0,0",
+      "originPosition": "0,0",
       "zoom": 0.01,
       "tableOffset": 100,
       "scaleX": 0.5,
       "scaleY": 1,
-      "textHeight": 7,
-      "sheetTextHeight": 2,
+      "textHeight": 2.5,
+      "sheetTextHeight": 7,
+      "annotationOffset": 2,
       "material": "PA6",
       "focusDraw": true,
       "backUpMode": "segment-step"

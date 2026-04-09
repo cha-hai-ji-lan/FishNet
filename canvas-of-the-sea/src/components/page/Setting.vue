@@ -156,6 +156,13 @@
                     </div>
                 </div>
                 <div class="setting-item">
+                    <div class="setting-title ban-select">注释偏移</div>
+                    <div class="update-item nor-input">
+                        <input v-model="CoreConfig['annotationOffset']" type="number"
+                            :placeholder="CoreConfig['annotationOffset']">
+                    </div>
+                </div>
+                <div class="setting-item">
                     <div class="setting-title ban-select">制 网 材 料</div>
                     <div class="update-item nor-input">
                         <input v-model="CoreConfig['material']" type="text" :placeholder="CoreConfig['materal']">

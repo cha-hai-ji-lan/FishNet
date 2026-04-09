@@ -21,36 +21,38 @@
 
 > 配置文件字典
 >
-> |       key       |  info  | defaultValue |
-> |:---------------:|:------:|:------------:|
-> | sheetTextHeight | 表格文字高度 |      2       |
-> |    material     |   材质   |     PA6      |
-> | originPosition  |  原点位置  |   100,100    |
-> |     scaleX      |  X缩放   |     0.5      |
-> |     scaleY      |  Y缩放   |      1       |
-> |   tableOffset   |  表格偏移  |     100      |
-> |   textHeight    |  文字高度  |      7       |
-> |      zoom       |   缩放   |     0.01     |
+> |       key        |  info  | defaultValue |
+> |:----------------:|:------:|:------------:|
+> | annotationOffset |  注释偏移  |      2       |
+> | sheetTextHeight  | 表格文字高度 |      7       |
+> |     material     |   材质   |     PA6      |
+> |  originPosition  |  原点位置  |   100,100    |
+> |      scaleX      |  X缩放   |     0.5      |
+> |      scaleY      |  Y缩放   |      1       |
+> |   tableOffset    |  表格偏移  |     100      |
+> |    textHeight    |  文字高度  |     2.5      |
+> |       zoom       |   缩放   |     0.01     |
 >
 
- **注意：**
- 
- originPosition : 这里的原点指的是中心对称线所在的点
+**注意：**
+
+originPosition : 这里的原点指的是中心对称线所在的点
 
 ## arg :[userinputParam]:
 
 > 用户输入参数
-> 
+>
 > **规范**
-> 
+>
 > 1.输入参数将以 Vector 形式传递给后端
-> 
+>
 > 2.输入参数顺序起始必须以**网身目大 ,网身纵向目数 ,网身横向目数**的顺序作为起始
-> 
+>
 > 3.末尾参数必须以 **宕眼剪裁斜率**,**边旁剪裁斜率**的顺序结尾
-> 
+>
 
 ## undo 撤回操作
+
 ```python
 self.doc.SendCommand("_.UNDO\n_MARK\n")  # 撤销标记
 self.doc.SendCommand("_.UNDO\n_BACK\n")  # 撤销
