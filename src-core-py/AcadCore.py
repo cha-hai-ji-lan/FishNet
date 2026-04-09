@@ -1,8 +1,5 @@
 import math
 import re
-from typing import Callable, Any
-from functools import wraps
-import pywintypes
 import win32com.client as win32
 
 from typeInfoConfig import (
@@ -75,7 +72,7 @@ class ACADBase:
             self.doc.SaveAs(file_path)
             print(f"--file-save-in--{file_path}")
             return True
-        except pywintypes.com_error as e:
+        except Exception as e:
             print(f"--file-save-err--{str(e)}")
             return False
 
@@ -97,8 +94,8 @@ class ACADBase:
         """
         try:
             self.doc.Linetypes.Load(line_style, "acadiso.lin")
-        except pywintypes.com_error:
-            pass
+        except Exception as e:
+            print(f"--load-line-type-err--{str(e)}")
 
     def _set_text_style(self) -> None:
         """
@@ -108,10 +105,12 @@ class ACADBase:
         """
         try:
             self._active_text_style()
-        except pywintypes.com_error:
+        except Exception as e:
+            print(f"--set-text-style-warn1--{str(e)}")
             try:
                 self._active_text_style("汉仪长仿宋体", "长仿宋体")
-            except pywintypes.com_error:
+            except Exception as e:
+                print(f"--set-text-style-warn2--{str(e)}")
                 self._active_text_style("仿宋", "仿宋体")
 
     def _active_text_style(self, font_name="长仿宋体（工程制图用）", style_name="长仿宋体") -> None:
@@ -140,9 +139,6 @@ class ACADBase:
                 self.doc.Undo()
             print(f"--has-undo--{steps}--step-opr")
             return True
-        except pywintypes.com_error as e:
-            print(f"--undo-err--{str(e)}")
-            return False
         except Exception as e:
             print(f"--undo-err--{str(e)}")
             return False
@@ -159,7 +155,7 @@ class ACADBase:
                 self.doc.Redo()
             print(f"--has-redo-{steps}--step-opr")
             return True
-        except pywintypes.com_error as e:
+        except Exception as e:
             print(f"--redo-err--{str(e)}")
             return False
 
@@ -172,8 +168,8 @@ class ACADBase:
         try:
             self.doc.SendCommand(f"_.AI_SELALL\n")
             self.doc.SendCommand(f"_.ERASE\n")
-        except pywintypes.com_error as _:
-            print("-clean-err")
+        except Exception as e:
+            print(f"-clean-err--{str(e)}")
 
 
 class AcadDxf(ACADBase):
@@ -183,7 +179,7 @@ class AcadDxf(ACADBase):
 
     def __init__(self):
         super().__init__()
-        self.pos_record = {}  # 坐标缓存记录
+        self.cache = {}  # 坐标缓存记录
         self.has_draw_first_segment = False  # 是否绘制了网身第一段
 
     def get_all_entities(self) -> list:
@@ -518,15 +514,16 @@ class AcadDxf(ACADBase):
                                             [line_loop * 2, label_offset[1]], rotary, mirror)
                                 line_loop = len(one_piece)
                         position[1] -= word_height + self.cfg["annotationOffset"]
-            self.eye_cut_slope_mark_data[0] = position
-            self.eye_cut_slope_mark_data[0][1] -= 2 * self.cfg["sheetTextHeight"]
+            self.cache["eyeSlopePosMark"][0] = position
+            self.cache["eyeSlopePosMark"][1] -= 2 * self.cfg["sheetTextHeight"]
 
     def refresh_pos(self) -> None:
         """
         刷新坐标,用于缓存上一段坐标数据,并且清空上一段坐标组数据
         :return: None
         """
-        self.pos_record["preSegment"] = self.s_pos
+        self.cache["eyeSlopePosMark"] = []
+        self.cache["preSegment"] = self.s_pos
         self.s_pos = []  # 清空s_pos
 
     def focus_interface(self) -> None:
@@ -1005,7 +1002,7 @@ class AcadTool(AcadDxf):
         :param left_sheet:
         :return:
         """
-        pr = self.pos_record["preSegment"]  # pr: pos_record的前一段线段坐标点集
+        pr = self.cache["preSegment"]  # pr: pos_record的前一段线段坐标点集
         # self.doc.ActiveLayer.Linetype = "ByLayer"
         if left_sheet:
             # 表格注释起始点
@@ -1122,28 +1119,25 @@ class AcadTool(AcadDxf):
                 self.ORI[0] - (2.125 * self.cfg["tableOffset"]),
                 pr[7],
             ]))
-            if (self.part_obj == "tl" and
-                    self.i_arg[-2][0] != self.i_arg[-2][-1] and
-                    self.i_arg[-2] not in self.eye_cut_slope_mark_data[1]):
-                if not self.eye_cut_slope_mark_data[0]:
-                    self.eye_cut_slope_mark_data[0] = [
+            if self.part_obj == "tl" and self.i_arg[-2][0] != self.i_arg[-2][-1]:
+                if not self.cache["eyeSlopePosMark"]:
+                    self.cache["eyeSlopePosMark"] = [
                         self.ORI[0] + (1.75 * self.cfg["tableOffset"]),
                         self.ORI[1] - self.cfg["sheetTextHeight"]
                     ]
-                self.eye_cutting_slope_data.insert(0, self.i_arg[-2])
-                self.eye_cutting_slope_data.insert(0, "上袖")
+                self.eye_slope.insert(0, self.i_arg[-2])
+                self.eye_slope.insert(0, "上袖")
                 self.me_mk_txt(
-                    self.eye_cutting_slope_data,
-                    self.eye_cut_slope_mark_data[0],
+                    self.eye_slope,
+                    self.cache["eyeSlopePosMark"],
                     self.cfg["textHeight"],
                     9,
                 )
-                self.eye_cut_slope_mark_data[1].append(self.i_arg[-2])
-        else:
-            mark_start_pos = [
-                self.ORI[0] + (1.5 * self.cfg["tableOffset"]),
-                self.pre_draw_data["tilesRightLineMidPoint"][1]
-            ]
+            else:
+                mark_start_pos = [
+                    self.ORI[0] + (1.5 * self.cfg["tableOffset"]),
+                    abs(pr[1] - pr[3])
+                ]
             self.mk_txt(
                 self.cfg["material"],
                 mark_start_pos[:],
@@ -1160,26 +1154,26 @@ class AcadTool(AcadDxf):
                     [self.cfg["textHeight"], 1]
 
                 )
-                line1 = self.msp.AddLightWeightPolyline(l2F([
-                    pr[2] - (0.5 * self.cfg["tableOffset"]),
-                    pr[3],  # 0
-                    pr[2] - (0.5 * self.cfg["tableOffset"]),
-                    pr[3] - ((abs(pr[1] - pr[3]) / 3) * 2),  # 1
-                    pr[2] - (0.5 * self.cfg["tableOffset"]),
-                    pr[3] - abs(pr[1] - pr[3]),  # 2
-                    pr[2] - (0.4 * self.cfg["tableOffset"]),
-                    pr[3] - abs(pr[1] - pr[3]),  # 3
-                    pr[2] - (0.6 * self.cfg["tableOffset"]),
-                    pr[3] - abs(pr[1] - pr[3]),  # 4
-                ]))
-                line1.SetWidth(1, 2.0, 0.1)
-                self.mk_txt("长度2",
-                            [
-                                pr[2] - (0.5 * self.cfg["tableOffset"]),
-                                pr[3] - abs(pr[1] - pr[3])
-                            ],
-                            self.cfg["sheetTextHeight"],
-                            7)
+            line1 = self.msp.AddLightWeightPolyline(l2F([
+                pr[2] - (0.5 * self.cfg["tableOffset"]),
+                pr[3],  # 0
+                pr[2] - (0.5 * self.cfg["tableOffset"]),
+                pr[3] - ((abs(pr[1] - pr[3]) / 3) * 2),  # 1
+                pr[2] - (0.5 * self.cfg["tableOffset"]),
+                pr[3] - abs(pr[1] - pr[3]),  # 2
+                pr[2] - (0.4 * self.cfg["tableOffset"]),
+                pr[3] - abs(pr[1] - pr[3]),  # 3
+                pr[2] - (0.6 * self.cfg["tableOffset"]),
+                pr[3] - abs(pr[1] - pr[3]),  # 4
+            ]))
+            line1.SetWidth(1, 2.0, 0.1)
+            self.mk_txt("长度2",
+                        [
+                            pr[2] - (0.5 * self.cfg["tableOffset"]),
+                            pr[3] - abs(pr[1] - pr[3])
+                        ],
+                        self.cfg["sheetTextHeight"],
+                        7)
             mark_start_pos[0] += 0.25 * self.cfg["tableOffset"]
             self.mk_txt(
                 abs(pr[1] - pr[3]) / 10,
@@ -1198,7 +1192,7 @@ class AcadTool(AcadDxf):
                 )
             mark_start_pos[0] += 0.25 * self.cfg["tableOffset"]
             self.mk_txt(
-                args["VerticalMesh"],
+                self.i_arg[1],
                 mark_start_pos[:],
                 self.cfg["sheetTextHeight"],
                 1,
@@ -1210,8 +1204,8 @@ class AcadTool(AcadDxf):
                 point.Rotate(l2F(
                     [mark_start_pos[0], pr[1] + self.cfg["textHeight"], 0]),
                     35)
-                self.doc.SetVariable("PDMODE", 65)
-                self.doc.SetVariable("PDSIZE", self.cfg["textHeight"])
+            self.doc.SetVariable("PDMODE", 65)
+            self.doc.SetVariable("PDSIZE", self.cfg["textHeight"])
 
             self.doc.ActiveLayer.Linetype = "Continuous"
             ori_layer = self.doc.ActiveLayer
@@ -1224,12 +1218,12 @@ class AcadTool(AcadDxf):
                 self.ORI[0] + (2.25 * self.cfg["tableOffset"]),
                 pr[3]
             ]))
-            if int(args["CurrentNumberOfSegments"]) == 1:
+            if self.has_draw_first_segment:
                 self.msp.AddLightWeightPolyline(l2F([
                     pr[4] + (0.5 * self.cfg["tableOffset"]),
-                    self.pre_draw_data["tilesPoss"][2][1],
+                    pr[5],
                     self.ORI[0] + (2.25 * self.cfg["tableOffset"]),
-                    self.pre_draw_data["tilesPoss"][2][1]
+                    pr[5]
                 ]))
             self.doc.ActiveLayer = ori_layer
             self.msp.AddLightWeightPolyline(l2F([
@@ -1238,23 +1232,20 @@ class AcadTool(AcadDxf):
                 self.ORI[0] + (1.875 * self.cfg["tableOffset"]),
                 pr[7],
             ]))
-            if (self.part_obj == "tr" and
-                    self.i_arg[-2][0] != self.i_arg[-2][-1] and
-                    self.i_arg[-2] not in self.eye_cut_slope_mark_data[2]):
-                if not self.eye_cut_slope_mark_data[0]:
-                    self.eye_cut_slope_mark_data[0] = [
+            if self.part_obj == "tr" and self.i_arg[-2][0] != self.i_arg[-2][-1]:
+                if not self.cache["eyeSlopePosMark"]:
+                    self.cache["eyeSlopePosMark"] = [
                         self.ORI[0] + (1.75 * self.cfg["tableOffset"]),
                         self.ORI[1] - self.cfg["sheetTextHeight"]
                     ]
-                self.eye_cutting_slope_data.insert(0, self.i_arg[-2])
-                self.eye_cutting_slope_data.insert(0, "下袖")
-                self.mult_eye_mk_txt(
-                    self.eye_cutting_slope_data,
-                    self.eye_cut_slope_mark_data[0],
+                self.eye_slope.insert(0, self.i_arg[-2])
+                self.eye_slope.insert(0, "下袖")
+                self.me_mk_txt(
+                    self.eye_slope,
+                    self.cache["eyeSlopePosMark"],
                     self.cfg["textHeight"],
                     9,
                 )
-                self.eye_cut_slope_mark_data[2].append(self.i_arg[-2])
 
     def set_core_config_encapsulation(self):
         self.ORI = self.cfg["originPosition"]
@@ -1280,7 +1271,8 @@ class ACAD(AcadTool):
             self.cad = win32.GetActiveObject("AutoCAD.Application")
             print("-fin-connect-cad")
 
-        except pywintypes.com_error:  # 无活动CAD实例则启动启动一个新的
+        except Exception as e:  # 无活动CAD实例则启动启动一个新的
+            print(f"--connect-err-{str(e)}")
             # 如果没有运行的实例，则创建一个新的实例
             print("-fail-connect-cad")
             print("-try-crate-cad")
@@ -1288,7 +1280,8 @@ class ACAD(AcadTool):
                 self.cad = win32.Dispatch("AutoCAD.Application")
                 self.cad.Visible = True  # 使 AutoCAD 可见
                 print("-fin-crate-cad")  # 成功创建CAD实例
-            except pywintypes.com_error:  # 无法创建新的CAD实例应当重启后尝试
+            except Exception as e:  # 无法创建新的CAD实例应当重启后尝试
+                print(f"--create-cad-err-{str(e)}")  # 创建CAD实例失败
                 print("-fail-crate-cad")  # 创建CAD实例失败
 
         # 现在 acad 变量包含对 AutoCAD 应用程序对象的引用
@@ -1302,7 +1295,8 @@ class ACAD(AcadTool):
                               + r"\acadiso.dwt")
         try:  # 获取当前文档
             self.doc = self.cad.ActiveDocument
-        except pywintypes.com_error:  # 如果没有打开文档 则创建一个
+        except Exception as e:  # 如果没有打开文档 则创建一个
+            print(f"--get-doc-err-{str(e)}")  # 如果没有打开文档 则创建一个
             self.doc = self.cad.Documents.Add(self.template_path)
         self.ven = self.cad.Application.Version[0:2]
         self.oc = self.cad.Application.GetInterfaceObject(F"AutoCAD.AcCmColor.{self.ven}")
@@ -1345,13 +1339,13 @@ class ACAD(AcadTool):
             self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
             print(self.s_pos)
             self.pos_write_to_adoc(self.s_pos)
-            self.pos_record["netBody"] = self.s_pos
+            self.cache["netBody"] = self.s_pos
 
             self.refresh_pos()  # 刷新坐标
             self.has_draw_first_segment = True
         else:
-            self.s_pos.extend(self.pos_record["preSegment"][6:])
-            self.s_pos.extend(self.pos_record["preSegment"][4:6])
+            self.s_pos.extend(self.cache["preSegment"][6:])
+            self.s_pos.extend(self.cache["preSegment"][4:6])
             self.s_pos.extend([
                 self.ORI[0]
                 + (mesh_len / 2),

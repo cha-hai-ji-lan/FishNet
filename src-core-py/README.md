@@ -67,3 +67,13 @@ self.doc.SendCommand("_.REDO\n")
 # ✅ 正确：重做多步
 self.doc.SendCommand("_.REDO\n3\n")
 ```
+
+## cache :[inlineParam]:
+
+> 缓存参数
+>
+>   |       key       |     info     |
+>   |:---------------:|:------------:|
+>   |     netBody     |   网身段1四点坐标   |
+>   |   preSegment    |    前一段点坐标    |
+>   | eyeSlopePosMark | 宕眼剪裁斜率标注位置坐标 |
