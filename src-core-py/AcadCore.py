@@ -97,34 +97,36 @@ class ACADBase:
         except Exception as e:
             print(f"--load-line-type-err--{str(e)}")
 
-    def _set_text_style(self) -> None:
+    # 在需要的地方调用,例如在 connectCAD 方法中
+    def set_shx_text_style(self):
         """
-        配置绘图使用的字体
-
-        :return: None
+        设置 SHX 字体样式的方法 - 使用 SendCommand
         """
         try:
-            self._active_text_style()
-        except Exception as e:
-            print(f"--set-text-style-warn1--{str(e)}")
-            try:
-                self._active_text_style("汉仪长仿宋体", "长仿宋体")
-            except Exception as e:
-                print(f"--set-text-style-warn2--{str(e)}")
-                self._active_text_style("仿宋", "仿宋体")
+            # 使用 AutoCAD 命令行方式创建文字样式,这样更可靠
+            self.doc.SendCommand("_.-STYLE\nStandard\ntxt\n0\n1\n0\nN\nN\nN\n")  # 启动 STYLE 命令
+            # self.doc.SendCommand("TXT_Style\n")  # 样式名称
+            # self.doc.SendCommand("txt.shx\n")  # 字体文件名
+            # self.doc.SendCommand("0\n")  # 高度(0=可变)
+            # self.doc.SendCommand("1\n")  # 宽度因子
+            # self.doc.SendCommand("0\n")  # 倾斜角度
+            # self.doc.SendCommand("N\n")  # 反向
+            # self.doc.SendCommand("N\n")  # 倒置
+            # self.doc.SendCommand("N\n")  # 垂直
 
-    def _active_text_style(self, font_name="长仿宋体（工程制图用）", style_name="长仿宋体") -> None:
-        """
-        创建新样式并设置字体
-        :param font_name:  设备字体名称
-        :param style_name:  活动文档字体显示名称
-        :return:
-        """
-        new_text_style = self.doc.TextStyles.Add(style_name)
-        new_text_style.SetFont(font_name, False, True, 1, 0 or 0)  # CharSet=0, PitchAndFamily=1
-        # 激活新样式
-        self.doc.ActiveTextStyle = self.doc.TextStyles.Item(style_name)
-        self.doc.Regen(True)  # 刷新文档显示更改
+            # 设置为当前活动样式
+            text_styles = self.doc.TextStyles
+            try:
+                txt_style = text_styles.Item("Standard")
+                self.doc.ActiveTextStyle = txt_style
+                print("--set-txt-shx-style-v2-success")
+            except:
+                print("--failed-to-activate-style")
+
+        except Exception as e:
+            print(f"--set-shx-style-v2-err--{str(e)}")
+            import traceback
+            traceback.print_exc()
 
     def undo(self, steps: int = 1) -> bool:
         """
@@ -479,7 +481,6 @@ class AcadDxf(ACADBase):
             temp_x_pos = 0  # 临时保存X坐标
             loop = -1  # 循环次数 -1: 代表开始循环
             for i in content:
-
                 if loop == -1:
                     loop += 1
                     if isinstance(i, str):
@@ -515,7 +516,7 @@ class AcadDxf(ACADBase):
                                 temp_x_pos = position[0]
                             else:
                                 temp_x_pos += len(one_piece) * word_height
-                                self.m_txt(one_piece,[temp_x_pos, position[1]], word_height, insert_mode,
+                                self.m_txt(one_piece, [temp_x_pos, position[1]], word_height, insert_mode,
                                            label_offset, rotary, mirror)
                         position[1] -= word_height + self.cfg["annotationOffset"]
 
@@ -578,6 +579,8 @@ class AcadDxf(ACADBase):
         """
         self.cache["eyeSlopePosMark"] = []
         self.cache["preSegment"] = self.s_pos
+        self.shears: dict = {"N": 0, "T": 0, "B": 0}  # 边旁 起剪 续剪 落剪参数
+        self.eye_shears: dict = {"N": 0, "T": 0, "B": 0}  # 宕眼 起剪 续剪 落剪参数
         self.s_pos = []  # 清空s_pos
 
     def focus_interface(self) -> None:
@@ -633,6 +636,7 @@ class AcadTool(AcadDxf):
         :return: None
         """
         print(f"-arg-org-st--{arg}--{type(arg)}")
+        self.i_arg = []  # 清空当前原有参数
         result = arg.split(",")
         for single_param in result:
             if single_param in ["", "null", None]:
@@ -829,7 +833,7 @@ class AcadTool(AcadDxf):
 
     def calculate_the_ratio(self):
         # 计算起剪数据
-        print(self.slope)
+        print("---self.slope--", self.slope)
         if isinstance(self.slope[0], str):
             number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.slope[0])]
             if "N" in self.slope[0]:
@@ -885,7 +889,6 @@ class AcadTool(AcadDxf):
         cycles_total_len = self.i_arg[1] - self.shears["N"]  # 续剪数据总长度
         # 如果剪数据为字符串，并且续剪标志字符长度大于2 (例如 1N2B)，则计算续剪数据
         if isinstance(self.slope[1], str) and len(self.slope[1]) > 2:
-
             self.cycles = 0
             temp_one_cycles_len = 0
             number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.slope[1])]
@@ -903,7 +906,7 @@ class AcadTool(AcadDxf):
                 if temp_one_cycles_len >= cycles_total_len:
                     break
 
-            self.slope[1] += F"({self.cycles})"
+            self.slope[1] += F" ({self.cycles})"
             self.cycles = 0
         # 如果剪数据为字符串，并且续剪标志字符长度小于2 (例如 1N)，则计算续剪数据
         elif isinstance(self.slope[1], str) and len(self.slope[1]) <= 2:
@@ -1331,7 +1334,6 @@ class ACAD(AcadTool):
             except Exception as e:  # 无法创建新的CAD实例应当重启后尝试
                 print(f"--create-cad-err-{str(e)}")  # 创建CAD实例失败
                 print("-fail-crate-cad")  # 创建CAD实例失败
-
         # 现在 acad 变量包含对 AutoCAD 应用程序对象的引用
         pref = self.cad.Preferences
         # 获取文件设置
@@ -1350,6 +1352,7 @@ class ACAD(AcadTool):
         self.oc = self.cad.Application.GetInterfaceObject(F"AutoCAD.AcCmColor.{self.ven}")
         self.msp = self.doc.ModelSpace
         self.doc.Application.Visible = True
+        self.set_shx_text_style()
         self.load_line_type("ACAD_ISO04W100")  # 加载线型
 
     def draw_two_piece_body(self, arg) -> None:
@@ -1368,8 +1371,8 @@ class ACAD(AcadTool):
         self.confirm_the_clipping_slope__two()
         self.calculate_the_ratio()
         # 计算裁剪后的横向目数
-        mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
         if not self.has_draw_first_segment:
+            mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
             self.s_pos.extend([
                 self.ORI[0]
                 - (self.i_arg[0]  # 目大参数
@@ -1385,11 +1388,14 @@ class ACAD(AcadTool):
                 - (self.i_arg[0] * self.i_arg[1] * self.ZY)
             ])
             self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
-            print(self.s_pos)
+            print("---self.s_pos--", self.s_pos)
             self.pos_write_to_adoc(self.s_pos)
             self.cache["netBody"] = self.s_pos
             self.has_draw_first_segment = True
         else:
+            mesh_len = (
+                    self.S(self.cache["preSegment"][4:6], self.cache["preSegment"][6:])
+                    - self.shears["T"] - self.shears["B"] * 2)
             self.s_pos.extend(self.cache["preSegment"][6:])
             self.s_pos.extend(self.cache["preSegment"][4:6])
             self.s_pos.extend([
@@ -1399,16 +1405,15 @@ class ACAD(AcadTool):
                 - (self.i_arg[0] * self.i_arg[1] * self.ZY)
             ])
             self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
-            print(self.s_pos)
+            print("", self.s_pos)
             self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
-            self.refresh_pos()  # 刷新坐标
         self.m_txt(
             str(int(self.i_arg[2])),
             self.mid_pos(self.s_pos[:2], self.s_pos[2:4]),
             0, 7,
             [self.cfg["annotationOffset"], 2])
         self.m_txt(
-            str(int(mesh_len)),
+            str(int(self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2)),
             self.mid_pos(self.s_pos[4:6], self.s_pos[6:]),
             0, 1,
             [self.cfg["annotationOffset"], 1])
