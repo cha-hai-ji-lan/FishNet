@@ -298,7 +298,57 @@ class AcadDxf(ACADBase):
         temp: list = []
         for i in range(len(pos_list1)):
             temp.append(self.mid_val(pos_list1[i], pos_list2[i]))
+        print(temp)
         return temp
+
+    @staticmethod
+    def s(val1, val2):
+        """
+        获取间隔值即两值的距离
+        :param val1: 值1
+        :param val2: 值2
+        :return: 两值的距离
+        """
+        return abs(val1 - val2)
+
+    @staticmethod
+    def S(pos1, pos2):
+        """
+        获取两个坐标点之间的间隔值
+        :param pos1: 坐标点1
+        :param pos2: 坐标点2
+        :return: 坐标点之间的间隔值
+        """
+        return math.dist(pos1, pos2)
+
+    @staticmethod
+    def k(pos1, pos2) -> float:
+        """
+        获取斜率
+        :param pos1: 坐标点1
+        :param pos2: 坐标点2
+        :return: 斜率
+        """
+        return (pos2[1] - pos1[1]) / (pos2[0] - pos1[0])
+
+    @staticmethod
+    def k2rad(k: float) -> float:
+        """
+        获取斜率对应的弧度
+        :param k: 斜率
+        :return: 弧度
+        """
+        return math.atan(k)
+
+    @staticmethod
+    def p2rad(pos1, pos2) -> float:
+        """
+        获取两个坐标点之间的弧度
+        :param pos1: 坐标点1
+        :param pos2: 坐标点2
+        :return: 弧度
+        """
+        return math.atan((pos2[1] - pos1[1]) / (pos2[0] - pos1[0]))
 
     def pos_write_to_adoc(self, pos_list: list, close_flag: bool = True):
         """
@@ -319,9 +369,9 @@ class AcadDxf(ACADBase):
             rectangle.Closed = True
         print(self.msp.Count)
 
-    def mk_txt(self, content: str, position: list, word_height: float = 0,
-               insert_mode: int = 0, label_offset: list | None = None, rotary: tuple = (0, []),
-               mirror=(0, [])):
+    def m_txt(self, content: str, position: list, word_height: float = 0,
+              insert_mode: int = 0, label_offset: list | None = None, rotary: tuple = (0, []),
+              mirror=(0, [])):
         """
         进行文本标注
         :param content: 标注内容
@@ -355,6 +405,8 @@ class AcadDxf(ACADBase):
             position.append(0)
         if word_height == 0:  # 如果字高为0，则使用默认表格字高
             word_height = self.cfg["sheetTextHeight"]
+        elif word_height == -1:
+            word_height = self.cfg["textHeight"]
         if label_offset is not None:
             if label_offset[1] == 1:
                 position[1] += label_offset[0]
@@ -372,29 +424,27 @@ class AcadDxf(ACADBase):
         text_obj.TextAlignmentPoint = insert_pos
         match rotary[0]:
             case 1:  # 按剪裁斜率缺角度旋转
-                radians = 0
+                rad = 0
                 if isinstance(rotary[1], list):
-                    radians = math.atan(rotary[1][0] / rotary[1][1])
+                    rad = self.p2rad(rotary[1][0], rotary[1][1])
                 elif isinstance(rotary[1], float):
-                    radians = rotary[1]
-                rotation_angle = math.radians(90 - radians)
-                text_obj.Rotate(insert_pos, rotation_angle)
+                    rad = rotary[1]
+                text_obj.Rotate(insert_pos, rad)
             case 2:  # 按剪裁斜率补 角度旋转
-                radians = 0
+                rad = 0
                 if isinstance(rotary[1], list):
-                    radians = math.atan(rotary[1][0] / rotary[1][1])
+                    rad = self.p2rad(rotary[1][0], rotary[1][1])
                 elif isinstance(rotary[1], float):
-                    radians = rotary[1]
-                rotation_angle = math.radians(90 + radians)
-                text_obj.Rotate(insert_pos, rotation_angle)
-            case 3:  # 按剪裁斜率补 角度 翻转旋转
-                radians = 0
-                if isinstance(rotary[1], list):
-                    radians = math.atan(rotary[1][0] / rotary[1][1])
-                elif isinstance(rotary[1], float):
-                    radians = rotary[1]
-                rotation_angle = math.radians(90 + radians + 180)
-                text_obj.Rotate(insert_pos, rotation_angle)
+                    rad = rotary[1]
+                text_obj.Rotate(insert_pos, math.pi - rad)
+            # case 3:  # 按剪裁斜率补 角度 翻转旋转
+            #     radians = 0
+            #     if isinstance(rotary[1], list):
+            #         radians = math.atan(rotary[1][0] / rotary[1][1])
+            #     elif isinstance(rotary[1], float):
+            #         radians = rotary[1]
+            #     rotation_angle = math.radians(90 + radians + 180)
+            #     text_obj.Rotate(insert_pos, rotation_angle)
             case _:
                 pass
 
@@ -415,11 +465,65 @@ class AcadDxf(ACADBase):
             case _:
                 pass
 
-    def mmk_txt(self, content: str | list, position: list, word_height: float = 0,
-                insert_mode: int = 0, label_offset: list | None = None, rotary: tuple = (0, []),
-                mirror=(0, [])):
+    def mm_txt(self, content: str | list, position: list, word_height: float = 0,
+               insert_mode: int = 0, label_offset: list | None = None, rotary: tuple = (0, []),
+               mirror=(0, [])):
+        if word_height == 0:  # 如果字高为0，则使用默认表格字高
+            word_height = self.cfg["sheetTextHeight"]
+        elif word_height == -1:
+            word_height = self.cfg["textHeight"]
         if type(content) is str:
-            self.mk_txt(content, position, word_height, insert_mode, label_offset, rotary, mirror)
+            self.m_txt(content, position, word_height, insert_mode, label_offset, rotary, mirror)
+        elif type(content) is list:
+
+            temp_x_pos = 0  # 临时保存X坐标
+            loop = -1  # 循环次数 -1: 代表开始循环
+            for i in content:
+
+                if loop == -1:
+                    loop += 1
+                    if isinstance(i, str):
+                        self.m_txt(i, position, word_height, insert_mode, label_offset, rotary, mirror)
+                        position[1] -= word_height + self.cfg["annotationOffset"]
+                    elif isinstance(i, list):
+                        line_loop = -1  # 行内循环次数 -1: 代表开始循环
+                        for one_piece in i:
+                            if line_loop == -1:
+                                line_loop += 1
+                                self.m_txt(one_piece, position, word_height, insert_mode, label_offset, rotary,
+                                           mirror)
+                                temp_x_pos = position[0]
+                            else:
+                                temp_x_pos += len(one_piece) * word_height
+                                self.m_txt(one_piece, [temp_x_pos, position[1]], word_height, insert_mode,
+                                           label_offset, rotary,
+                                           mirror)
+                        position[1] -= word_height + self.cfg["annotationOffset"]
+                else:
+                    if isinstance(i, str):
+                        self.m_txt(i, position, word_height, insert_mode, None, rotary, mirror)
+                        position[1] -= word_height + self.cfg["annotationOffset"]
+                    elif isinstance(i, list):
+                        line_loop = -1
+                        for one_piece in i:
+                            if line_loop == -1:
+                                line_loop += 1
+
+                                self.m_txt(one_piece, position, word_height, insert_mode,
+                                           None, rotary,
+                                           mirror)
+                                temp_x_pos = position[0]
+                            else:
+                                temp_x_pos += len(one_piece) * word_height
+                                self.m_txt(one_piece,[temp_x_pos, position[1]], word_height, insert_mode,
+                                           label_offset, rotary, mirror)
+                        position[1] -= word_height + self.cfg["annotationOffset"]
+
+    def me_txt(self, content: str | list, position: list, word_height: float = None,
+               insert_mode: int = 0, label_offset: list | None = None, rotary: tuple = (0, []),
+               mirror=(0, [])):
+        if type(content) is str:
+            self.m_txt(content, position, word_height, insert_mode, label_offset, rotary, mirror)
         elif type(content) is list:
             temp_x_pos = 0
             loop = -1
@@ -427,57 +531,7 @@ class AcadDxf(ACADBase):
                 if loop == -1:
                     loop += 1
                     if isinstance(i, str):
-                        self.mk_txt(i, position, word_height, insert_mode, label_offset, rotary, mirror)
-                        temp_x_pos = position[0]
-                        position[1] -= word_height
-                    elif isinstance(i, list):
-                        line_loop = -1
-                        for one_piece in i:
-                            if line_loop == -1:
-
-                                self.mk_txt(one_piece, position, word_height, insert_mode, label_offset, rotary,
-                                            mirror)
-                                line_loop = len(one_piece)
-                                temp_x_pos = position[0]
-                            else:
-                                self.mk_txt(one_piece, position, word_height, insert_mode,
-                                            [line_loop * 2, label_offset[1]], rotary,
-                                            mirror)
-                                line_loop = len(one_piece)
-                        position[1] -= word_height
-                else:
-                    if isinstance(i, str):
-                        position[0] = temp_x_pos
-                        self.mk_txt(i, position, word_height, insert_mode, None, rotary, mirror)
-                        position[1] -= word_height
-                    elif isinstance(i, list):
-                        line_loop = -1
-                        for one_piece in i:
-                            if line_loop == -1:
-                                position[0] = temp_x_pos
-                                self.mk_txt(one_piece, position, word_height, insert_mode,
-                                            None, rotary,
-                                            mirror)
-                                line_loop = len(one_piece)
-                            else:
-                                self.mk_txt(one_piece, position, word_height, insert_mode,
-                                            [line_loop * 2, label_offset[1]], rotary, mirror)
-                                line_loop = len(one_piece)
-                        position[1] -= word_height
-
-    def me_mk_txt(self, content: str | list, position: list, word_height: float = None,
-                  insert_mode: int = 0, label_offset: list | None = None, rotary: tuple = (0, []),
-                  mirror=(0, [])):
-        if type(content) is str:
-            self.mk_txt(content, position, word_height, insert_mode, label_offset, rotary, mirror)
-        elif type(content) is list:
-            temp_x_pos = 0
-            loop = -1
-            for i in content:
-                if loop == -1:
-                    loop += 1
-                    if isinstance(i, str):
-                        self.mk_txt(i, position, word_height, insert_mode, label_offset, rotary, mirror)
+                        self.m_txt(i, position, word_height, insert_mode, label_offset, rotary, mirror)
                         temp_x_pos = position[0]
                         position[1] -= word_height + self.cfg["annotationOffset"]
                     elif isinstance(i, list):
@@ -485,33 +539,33 @@ class AcadDxf(ACADBase):
                         for one_piece in i:
                             if line_loop == -1:
 
-                                self.mk_txt(one_piece, position, word_height, insert_mode, label_offset, rotary,
-                                            mirror)
+                                self.m_txt(one_piece, position, word_height, insert_mode, label_offset, rotary,
+                                           mirror)
                                 line_loop = len(one_piece)
                                 temp_x_pos = position[0]
                             else:
-                                self.mk_txt(one_piece, position, word_height, insert_mode,
-                                            [line_loop * 2, label_offset[1]], rotary,
-                                            mirror)
+                                self.m_txt(one_piece, position, word_height, insert_mode,
+                                           [line_loop * 2, label_offset[1]], rotary,
+                                           mirror)
                                 line_loop = len(one_piece)
                         position[1] -= word_height + self.cfg["annotationOffset"]
                 else:
                     if isinstance(i, str):
                         position[0] = temp_x_pos
-                        self.mk_txt(i, position, word_height, insert_mode, None, rotary, mirror)
+                        self.m_txt(i, position, word_height, insert_mode, None, rotary, mirror)
                         position[1] -= word_height + self.cfg["annotationOffset"]
                     elif isinstance(i, list):
                         line_loop = -1
                         for one_piece in i:
                             if line_loop == -1:
                                 position[0] = temp_x_pos
-                                self.mk_txt(one_piece, position, word_height, insert_mode,
-                                            None, rotary,
-                                            mirror)
+                                self.m_txt(one_piece, position, word_height, insert_mode,
+                                           None, rotary,
+                                           mirror)
                                 line_loop = len(one_piece)
                             else:
-                                self.mk_txt(one_piece, position, word_height, insert_mode,
-                                            [line_loop * 2, label_offset[1]], rotary, mirror)
+                                self.m_txt(one_piece, position, word_height, insert_mode,
+                                           [line_loop * 2, label_offset[1]], rotary, mirror)
                                 line_loop = len(one_piece)
                         position[1] -= word_height + self.cfg["annotationOffset"]
             self.cache["eyeSlopePosMark"][0] = position
@@ -570,6 +624,8 @@ class AcadTool(AcadDxf):
         self.ORI = None  # 原点坐标
         self.ZX = None  # 经过全局缩放后并横向缩放标尺值
         self.ZY = None  # 经过全局缩放后并纵向缩放标尺值
+        self.THB = None  # config sheet text height ,即 text height BIG 大字高
+        self.THS = None  # config sheet text height SMALL 小字高
 
     def collate_param(self, arg) -> None:
         """
@@ -986,23 +1042,13 @@ class AcadTool(AcadDxf):
     def ori_p_mir(self, pos):
         return [self.ori_mir(pos[0]), self.ori_mir(pos[1], "y")]
 
-    @staticmethod
-    def s(val1, val2):
-        """
-        获取间隔值即两值的距离
-        :param val1: 值1
-        :param val2: 值2
-        :return: 两值的距离
-        """
-        return abs(val1 - val2)
-
     def draw_sheet_two(self, left_sheet=True):
         """
         绘制两片式拖网左侧表格
         :param left_sheet:
         :return:
         """
-        pr = self.cache["preSegment"]  # pr: pos_record的前一段线段坐标点集
+        pr = self.s_pos  # pr: 当前段的坐标
         # self.doc.ActiveLayer.Linetype = "ByLayer"
         if left_sheet:
             # 表格注释起始点
@@ -1010,89 +1056,89 @@ class AcadTool(AcadDxf):
                 self.ORI[0] - (1.5 * self.cfg["tableOffset"]),
                 self.mid_val(pr[1], pr[7])
             ]
-            self.mk_txt(
+            self.m_txt(
                 self.i_arg[0],
                 mark_start_pos[:],
                 0, 1,
-                [self.cfg["sheetTextHeight"] / 2, 2]
+                [self.THB / 2, 2]
             )
             if self.part_obj == "tl" and self.i_arg[-1][0] == self.i_arg[-1][1]:
-                self.mk_txt(
+                self.m_txt(
                     "2a",
                     [mark_start_pos[0], pr[3]],
                     0, 1,
-                    [self.cfg["textHeight"], 1]
+                    [self.THS, 1]
 
                 )
                 line1 = self.msp.AddLightWeightPolyline(l2F([
                     pr[4] + (0.5 * self.cfg["tableOffset"]),
                     pr[5],  # 0
                     pr[4] + (0.5 * self.cfg["tableOffset"]),
-                    pr[5] + abs(pr[1] - pr[3]) / 3 * 2,  # 1
+                    pr[5] + self.s(pr[1], pr[3]) / 3 * 2,  # 1
                     pr[4] + (0.5 * self.cfg["tableOffset"]),
-                    pr[5] + abs(pr[1] - pr[3]),  # 2
+                    pr[5] + self.s(pr[1], pr[3]),  # 2
                     pr[4] + (0.4 * self.cfg["tableOffset"]),
-                    pr[5] + abs(pr[1] - pr[3]),  # 3
+                    pr[5] + self.s(pr[1], pr[3]),  # 3
                     pr[4] + (0.6 * self.cfg["tableOffset"]),
-                    pr[5] + abs(pr[1] - pr[3]),  # 4
+                    pr[5] + self.s(pr[1], pr[3]),  # 4
                 ]))
                 line1.SetWidth(1, 2.0, 0.1)
-                self.mk_txt("长度1",
-                            [
-                                pr[4] + (0.5 * self.cfg["tableOffset"]),
-                                pr[5] + abs(pr[1] - pr[3])
-                            ],
-                            self.cfg["sheetTextHeight"],
-                            1)
+                self.m_txt("长度1",
+                           [
+                               pr[4] + (0.5 * self.cfg["tableOffset"]),
+                               pr[5] + self.s(pr[1], pr[3])
+                           ],
+                           self.THB,
+                           1)
             mark_start_pos[0] -= 0.25 * self.cfg["tableOffset"]
-            self.mk_txt(
+            self.m_txt(
                 self.cfg["material"],
                 mark_start_pos[:],
-                self.cfg["sheetTextHeight"],
+                self.THB,
                 1,
-                [self.cfg["sheetTextHeight"] / 2, 2]
+                [self.THB / 2, 2]
             )
             if self.part_obj == "tl" and self.i_arg[-1][0] != self.i_arg[-1][1]:
-                self.mk_txt(
+                self.m_txt(
                     "MAT",
                     [mark_start_pos[0], pr[1]],
-                    self.cfg["sheetTextHeight"],
+                    self.THB,
                     1,
-                    [self.cfg["textHeight"], 1]
+                    [self.THS, 1]
 
                 )
             mark_start_pos[0] -= 0.25 * self.cfg["tableOffset"]
-            self.mk_txt(
-                f"{abs(pr[1] - pr[3]) / 10:.3f}",
+            self.m_txt(
+                f"{self.s(pr[1], pr[3]) / 10:.3f}",
                 mark_start_pos[:],
-                self.cfg["sheetTextHeight"],
+                self.THB,
                 1,
-                [self.cfg["sheetTextHeight"] / 2, 2]
+                [self.THB / 2, 2]
             )
             if self.part_obj == "tl" and self.i_arg[-1][0] == self.i_arg[-1][1]:
-                self.mk_txt(
+                self.m_txt(
                     "NL",
                     [mark_start_pos[0], pr[1]],
-                    self.cfg["sheetTextHeight"],
+                    self.THB,
                     1,
-                    [self.cfg["textHeight"], 1]
+                    [self.THS, 1]
                 )
             mark_start_pos[0] -= 0.25 * self.cfg["tableOffset"]
-            self.mk_txt(
+            self.m_txt(
                 self.i_arg[1],
                 mark_start_pos[:],
-                self.cfg["sheetTextHeight"],
+                self.THB,
                 1,
-                [self.cfg["sheetTextHeight"] / 2, 2]
+                [self.THB / 2, 2]
             )
             if self.part_obj == "tl" and self.i_arg[-1][0] == self.i_arg[-1][1]:
                 point = self.msp.AddPoint(l2F(
-                    [mark_start_pos[0], pr[1] + self.cfg["textHeight"], 0]))
+                    [mark_start_pos[0], pr[1] + self.THS, 0]))
                 point.Rotate(l2F(
-                    [mark_start_pos[0], pr[1] + self.cfg["textHeight"], 0]),
+                    [mark_start_pos[0], pr[1] + self.THS, 0]),
                     35)
                 self.doc.SetVariable("PDMODE", 65)
-                self.doc.SetVariable("PDSIZE", self.cfg["textHeight"])
+                self.doc.SetVariable("PDSIZE", self.THS)
 
             self.doc.ActiveLayer.Linetype = "Continuous"
             ori_layer = self.doc.ActiveLayer
@@ -1123,89 +1169,89 @@ class AcadTool(AcadDxf):
                 if not self.cache["eyeSlopePosMark"]:
                     self.cache["eyeSlopePosMark"] = [
                         self.ORI[0] + (1.75 * self.cfg["tableOffset"]),
-                        self.ORI[1] - self.cfg["sheetTextHeight"]
+                        self.ORI[1] - self.THB
                     ]
                 self.eye_slope.insert(0, self.i_arg[-2])
                 self.eye_slope.insert(0, "上袖")
-                self.me_mk_txt(
+                self.me_txt(
                     self.eye_slope,
                     self.cache["eyeSlopePosMark"],
-                    self.cfg["textHeight"],
+                    self.THS,
                     9,
                 )
             else:
                 mark_start_pos = [
                     self.ORI[0] + (1.5 * self.cfg["tableOffset"]),
-                    abs(pr[1] - pr[3])
+                    self.s(pr[1], pr[3])
                 ]
-            self.mk_txt(
+            self.m_txt(
                 self.cfg["material"],
                 mark_start_pos[:],
-                self.cfg["sheetTextHeight"],
+                self.THB,
                 1,
-                [self.cfg["sheetTextHeight"] / 2, 2]
+                [self.THB / 2, 2]
             )
             if self.part_obj == "tr" and self.i_arg[-1][0] == self.i_arg[-1][1]:
-                self.mk_txt(
+                self.m_txt(
                     "MAT",
                     [mark_start_pos[0], pr[1]],
-                    self.cfg["sheetTextHeight"],
+                    self.THB,
                     1,
-                    [self.cfg["textHeight"], 1]
+                    [self.THS, 1]
 
                 )
-            line1 = self.msp.AddLightWeightPolyline(l2F([
-                pr[2] - (0.5 * self.cfg["tableOffset"]),
-                pr[3],  # 0
-                pr[2] - (0.5 * self.cfg["tableOffset"]),
-                pr[3] - ((abs(pr[1] - pr[3]) / 3) * 2),  # 1
-                pr[2] - (0.5 * self.cfg["tableOffset"]),
-                pr[3] - abs(pr[1] - pr[3]),  # 2
-                pr[2] - (0.4 * self.cfg["tableOffset"]),
-                pr[3] - abs(pr[1] - pr[3]),  # 3
-                pr[2] - (0.6 * self.cfg["tableOffset"]),
-                pr[3] - abs(pr[1] - pr[3]),  # 4
-            ]))
-            line1.SetWidth(1, 2.0, 0.1)
-            self.mk_txt("长度2",
-                        [
-                            pr[2] - (0.5 * self.cfg["tableOffset"]),
-                            pr[3] - abs(pr[1] - pr[3])
-                        ],
-                        self.cfg["sheetTextHeight"],
-                        7)
-            mark_start_pos[0] += 0.25 * self.cfg["tableOffset"]
-            self.mk_txt(
-                abs(pr[1] - pr[3]) / 10,
-                mark_start_pos[:],
-                self.cfg["sheetTextHeight"],
-                1,
-                [self.cfg["sheetTextHeight"] / 2, 2]
-            )
+                line1 = self.msp.AddLightWeightPolyline(l2F([
+                    pr[2] - (0.5 * self.cfg["tableOffset"]),
+                    pr[3],  # 0
+                    pr[2] - (0.5 * self.cfg["tableOffset"]),
+                    pr[3] - ((self.s(pr[1], pr[3]) / 3) * 2),  # 1
+                    pr[2] - (0.5 * self.cfg["tableOffset"]),
+                    pr[3] - self.s(pr[1], pr[3]),  # 2
+                    pr[2] - (0.4 * self.cfg["tableOffset"]),
+                    pr[3] - self.s(pr[1], pr[3]),  # 3
+                    pr[2] - (0.6 * self.cfg["tableOffset"]),
+                    pr[3] - self.s(pr[1], pr[3]),  # 4
+                ]))
+                line1.SetWidth(1, 2.0, 0.1)
+                self.m_txt("长度2",
+                           [
+                               pr[2] - (0.5 * self.cfg["tableOffset"]),
+                               pr[3] - self.s(pr[1], pr[3])
+                           ],
+                           self.THB,
+                           7)
+                mark_start_pos[0] += 0.25 * self.cfg["tableOffset"]
+                self.m_txt(
+                    self.s(pr[1], pr[3]) / 10,
+                    mark_start_pos[:],
+                    self.THB,
+                    1,
+                    [self.THB / 2, 2]
+                )
             if self.part_obj == "tr" and self.i_arg[-1][0] == self.i_arg[-1][1]:
-                self.mk_txt(
+                self.m_txt(
                     "NL",
                     [mark_start_pos[0], pr[1]],
-                    self.cfg["sheetTextHeight"],
+                    self.THB,
                     1,
-                    [self.cfg["textHeight"], 1]
+                    [self.THS, 1]
                 )
-            mark_start_pos[0] += 0.25 * self.cfg["tableOffset"]
-            self.mk_txt(
-                self.i_arg[1],
-                mark_start_pos[:],
-                self.cfg["sheetTextHeight"],
-                1,
-                [self.cfg["sheetTextHeight"] / 2, 2]
-            )
+                mark_start_pos[0] += 0.25 * self.cfg["tableOffset"]
+                self.m_txt(
+                    self.i_arg[1],
+                    mark_start_pos[:],
+                    self.THB,
+                    1,
+                    [self.THB / 2, 2]
+                )
             if self.part_obj == "tr" and self.i_arg[-1][0] == self.i_arg[-1][1]:
                 point = self.msp.AddPoint(l2F(
-                    [mark_start_pos[0], pr[1] + self.cfg["textHeight"], 0]))
+                    [mark_start_pos[0], pr[1] + self.THS, 0]))
                 point.Rotate(l2F(
-                    [mark_start_pos[0], pr[1] + self.cfg["textHeight"], 0]),
+                    [mark_start_pos[0], pr[1] + self.THS, 0]),
                     35)
             self.doc.SetVariable("PDMODE", 65)
-            self.doc.SetVariable("PDSIZE", self.cfg["textHeight"])
+            self.doc.SetVariable("PDSIZE", self.THS)
 
             self.doc.ActiveLayer.Linetype = "Continuous"
             ori_layer = self.doc.ActiveLayer
@@ -1236,14 +1282,14 @@ class AcadTool(AcadDxf):
                 if not self.cache["eyeSlopePosMark"]:
                     self.cache["eyeSlopePosMark"] = [
                         self.ORI[0] + (1.75 * self.cfg["tableOffset"]),
-                        self.ORI[1] - self.cfg["sheetTextHeight"]
+                        self.ORI[1] - self.THB
                     ]
                 self.eye_slope.insert(0, self.i_arg[-2])
                 self.eye_slope.insert(0, "下袖")
-                self.me_mk_txt(
+                self.me_txt(
                     self.eye_slope,
                     self.cache["eyeSlopePosMark"],
-                    self.cfg["textHeight"],
+                    self.THS,
                     9,
                 )
 
@@ -1251,6 +1297,8 @@ class AcadTool(AcadDxf):
         self.ORI = self.cfg["originPosition"]
         self.ZX = self.cfg["zoom"] * self.cfg["scaleX"]  # 经过全局缩放后并横向缩放标尺值
         self.ZY = self.cfg["zoom"] * self.cfg["scaleY"]  # 经过全局缩放后并纵向缩放标尺值
+        self.THB = self.cfg["sheetTextHeight"]  # 大字高
+        self.THS = self.cfg["textHeight"]  # 小字高
 
 
 class ACAD(AcadTool):
@@ -1340,8 +1388,6 @@ class ACAD(AcadTool):
             print(self.s_pos)
             self.pos_write_to_adoc(self.s_pos)
             self.cache["netBody"] = self.s_pos
-
-            self.refresh_pos()  # 刷新坐标
             self.has_draw_first_segment = True
         else:
             self.s_pos.extend(self.cache["preSegment"][6:])
@@ -1356,4 +1402,29 @@ class ACAD(AcadTool):
             print(self.s_pos)
             self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
             self.refresh_pos()  # 刷新坐标
+        self.m_txt(
+            str(int(self.i_arg[2])),
+            self.mid_pos(self.s_pos[:2], self.s_pos[2:4]),
+            0, 7,
+            [self.cfg["annotationOffset"], 2])
+        self.m_txt(
+            str(int(mesh_len)),
+            self.mid_pos(self.s_pos[4:6], self.s_pos[6:]),
+            0, 1,
+            [self.cfg["annotationOffset"], 1])
+        self.m_txt(
+            f"{int(self.i_arg[-1][0])}-{int(self.i_arg[-1][1])}",
+            self.mid_pos(self.s_pos[2:4], self.s_pos[4:6]),
+            -1, 7,
+            [self.cfg["annotationOffset"], 4],
+            (1, [self.s_pos[2:4], self.s_pos[4:6]])
+        )
+        self.mm_txt(
+            self.slope,
+            self.mid_pos(self.s_pos[2:4], self.s_pos[4:6]),
+            -1, 9,
+            [self.cfg["annotationOffset"] * 8, 4])
+
+        self.draw_sheet_two()
+        self.refresh_pos()  # 最后刷新坐标并记录上一段点
         self.doc.EndUndoMark()

@@ -46,13 +46,13 @@ class CLIHandler:
 
         # 查找并执行命令
         if cmd_name in self.commands:
-            try:
+            # try:
                 print(f"--exe-command--{cmd_name}")
                 result = self.commands[cmd_name]['function'](args)
                 return result if result is not None else True
-            except Exception as e:
-                print(f"--exe-err--{e}")
-                return False
+            # except Exception as e:
+            #     print(f"--exe-err--{e}")
+            #     return False
         else:
             print(f"未知命令: {cmd_name}")
             print("输入 'help' 查看可用命令")
