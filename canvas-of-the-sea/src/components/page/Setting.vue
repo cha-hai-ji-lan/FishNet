@@ -163,9 +163,9 @@
                     </div>
                 </div>
                 <div class="setting-item">
-                    <div class="setting-title ban-select">制 网 材 料</div>
+                    <div class="setting-title ban-select">线 径 规 格</div>
                     <div class="update-item nor-input">
-                        <input v-model="CoreConfig['material']" type="text" :placeholder="CoreConfig['materal']">
+                        <input v-model="CoreConfig['wireDiameter']" type="text" :placeholder="CoreConfig['materal']">
                     </div>
                 </div>
             </div>
@@ -433,7 +433,7 @@ const replace_default_config = async () => {
                 }
 
                 &.lost-color {
-                    border: 2px solid rgba(var(--background), 1);
+                    border: 2px solid rgba(var(--border-line), 1);
                     background-color: rgba(var(--background), var(--pTransparency));
                 }
             }

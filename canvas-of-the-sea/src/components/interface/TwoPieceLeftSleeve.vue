@@ -10,20 +10,27 @@
         <div class="w100 ban-select">
             <div class="item">
                 <div class="item-title">网身目大:</div><input v-model="netGroup['leftSleeve'][`${segment}`][0]"
-                :placeholder="netGroup['leftSleeve'][`${segment - 1}`]?.[0] || '目大'" type="number">
+                    :placeholder="netGroup['leftSleeve'][`${segment - 1}`]?.[0] || '目大'" type="number">
             </div>
             <div class="item">
                 <div class="item-title">网身纵向目数:</div><input v-model="netGroup['leftSleeve'][`${segment}`][1]"
-                :placeholder="netGroup['leftSleeve'][`${segment - 1}`]?.[1] || '纵向目数'" type="number">
+                    :placeholder="netGroup['leftSleeve'][`${segment - 1}`]?.[1] || '纵向目数'" type="number">
             </div>
             <div class="item">
                 <div class="item-title">网身横向目数:</div><input v-model="netGroup['leftSleeve'][`${segment}`][2]"
-                :placeholder="netGroup['leftSleeve'][`${segment - 1}`]?.[2] || '横向目数'" type="number">
+                    :placeholder="netGroup['leftSleeve'][`${segment - 1}`]?.[2] || '横向目数'" type="number">
             </div>
             <div class="item">
                 <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['leftSleeve'][`${segment}`][3]"
                     placeholder="剪裁斜率默认 1:0" type="text">
             </div>
+            <div class="item">
+                <div class="item-title">线径规格:</div><input v-model="netGroup['leftSleeve'][`${segment}`][4]"
+                    :placeholder="netGroup['leftSleeve'][`${segment - 1}`]?.[4] || '线径规格默认:' + coreConfig['defaultParam']['wireDiameter']"
+                    type="text">
+            </div>
+        </div>
+        <div class="w100 ban-select">
             <div class="item">
                 <div @click="() => { next_segment() }" class="item-title item-button ban-select">下一段</div>
                 <div @click="() => { give_up_draw() }" class="item-title item-button-give-up ban-select">放弃</div>
@@ -56,9 +63,9 @@ const segment = ref<number>(1)
 const route = useRoute()
 const router = useRouter()
 onMounted(() => {
-    if ( netGroup.value['leftSleeve'] && netGroup.value['leftSleeve']['segment'] === 0) {
+    if (netGroup.value['leftSleeve'] && netGroup.value['leftSleeve']['segment'] === 0) {
         netGroup.value['leftSleeve']['segment'] += 1
-        netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`] = Array(4).fill(null)
+        netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`] = Array(5).fill(null)
     }
     segment.value = netGroup.value['leftSleeve']?.['segment'] || 0
     DTC.value?.flesh_node()  // 刷新设计树
@@ -70,10 +77,12 @@ const next_segment = () => {
     cacheRouterPath.value = route.path
     netGroup.value["hasDraw"] = true
     check_pre_segment()
-    send_parma_to_cli(["-i", `${netGroup.value['leftSleeve'][`${segment.value}`]}`])
+    set_default_param()
+    send_parma_to_cli(["-i", `${netGroup.value['leftSleeve'][`${segment.value}`].slice(0, 4)}`,
+        "-cfg-wireDiameter", netGroup.value['leftSleeve'][`${segment.value}`][4]]);
     netGroup.value['leftSleeve']['segment'] += 1
     segment.value = netGroup.value['leftSleeve']['segment']
-    netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`] = Array(4).fill(null)
+    netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`] = Array(5).fill(null)
     DTC.value?.flesh_node()
 }
 const give_up_draw = () => {
@@ -92,7 +101,11 @@ const check_pre_segment = () => {
         }
     });
 }
-const clean_param =() =>{
+const set_default_param = () => {
+    if (netGroup.value['leftSleeve'][`${segment.value}`][4] === null) netGroup.value['leftSleeve'][`${segment.value}`][4] = coreConfig.value['defaultParam']['wireDiameter']
+    if (netGroup.value['leftSleeve'][`${segment.value}`][3] === null) netGroup.value['leftSleeve'][`${segment.value}`][3] = "1:0"
+}
+const clean_param = () => {
     netGroup.value['leftSleeve'][`${segment.value}`].fill(null)
 }
 </script>
@@ -198,6 +211,15 @@ const clean_param =() =>{
             width: 50%;
             max-width: 300px;
 
+            &.choose-button {
+                width: 10%;
+                text-align: center;
+                background-color: rgba(var(--ready-note), var(--pTransparency));
+                border: 2px solid rgba(var(--ready-note), 1);
+                border-radius: 1vmin;
+                margin: 0 1vmin;
+            }
+
             &.item-button {
                 width: calc(40% - 2vmin);
                 text-align: center;
@@ -227,6 +249,10 @@ const clean_param =() =>{
                 border-radius: 1vmin;
                 margin: 0 1vmin;
             }
+            &.lost-color {
+                    border: 2px solid rgba(var(--normal-note), 1);
+                    background-color: rgba(var(--normal-note), var(--pTransparency));
+                }
 
             &.item-button-fin {
                 display: flex;

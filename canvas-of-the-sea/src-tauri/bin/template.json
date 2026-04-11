@@ -2,6 +2,7 @@
   "twoPieces": {
     "corePos": "",
     "hasDraw": false,
+    "drawNetSac": false,
     "netBody": {
       "segment": 0
     },
@@ -15,6 +16,7 @@
   "fourPieces": {
     "corePos": "",
     "hasDraw": false,
+    "drawNetSac": false,
     "netBody": {
       "segment": 0
     },
@@ -28,6 +30,7 @@
   "sixPieces": {
     "corePos": "",
     "hasDraw": false,
+    "drawNetSac": false,
     "netBody": {
       "segment": 0
     },

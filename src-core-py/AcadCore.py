@@ -610,7 +610,7 @@ class AcadTool(AcadDxf):
         """
         print(f"-arg-org-st--{arg}--{type(arg)}")
         self.i_arg = []  # 清空当前原有参数
-        result = arg.split(",")
+        result = arg[0].split(",")
         for single_param in result:
             if single_param in ["", "null", None]:
                 single_param = None
@@ -624,6 +624,8 @@ class AcadTool(AcadDxf):
                 except ValueError:
                     single_param = [float(x) for x in re.findall(r'\d+\.\d+|\d+', single_param)]
             self.i_arg.append(single_param)
+        if arg[1] == "-cfg-wireDiameter":  # 线径规格
+            self.cfg["wireDiameter"] = arg[2]
         print(self.i_arg)
 
     def confirm_the_clipping_slope__two(self) -> None:
@@ -1073,7 +1075,7 @@ class AcadTool(AcadDxf):
                            1)
             mark_start_pos[0] -= 0.25 * self.cfg["tableOffset"]
             self.m_txt(
-                self.cfg["material"],
+                self.cfg["wireDiameter"],
                 mark_start_pos[:],
                 self.THB,
                 1,
@@ -1165,7 +1167,7 @@ class AcadTool(AcadDxf):
                     self.s(pr[1], pr[3])
                 ]
                 self.m_txt(
-                    self.cfg["material"],
+                    self.cfg["wireDiameter"],
                     mark_start_pos[:],
                     self.THB,
                     1,
@@ -1343,7 +1345,7 @@ class ACAD(AcadTool):
         """
         self.part_obj = "tb"  # 网身 two-body
         self.doc.StartUndoMark()
-        self.collate_param(arg[0])
+        self.collate_param(arg)
         self.confirm_the_clipping_slope__two()
         self.calculate_the_ratio()
         # 计算裁剪后的横向目数

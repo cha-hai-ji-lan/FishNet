@@ -7,7 +7,7 @@
     </div>
     <div class="flex-r-div home-subtitle">{{ welcomeTitle }} 欢迎回来.{{ careTitle }}</div>
     <div class="blank-10pe"></div>
-    <div class="select-bar-frame">
+    <div class="select-bar-frame" :class="{'is-focus': selectBarFrameState}" @click="()=>{ select_bar_frame_change_state()}">
       <SelectBar v-model="drawMode" :options="netTypes" placeholder="拖网类型"></SelectBar>
     </div>
     <input v-if="drawMode !== ''" v-model="netGroup['corePos']" type="text" :placeholder="'原点默认:' + coreConfig['defaultParam']['originPosition']">
@@ -55,6 +55,7 @@ import { init_cad_listen_group } from "../../utils/event.ts";
 const currentTime = ref('');
 const welcomeTitle = ref("__WELCOME_SENTENCES__")
 const careTitle = ref("") // __CARE_SENTENCES__
+const selectBarFrameState = ref(false)  // 响应式变量存储选择栏状态
 const drawMode = ref("")
 
 const router = useRouter()
@@ -143,6 +144,14 @@ const reset_server = () => {
   if (CADToolState.value === "__FAIL__") {
     init_cad_listen_group()
     invoke("reset_cli", { acadToolPath: fishNetEXE.value, command1: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])] })
+  }
+}
+
+const select_bar_frame_change_state = () =>{
+  if (selectBarFrameState.value  === false){
+    selectBarFrameState.value = true
+  } else {
+    selectBarFrameState.value = false
   }
 }
 
@@ -299,6 +308,9 @@ h1 {
   height: 6vmin;
   background-color: rgba(var(--title), var(--transparency));
   border-radius: 2vmin;
+  &.is-focus{
+  border-radius: 2vmin 2vmin 0 0;
+  }
   /* filter: brightness(0.75); */
 }
 

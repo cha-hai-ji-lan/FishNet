@@ -121,7 +121,7 @@ onUnmounted(() => {
   border-top: none;
   border-radius: 0 0 1vmin 1vmin;
   backdrop-filter: blur(30px);
-  background-color: rgba(var(--button), var(--transparency));
+  background-color: rgba(var(--background), var(--transparency));
   z-index: 5;
   max-height: 20vmin;
   overflow-y: auto;

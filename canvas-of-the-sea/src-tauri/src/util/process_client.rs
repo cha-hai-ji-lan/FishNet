@@ -206,7 +206,7 @@ pub fn init_connect_cli(
 
     if let Some(ref args) = args_g1 {
         for i in args {
-            command1 += &format!("{} ", i);
+            command1 += &format!("{} ", i);  // TODO:: 空格分割是不安全的,计划 使用 [[SP]]
         }
     }
 

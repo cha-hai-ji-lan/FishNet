@@ -25,6 +25,14 @@
                     placeholder="剪裁斜率默认 1:0" type="text">
             </div>
             <div class="item">
+                <div class="item-title">线径规格:</div><input v-model="netGroup['rightSleeve'][`${segment}`][4]"
+                    :placeholder="netGroup['rightSleeve'][`${segment - 1}`]?.[4] || '线径规格默认:' + coreConfig['defaultParam']['wireDiameter']"
+                    type="text">
+            </div>
+
+        </div>
+        <div class="w100 ban-select">
+            <div class="item">
                 <div @click="() => { next_segment() }" class="item-title item-button ban-select">下一段</div>
                 <div @click="() => { give_up_draw() }" class="item-title item-button-give-up ban-select">放弃</div>
             </div>
@@ -58,7 +66,7 @@ const router = useRouter()
 onMounted(() => {
     if (netGroup.value['rightSleeve'] && netGroup.value['rightSleeve']['segment'] === 0) {
         netGroup.value['rightSleeve']['segment'] += 1
-        netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`] = Array(4).fill(null)
+        netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`] = Array(5).fill(null)
     }
     segment.value = netGroup.value['rightSleeve']?.['segment'] || 0
     DTC.value?.flesh_node()  // 刷新设计树
@@ -70,10 +78,13 @@ const next_segment = () => {
     cacheRouterPath.value = route.path
     netGroup.value["hasDraw"] = true
     check_pre_segment()
-    send_parma_to_cli(["-i", `${netGroup.value['rightSleeve'][`${segment.value}`]}`])
+    set_default_param()
+    send_parma_to_cli(["-i", `${netGroup.value['rightSleeve'][`${segment.value}`].slice(0, 4)}`,
+        "-cfg-wireDiameter", netGroup.value['rightSleeve'][`${segment.value}`][4]]);
+
     netGroup.value['rightSleeve']['segment'] += 1
     segment.value = netGroup.value['rightSleeve']['segment']
-    netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`] = Array(4).fill(null)
+    netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`] = Array(5).fill(null)
     DTC.value?.flesh_node()
 }
 const give_up_draw = () => {
@@ -90,6 +101,10 @@ const check_pre_segment = () => {
             netGroup.value['rightSleeve'][`${segment.value}`][index] = netGroup.value['rightSleeve'][`${segment.value - 1}`][index]
         }
     });
+}
+const set_default_param = () => {
+    if (netGroup.value['rightSleeve'][`${segment.value}`][4] === null) netGroup.value['rightSleeve'][`${segment.value}`][4] = coreConfig.value['defaultParam']['wireDiameter']
+    if (netGroup.value['rightSleeve'][`${segment.value}`][3] === null) netGroup.value['rightSleeve'][`${segment.value}`][3] = "1:0"
 }
 const clean_param = () => {
     netGroup.value['rightSleeve'][`${segment.value}`].fill(null)
@@ -197,6 +212,14 @@ const clean_param = () => {
             width: 50%;
             max-width: 300px;
 
+            &.choose-button {
+                width: 10%;
+                text-align: center;
+                background-color: rgba(var(--ready-note), var(--pTransparency));
+                border: 2px solid rgba(var(--ready-note), 1);
+                border-radius: 1vmin;
+                margin: 0 1vmin;
+            }s
             &.item-button {
                 width: calc(40% - 2vmin);
                 text-align: center;
@@ -216,6 +239,7 @@ const clean_param = () => {
 
 
             }
+           
 
             &.item-button-give-up {
 
@@ -226,6 +250,10 @@ const clean_param = () => {
                 border-radius: 1vmin;
                 margin: 0 1vmin;
             }
+            &.lost-color {
+                    border: 2px solid rgba(var(--normal-note), 1);
+                    background-color: rgba(var(--normal-note), var(--pTransparency));
+                }
 
             &.item-button-fin {
                 display: flex;

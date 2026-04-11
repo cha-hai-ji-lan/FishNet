@@ -13,7 +13,7 @@
       "textHeight": 2.5,
       "sheetTextHeight": 5,
       "annotationOffset": 2,
-      "material": "PA6",
+      "wireDiameter": "25X3",
       "focusDraw": true,
       "backUpMode": "segment-step"
     }

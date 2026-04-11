@@ -3,7 +3,7 @@ export const CR = ref<CanvasRenderer | null>(null)
 
 class CanvasRenderer {
   private canvas: HTMLCanvasElement | null = null
-  private ctx: CanvasRenderingContext2D | null = null
+  // private ctx: CanvasRenderingContext2D | null = null
   private canvas_type: string = "__NULL__"
 
 
@@ -14,7 +14,7 @@ class CanvasRenderer {
   init(canvasId: string): boolean {
     this.canvas_type = canvasId
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement
-    this.ctx = this.canvas.getContext('2d')
+    // this.ctx = this.canvas.getContext('2d')
 
     return false
   }

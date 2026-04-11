@@ -126,7 +126,6 @@ const choose_part = (who: string) => {
   // invoke("send_param_to_cli", {command:["-i",JSON.stringify(coreConfig.value)]})
   switch (who) {
     case 'net-body':
-
       isNewFile.value = false  // 已进行了一步操作,可看作不是新文件
       hasChoose.value = true;
       focusPart.value = "two-net-body"

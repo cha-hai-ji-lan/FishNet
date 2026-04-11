@@ -4,6 +4,7 @@
         <div class="item ban-select">
             <div class="part-title "><span>网身</span></div>
             <div class="part-title segments"><span>第{{ segment }}段</span></div>
+            <div v-if="netGroup['drawNetSac']" class="part-title segments-port"><span>网囊段</span></div>
         </div>
 
         <div class="w100 ban-select">
@@ -19,10 +20,22 @@
                 <div class="item-title">网身横向目数:</div><input v-model="netGroup['netBody'][`${segment}`][2]"
                     :placeholder="netGroup['netBody'][`${segment - 1}`]?.[2] || '横向目数'" type="number">
             </div>
-            <div class="item">
+            <div class="item" v-if="netGroup['drawNetSac'] === false">
                 <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['netBody'][`${segment}`][3]"
-                    placeholder="剪裁斜率默认 1:0" type="text">
+                    placeholder="剪裁斜率默认 1:1" type="text">
             </div>
+            <div class="item">
+                <div class="item-title">线径规格:</div><input v-model="netGroup['netBody'][`${segment}`][4]"
+                    :placeholder="netGroup['netBody'][`${segment - 1}`]?.[4] || '线径规格默认:' + coreConfig['defaultParam']['wireDiameter']"
+                    type="text">
+            </div>
+            <div class="item">
+                <div class="item-title choose-button" :class="{ 'lost-color': netGroup['drawNetSac'] === false }"
+                    @click="() => { netGroup['drawNetSac'] = !netGroup['drawNetSac'] }">{{ netGroup['drawNetSac'] ?
+                    '绘制网囊':'网囊段' }}</div>
+            </div>
+        </div>
+        <div class="w100 ban-select">
             <div class="item">
                 <div @click="() => { next_segment() }" class="item-title item-button ban-select">下一段</div>
                 <div @click="() => { give_up_draw() }" class="item-title item-button-give-up ban-select">放弃</div>
@@ -38,12 +51,11 @@
             <div class="item">
                 <div class="item-title item-button-fin ban-select"><span>完成</span></div>
             </div>
-
         </div>
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useRoute, useRouter } from 'vue-router';
 import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts";
@@ -54,10 +66,11 @@ import { DTC } from "../../utils/core/startdraw.ts"
 const segment = ref<number>(1)
 const route = useRoute()
 const router = useRouter()
+
 onMounted(() => {
     if (netGroup.value['netBody'] && netGroup.value['netBody']['segment'] === 0) {
         netGroup.value['netBody']['segment'] += 1;
-        netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null);
+        netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(5).fill(null);
     };
     segment.value = netGroup.value['netBody']?.['segment'] || 0;
     DTC.value?.flesh_node()  // 刷新设计树
@@ -70,13 +83,18 @@ const next_segment = () => {
     cacheRouterPath.value = route.path;
     netGroup.value["hasDraw"] = true;
     check_pre_segment()
-    send_parma_to_cli(["-i", `${netGroup.value['netBody'][`${segment.value}`]}`]);
+    set_default_param()
+    send_parma_to_cli(["-i", `${netGroup.value['netBody'][`${segment.value}`].slice(0, 4)}`,
+        "-cfg-wireDiameter", netGroup.value['netBody'][`${segment.value}`][4]]);
     netGroup.value['netBody']['segment'] += 1;
     segment.value = netGroup.value['netBody']['segment'];
-    netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(4).fill(null);
+    netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(5).fill(null);
     DTC.value?.flesh_node()
 }
 
+/**
+ * 检查上一段参数,如果本段有空位参数则填写前一段的参数
+*/
 const check_pre_segment = () => {
     if (!netGroup.value['netBody'][`${segment.value - 1}`]) return;
     netGroup.value['netBody'][`${segment.value}`].forEach((val: string | number | null, index: number) => {
@@ -84,6 +102,11 @@ const check_pre_segment = () => {
             netGroup.value['netBody'][`${segment.value}`][index] = netGroup.value['netBody'][`${segment.value - 1}`][index]
         }
     });
+}
+
+const set_default_param = () => {
+    if (netGroup.value['netBody'][`${segment.value}`][4] === null) netGroup.value['netBody'][`${segment.value}`][4] = coreConfig.value['defaultParam']['wireDiameter']
+    if (netGroup.value['netBody'][`${segment.value}`][3] === null) netGroup.value['netBody'][`${segment.value}`][3] = "1:0"
 }
 
 const give_up_draw = () => {
@@ -180,6 +203,14 @@ const clean_param = () => {
             flex-direction: row;
             font-size: 5vmin;
             font-weight: bold;
+
+            &.segments-port {
+                margin-left: 2vmin;
+                padding: 0.5vmin 1vmin;
+                border: 2px solid rgba(var(--warn-note), 1);
+                background-color: rgba(var(--warn-note), var(--pTransparency));
+                border-radius: 2vmin;
+            }
         }
 
         & .segments {
@@ -193,6 +224,16 @@ const clean_param = () => {
         & .item-title {
             width: 50%;
             max-width: 300px;
+
+            &.choose-button {
+                width: fit-content;
+                padding: 0 1vmin;
+                text-align: center;
+                background-color: rgba(var(--ready-note), var(--pTransparency));
+                border: 2px solid rgba(var(--ready-note), 1);
+                border-radius: 1vmin;
+                margin: 0 1vmin;
+            }
 
             &.item-button {
                 width: calc(40% - 2vmin);
@@ -222,6 +263,11 @@ const clean_param = () => {
                 border: 2px solid rgba(var(--error-note), 1);
                 border-radius: 1vmin;
                 margin: 0 1vmin;
+            }
+
+            &.lost-color {
+                border: 2px solid rgba(var(--normal-note), 1);
+                background-color: rgba(var(--normal-note), var(--pTransparency));
             }
 
             &.item-button-fin {
