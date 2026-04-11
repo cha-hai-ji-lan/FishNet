@@ -8,9 +8,13 @@
             <BaseIcon whichIcon="report-bug"></BaseIcon>
           </div>
         </a>
+        <div @click="open_url('https://github.com/cha-hai-ji-lan/FishNet')">
+          <BaseIcon whichIcon="github"></BaseIcon>
+        </div>
         <div @click="router_to('/setting')">
           <BaseIcon whichIcon="setting"></BaseIcon>
         </div>
+        
 
       </div>
       <div data-tauri-drag-region class="title-head mid-head"></div>
@@ -132,6 +136,10 @@ const router_to = (where: string) => {
       break;
   }
 
+}
+
+const open_url = (url: string) => {
+  invoke("open_url", {url: url})
 }
 
 </script>

@@ -358,6 +358,7 @@ name = "canvas-of-the-sea"
 version = "0.1.0"
 dependencies = [
  "once_cell",
+ "open",
  "serde",
  "serde_json",
  "tauri",

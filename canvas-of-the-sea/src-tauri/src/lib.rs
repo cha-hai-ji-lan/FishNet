@@ -1,5 +1,5 @@
 mod util;
-
+use open;
 use crate::util::event::set_app_handle;
 use serde_json::Value;
 use std::process::Command;
@@ -20,6 +20,15 @@ fn run_exe(path: String) {
             eprintln!("Failed to run EXE: {:?}", output);
         }
     });
+}
+
+/// 打开 URL
+#[tauri::command]
+fn open_url(url: &str) -> Result<(), String> {
+    match open::that(url) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(format!("无法打开 URL: {e}")),
+    }
 }
 #[tauri::command]
 async fn get_app_path(app_handle: tauri::AppHandle) -> Result<String, String> {
@@ -94,6 +103,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             run_exe,           // 运行exe
+            open_url,          // 默认浏览器打开URL
             get_app_path,      // 获取app路径
             read_json_file,    // 读取json文件
             write_json_file,   // 写入json文件
