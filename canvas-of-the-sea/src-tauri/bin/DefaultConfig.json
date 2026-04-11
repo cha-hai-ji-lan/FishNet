@@ -11,7 +11,7 @@
       "scaleX": 0.5,
       "scaleY": 1,
       "textHeight": 2.5,
-      "sheetTextHeight": 7,
+      "sheetTextHeight": 5,
       "annotationOffset": 2,
       "material": "PA6",
       "focusDraw": true,

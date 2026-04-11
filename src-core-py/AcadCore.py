@@ -475,50 +475,22 @@ class AcadDxf(ACADBase):
         elif word_height == -1:
             word_height = self.cfg["textHeight"]
         if type(content) is str:
-            self.m_txt(content, position, word_height, insert_mode, label_offset, rotary, mirror)
+            self.m_txt(content, position[:], word_height, insert_mode, label_offset, rotary, mirror)
         elif type(content) is list:
-
-            temp_x_pos = 0  # 临时保存X坐标
-            loop = -1  # 循环次数 -1: 代表开始循环
             for i in content:
-                if loop == -1:
-                    loop += 1
-                    if isinstance(i, str):
-                        self.m_txt(i, position, word_height, insert_mode, label_offset, rotary, mirror)
-                        position[1] -= word_height + self.cfg["annotationOffset"]
-                    elif isinstance(i, list):
-                        line_loop = -1  # 行内循环次数 -1: 代表开始循环
-                        for one_piece in i:
-                            if line_loop == -1:
-                                line_loop += 1
-                                self.m_txt(one_piece, position, word_height, insert_mode, label_offset, rotary,
-                                           mirror)
-                                temp_x_pos = position[0]
-                            else:
-                                temp_x_pos += len(one_piece) * word_height
-                                self.m_txt(one_piece, [temp_x_pos, position[1]], word_height, insert_mode,
-                                           label_offset, rotary,
-                                           mirror)
-                        position[1] -= word_height + self.cfg["annotationOffset"]
-                else:
-                    if isinstance(i, str):
-                        self.m_txt(i, position, word_height, insert_mode, None, rotary, mirror)
-                        position[1] -= word_height + self.cfg["annotationOffset"]
-                    elif isinstance(i, list):
-                        line_loop = -1
-                        for one_piece in i:
-                            if line_loop == -1:
-                                line_loop += 1
-
-                                self.m_txt(one_piece, position, word_height, insert_mode,
-                                           None, rotary,
-                                           mirror)
-                                temp_x_pos = position[0]
-                            else:
-                                temp_x_pos += len(one_piece) * word_height
-                                self.m_txt(one_piece, [temp_x_pos, position[1]], word_height, insert_mode,
-                                           label_offset, rotary, mirror)
-                        position[1] -= word_height + self.cfg["annotationOffset"]
+                if isinstance(i, str):
+                    self.m_txt(i, position[:], word_height, insert_mode, label_offset, rotary, mirror)
+                    position[1] -= word_height + self.cfg["annotationOffset"]
+                elif isinstance(i, list):
+                    self.m_txt(",".join(i), position[:], word_height, insert_mode, label_offset, rotary,mirror)
+                    position[1] -= word_height + self.cfg["annotationOffset"]
+                # else:
+                #     if isinstance(i, str):
+                #         self.m_txt(i, position[:], word_height, insert_mode, None, rotary, mirror)
+                #         position[1] -= word_height + self.cfg["annotationOffset"]
+                #     elif isinstance(i, list):
+                #         self.m_txt(",".join(i), position[:], word_height, insert_mode, label_offset, rotary, mirror)
+                #         position[1] -= word_height + self.cfg["annotationOffset"]
 
     def me_txt(self, content: str | list, position: list, word_height: float = None,
                insert_mode: int = 0, label_offset: list | None = None, rotary: tuple = (0, []),
@@ -577,6 +549,7 @@ class AcadDxf(ACADBase):
         刷新坐标,用于缓存上一段坐标数据,并且清空上一段坐标组数据
         :return: None
         """
+        self.doc.SendCommand("_.REGEN\n")  # 下划线确保命令识别，\n表示回车执行 刷新界面
         self.cache["eyeSlopePosMark"] = []
         self.cache["preSegment"] = self.s_pos
         self.shears: dict = {"N": 0, "T": 0, "B": 0}  # 边旁 起剪 续剪 落剪参数
@@ -588,7 +561,7 @@ class AcadDxf(ACADBase):
         聚焦界面绘图元素
         :return:
         """
-        self.doc.SendCommand("_.REGEN\n")  # 下划线确保命令识别，\n表示回车执行 刷新界面
+
         self.doc.SendCommand("_.ZOOM E\n")  # 下划线确保命令识别，\n表示回车执行 刷新界面
 
 
@@ -896,12 +869,17 @@ class AcadTool(AcadDxf):
                 if "N" in self.slope[1]:
                     self.shears["N"] += number_list[0]
                     temp_one_cycles_len += number_list[0]
+                    print("---temp_one_cycles_lenA--", temp_one_cycles_len)
+                    print("---cycles_total_lenB--", cycles_total_len)
                 if "T" in self.slope[1]:
                     self.shears["T"] += number_list[0]
                 if "B" in self.slope[1]:
                     self.shears["B"] += number_list[1] / 2
                     self.shears["N"] += number_list[1] / 2
                     temp_one_cycles_len += number_list[1] / 2
+                    print("---temp_one_cycles_lenB--", temp_one_cycles_len)
+                    print("---cycles_total_lenB--", cycles_total_len)
+
                 self.cycles += 1
                 if temp_one_cycles_len >= cycles_total_len:
                     break
@@ -926,7 +904,7 @@ class AcadTool(AcadDxf):
                 self.cycles += 1
                 if temp_one_cycles_len >= cycles_total_len:
                     break
-            self.slope[1] += F"({self.cycles})"
+            self.slope[1] += F" ({self.cycles})"
             self.cycles = 0
         elif isinstance(self.slope[1], list):
             self.cycles = 0
@@ -947,7 +925,7 @@ class AcadTool(AcadDxf):
                 self.cycles += 1
                 if temp_one_cycles_len >= cycles_total_len:
                     break
-            self.slope[1][-1] += F"({self.cycles})"
+            self.slope[1][-1] += F" ({self.cycles})"
 
     def calculate_the_eye_ratio(self):
         if isinstance(self.eye_slope[0], str):
@@ -1060,7 +1038,7 @@ class AcadTool(AcadDxf):
                 self.mid_val(pr[1], pr[7])
             ]
             self.m_txt(
-                self.i_arg[0],
+                str(int(self.i_arg[0])),
                 mark_start_pos[:],
                 0, 1,
                 [self.THB / 2, 2]
@@ -1112,7 +1090,7 @@ class AcadTool(AcadDxf):
                 )
             mark_start_pos[0] -= 0.25 * self.cfg["tableOffset"]
             self.m_txt(
-                f"{self.s(pr[1], pr[3]) / 10:.3f}",
+                str((self.i_arg[0] * self.i_arg[1]) / 1e3),
                 mark_start_pos[:],
                 self.THB,
                 1,
@@ -1128,7 +1106,7 @@ class AcadTool(AcadDxf):
                 )
             mark_start_pos[0] -= 0.25 * self.cfg["tableOffset"]
             self.m_txt(
-                self.i_arg[1],
+                f"{self.i_arg[1]:.1f}",
                 mark_start_pos[:],
                 self.THB,
                 1,
@@ -1151,16 +1129,16 @@ class AcadTool(AcadDxf):
             self.msp.AddLightWeightPolyline(l2F([
                 pr[0] - (0.5 * self.cfg["tableOffset"]),
                 pr[1],
-                self.ORI[0] - (2.25 * self.cfg["tableOffset"]),
+                mark_start_pos[0],
                 pr[1]
             ]))
-            if self.i_arg[-1][0] == self.i_arg[-1][1]:
-                self.msp.AddLightWeightPolyline(l2F([
-                    pr[6] - (0.5 * self.cfg["tableOffset"]),
-                    pr[7],
-                    self.ORI[0] - (2.25 * self.cfg["tableOffset"]),
-                    pr[7]
-                ]))
+            # if self.i_arg[-1][0] == self.i_arg[-1][1]:
+            self.msp.AddLightWeightPolyline(l2F([  # 表格下划线也应该有为了后续段有间隔方便绘制
+                pr[6] - (0.5 * self.cfg["tableOffset"]),
+                pr[7],
+                mark_start_pos[0],
+                pr[7]
+            ]))
             self.doc.ActiveLayer = ori_layer
             self.msp.AddLightWeightPolyline(l2F([
                 self.ORI[0] - (2.125 * self.cfg["tableOffset"]),
@@ -1182,18 +1160,17 @@ class AcadTool(AcadDxf):
                     self.THS,
                     9,
                 )
-            else:
                 mark_start_pos = [
                     self.ORI[0] + (1.5 * self.cfg["tableOffset"]),
                     self.s(pr[1], pr[3])
                 ]
-            self.m_txt(
-                self.cfg["material"],
-                mark_start_pos[:],
-                self.THB,
-                1,
-                [self.THB / 2, 2]
-            )
+                self.m_txt(
+                    self.cfg["material"],
+                    mark_start_pos[:],
+                    self.THB,
+                    1,
+                    [self.THB / 2, 2]
+                )
             if self.part_obj == "tr" and self.i_arg[-1][0] == self.i_arg[-1][1]:
                 self.m_txt(
                     "MAT",
@@ -1241,7 +1218,7 @@ class AcadTool(AcadDxf):
                 )
                 mark_start_pos[0] += 0.25 * self.cfg["tableOffset"]
                 self.m_txt(
-                    self.i_arg[1],
+                    f"{self.i_arg[1]:.0f}",
                     mark_start_pos[:],
                     self.THB,
                     1,
@@ -1253,34 +1230,33 @@ class AcadTool(AcadDxf):
                 point.Rotate(l2F(
                     [mark_start_pos[0], pr[1] + self.THS, 0]),
                     35)
-            self.doc.SetVariable("PDMODE", 65)
-            self.doc.SetVariable("PDSIZE", self.THS)
+                self.doc.SetVariable("PDMODE", 65)
+                self.doc.SetVariable("PDSIZE", self.THS)
 
-            self.doc.ActiveLayer.Linetype = "Continuous"
-            ori_layer = self.doc.ActiveLayer
-            dot_layer = self.doc.Layers.Add("DottedLineLayer")
-            self.doc.ActiveLayer = dot_layer
-            self.doc.ActiveLayer.Linetype = "ACAD_ISO04W100"
-            self.msp.AddLightWeightPolyline(l2F([
-                pr[2] + (0.5 * self.cfg["tableOffset"]),
-                pr[3],
-                self.ORI[0] + (2.25 * self.cfg["tableOffset"]),
-                pr[3]
-            ]))
-            if self.has_draw_first_segment:
+                self.doc.ActiveLayer.Linetype = "Continuous"
+                ori_layer = self.doc.ActiveLayer
+                dot_layer = self.doc.Layers.Add("DottedLineLayer")
+                self.doc.ActiveLayer = dot_layer
+                self.doc.ActiveLayer.Linetype = "ACAD_ISO04W100"
+                self.msp.AddLightWeightPolyline(l2F([
+                    pr[2] + (0.5 * self.cfg["tableOffset"]),
+                    pr[3],
+                    self.ORI[0] + (2.25 * self.cfg["tableOffset"]),
+                    pr[3]
+                ]))
                 self.msp.AddLightWeightPolyline(l2F([
                     pr[4] + (0.5 * self.cfg["tableOffset"]),
                     pr[5],
                     self.ORI[0] + (2.25 * self.cfg["tableOffset"]),
                     pr[5]
                 ]))
-            self.doc.ActiveLayer = ori_layer
-            self.msp.AddLightWeightPolyline(l2F([
-                self.ORI[0] + (1.875 * self.cfg["tableOffset"]),
-                pr[1],
-                self.ORI[0] + (1.875 * self.cfg["tableOffset"]),
-                pr[7],
-            ]))
+                self.doc.ActiveLayer = ori_layer
+                self.msp.AddLightWeightPolyline(l2F([
+                    self.ORI[0] + (1.875 * self.cfg["tableOffset"]),
+                    pr[1],
+                    self.ORI[0] + (1.875 * self.cfg["tableOffset"]),
+                    pr[7],
+                ]))
             if self.part_obj == "tr" and self.i_arg[-2][0] != self.i_arg[-2][-1]:
                 if not self.cache["eyeSlopePosMark"]:
                     self.cache["eyeSlopePosMark"] = [
@@ -1393,14 +1369,13 @@ class ACAD(AcadTool):
             self.cache["netBody"] = self.s_pos
             self.has_draw_first_segment = True
         else:
-            mesh_len = (
-                    self.S(self.cache["preSegment"][4:6], self.cache["preSegment"][6:])
-                    - self.shears["T"] - self.shears["B"] * 2)
+            mesh_len_ratio = (
+                    self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2) / self.i_arg[2]  # 裁剪后的横向目数比例
             self.s_pos.extend(self.cache["preSegment"][6:])
             self.s_pos.extend(self.cache["preSegment"][4:6])
             self.s_pos.extend([
                 self.ORI[0]
-                + (mesh_len / 2),
+                + (mesh_len_ratio * self.S(self.cache["preSegment"][6:], self.cache["preSegment"][4:6]) / 2).__ceil__(),
                 self.s_pos[3]
                 - (self.i_arg[0] * self.i_arg[1] * self.ZY)
             ])

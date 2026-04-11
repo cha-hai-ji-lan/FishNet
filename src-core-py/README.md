@@ -77,3 +77,9 @@ self.doc.SendCommand("_.REDO\n3\n")
 >   |     netBody     |   网身段1四点坐标   |
 >   |   preSegment    |    前一段点坐标    |
 >   | eyeSlopePosMark | 宕眼剪裁斜率标注位置坐标 |
+> 
+
+## 注 :[INFO]:
+
+### 常见公制尺寸
+**1.8mm、2.5mm、3.5mm、5mm、7mm、10mm、14mm、20mm**
