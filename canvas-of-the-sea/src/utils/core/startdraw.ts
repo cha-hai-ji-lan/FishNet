@@ -52,6 +52,10 @@ class DesignTreeCtr {
                if (this.tree_node[0].includes(`网身段${key}`)) continue // 跳过已存在的节点
                this.tree_node[0].push(`网身段${key}`)
                const div_element = document.createElement("div")
+               div_element.onclick = () => {
+                  // 可以访问 this 和当前作用域的变量
+                  this.handleClick(key, 'two-net-body')
+                }
                div_element.innerHTML = `网身段${key}`
                this.id_obj[0].appendChild(div_element)
             }
@@ -60,6 +64,9 @@ class DesignTreeCtr {
                if (this.tree_node[1].includes(`上袖段${key}`)) continue
                this.tree_node[1].push(`上袖段${key}`)
                const div_element = document.createElement("div")
+               div_element.onclick = () => {
+                  this.handleClick(key, 'two-left-sleeve')
+                }
                div_element.innerHTML = `上袖段${key}`
                this.id_obj[1].appendChild(div_element)
             }
@@ -68,6 +75,9 @@ class DesignTreeCtr {
                if (this.tree_node[2].includes(`下袖段${key}`)) continue
                this.tree_node[2].push(`下袖段${key}`)
                const div_element = document.createElement("div")
+               div_element.onclick = () => {
+                  this.handleClick(key, 'two-right-sleeve')
+                }
                div_element.innerHTML = `下袖段${key}`
                this.id_obj[2].appendChild(div_element)
             }
@@ -84,6 +94,25 @@ class DesignTreeCtr {
             console.log(this.net_type)
             console.log(this.tree_node)
             set_content(`设计树类型错误 当前类型为${this.net_type}`, 3)
+            break;
+      }
+   }
+
+   handleClick(key: string, part: string){
+      focusPart.value = part
+      console.log(key)
+      switch (part) {
+         case 'two-net-body':
+            netGroup.value['netBody']['segment'] = key
+            break;
+         case 'two-left-sleeve':
+            netGroup.value['leftSleeve']['segment'] = key
+            break;
+         case 'two-right-sleeve':
+            netGroup.value['rightSleeve']['segment'] = key
+            break;
+      
+         default:
             break;
       }
    }

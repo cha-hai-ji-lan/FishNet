@@ -51,7 +51,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useRoute, useRouter } from 'vue-router';
 import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts"
@@ -69,6 +69,9 @@ onMounted(() => {
     }
     segment.value = netGroup.value['leftSleeve']?.['segment'] || 0
     DTC.value?.flesh_node()  // 刷新设计树
+})
+watch(() => netGroup.value['leftSleeve']['segment'], () => {
+    segment.value = netGroup.value['leftSleeve']['segment'];
 })
 // watch(() => netGroup.value['leftSleeve'], () => {
 //     canvasRenderer.drawFromNetGroup(netGroup.value, 'leftSleeve')
@@ -103,7 +106,8 @@ const check_pre_segment = () => {
 }
 const set_default_param = () => {
     if (netGroup.value['leftSleeve'][`${segment.value}`][4] === null) netGroup.value['leftSleeve'][`${segment.value}`][4] = coreConfig.value['defaultParam']['wireDiameter']
-    if (netGroup.value['leftSleeve'][`${segment.value}`][3] === null) netGroup.value['leftSleeve'][`${segment.value}`][3] = "1:0"
+    if (netGroup.value['leftSleeve'][`${segment.value}`][3] === null && netGroup.value['drawNetSac']) { netGroup.value['leftSleeve'][`${segment.value}`][3] = "1:0" } else netGroup.value['leftSleeve'][`${segment.value}`][3] = "1:1"
+
 }
 const clean_param = () => {
     netGroup.value['leftSleeve'][`${segment.value}`].fill(null)

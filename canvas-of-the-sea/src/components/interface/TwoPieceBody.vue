@@ -32,7 +32,7 @@
             <div class="item">
                 <div class="item-title choose-button" :class="{ 'lost-color': netGroup['drawNetSac'] === false }"
                     @click="() => { netGroup['drawNetSac'] = !netGroup['drawNetSac'] }">{{ netGroup['drawNetSac'] ?
-                    '绘制网囊':'网囊段' }}</div>
+                        '绘制网囊' : '网囊段' }}</div>
             </div>
         </div>
         <div class="w100 ban-select">
@@ -55,7 +55,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useRoute, useRouter } from 'vue-router';
 import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts";
@@ -68,6 +68,8 @@ const route = useRoute()
 const router = useRouter()
 
 onMounted(() => {
+    console.log("进入网身段")
+    cacheRouterPath.value = route.path;  // 缓存当前路由
     if (netGroup.value['netBody'] && netGroup.value['netBody']['segment'] === 0) {
         netGroup.value['netBody']['segment'] += 1;
         netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(5).fill(null);
@@ -75,6 +77,10 @@ onMounted(() => {
     segment.value = netGroup.value['netBody']?.['segment'] || 0;
     DTC.value?.flesh_node()  // 刷新设计树
 
+})
+
+watch(() => netGroup.value['netBody']['segment'], () => {
+    segment.value = netGroup.value['netBody']['segment'];
 })
 // watch(() => netGroup.value['netBody'], () => {
 //     // canvasRenderer.drawFromNetGroup(netGroup.value, 'netBody')
@@ -87,7 +93,6 @@ const next_segment = () => {
     send_parma_to_cli(["-i", `${netGroup.value['netBody'][`${segment.value}`].slice(0, 4)}`,
         "-cfg-wireDiameter", netGroup.value['netBody'][`${segment.value}`][4]]);
     netGroup.value['netBody']['segment'] += 1;
-    segment.value = netGroup.value['netBody']['segment'];
     netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(5).fill(null);
     DTC.value?.flesh_node()
 }
@@ -106,7 +111,8 @@ const check_pre_segment = () => {
 
 const set_default_param = () => {
     if (netGroup.value['netBody'][`${segment.value}`][4] === null) netGroup.value['netBody'][`${segment.value}`][4] = coreConfig.value['defaultParam']['wireDiameter']
-    if (netGroup.value['netBody'][`${segment.value}`][3] === null) netGroup.value['netBody'][`${segment.value}`][3] = "1:0"
+
+    if (netGroup.value['netBody'][`${segment.value}`][3] === null && netGroup.value['drawNetSac']) { netGroup.value['netBody'][`${segment.value}`][3] = "1:0" } else netGroup.value['netBody'][`${segment.value}`][3] = "1:1"
 }
 
 const give_up_draw = () => {
