@@ -200,6 +200,8 @@ class AcadDxf(ACADBase):
         super().__init__()
         self.cache = {}  # 坐标缓存记录
         self.has_draw_first_segment = False  # 是否绘制了网身第一段
+        self.has_draw_left_sleeve_first_segment = False  # 是否绘制了左袖第一段
+        self.has_draw_right_sleeve_first_segment = False  # 是否绘制了右袖第一段
 
     def get_all_entities(self) -> list:
         """
@@ -595,6 +597,10 @@ class AcadDxf(ACADBase):
             self.s_pos[5] -= self.cfg["segmentSpacing"]
             self.s_pos[7] -= self.cfg["segmentSpacing"]
         self.cache["preSegment"] = self.s_pos
+        if self.has_draw_first_segment is False:
+            self.cache["netBody"] = self.s_pos
+            self.cache["netBodyArg"] = self.i_arg
+            self.has_draw_first_segment = True
         self.shears: dict = {"N": 0, "T": 0, "B": 0}  # 边旁 起剪 续剪 落剪参数
         self.eye_shears: dict = {"N": 0, "T": 0, "B": 0}  # 宕眼 起剪 续剪 落剪参数
         self.s_pos = []  # 清空s_pos
@@ -679,6 +685,9 @@ class AcadTool(AcadDxf):
             self.cfg["-useSegmentSpacing"] = True
         else:
             self.cfg["-useSegmentSpacing"] = False
+        if not self.has_draw_left_sleeve_first_segment and self.i_arg[0] is None :
+            self.i_arg[0] = self.cache["netBodyArg"][0]
+
 
     def confirm_the_clipping_slope__two(self) -> None:
         """
@@ -1446,8 +1455,6 @@ class ACAD(AcadTool):
                 - (self.i_arg[0] * self.i_arg[1] * self.ZY)
             ])
             self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
-            self.cache["netBody"] = self.s_pos
-            self.has_draw_first_segment = True
         elif self.cfg["-drawNetSac"]:
             self.s_pos.extend(self.cache["preSegment"][6:])
             self.s_pos.extend(self.cache["preSegment"][4:6])
@@ -1497,6 +1504,52 @@ class ACAD(AcadTool):
                 self.mid_pos(self.s_pos[2:4], self.s_pos[4:6]),
                 -1, 9,
                 [self.cfg["annotationOffset"] * 8, 4])
+        self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
+        self.draw_sheet_two()
+        self.refresh_pos()  # 最后刷新坐标并记录上一段点
+        self.doc.EndUndoMark()
+
+    def draw_two_piece_left_sleeve(self, arg) -> None:
+        """
+        绘制两片式网身左袖
+        :param arg:
+        :return:
+        """
+        if self.cache["netBody"] is None:
+            print("--no-net-body-first-segment")
+            return
+        self.part_obj = "tb"  # 网身 two-body
+        self.doc.StartUndoMark()
+        self.collate_param(arg)
+        self.confirm_the_clipping_slope__two()
+        self.calculate_the_ratio()
+        if not self.has_draw_left_sleeve_first_segment:
+
+
+        self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
+        self.draw_sheet_two()
+        self.refresh_pos()  # 最后刷新坐标并记录上一段点
+        self.doc.EndUndoMark()
+
+    def draw_two_piece_right_sleeve(self, arg) -> None:
+        """
+        绘制两片式网身右袖
+        :param arg:
+        :return:
+        """
+        if self.cache["netBody"] is None:
+            print("--no-net-body-first-segment")
+            return
+        self.part_obj = "tb"  # 网身 two-body
+        self.doc.StartUndoMark()
+        self.collate_param(arg)
+        self.confirm_the_clipping_slope__two()
+        self.calculate_the_ratio()
+        if not self.has_draw_right_sleeve_first_segment:
+            mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
+
+
+
         self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
         self.draw_sheet_two()
         self.refresh_pos()  # 最后刷新坐标并记录上一段点

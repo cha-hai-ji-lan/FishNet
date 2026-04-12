@@ -21,6 +21,8 @@ class CLIHandler:
         self.register_command('-config-set', self.set_config_command, "Set the configuration parameters")
         self.register_command('-i', self.echo_command, "echo input command")
         self.register_command('-i-tb', self.acad.draw_two_piece_body, "draw Two-piece mesh body")
+        self.register_command('-i-tl', self.acad.draw_two_piece_left_sleeve, "draw Two-piece mesh left sleeve")
+        self.register_command('-i-tr', self.acad.draw_two_piece_right_sleeve, "draw Two-piece mesh right sleeve")
 
     def register_command(self, name: str, func: Callable, description: str = ""):
         """注册新命令"""

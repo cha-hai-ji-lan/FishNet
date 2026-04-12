@@ -77,6 +77,7 @@ self.doc.SendCommand("_.REDO\n3\n")
 >   |       key       |     info     |
 >   |:---------------:|:------------:|
 >   |     netBody     |   网身段1四点坐标   |
+>   |     netBody     |   网身段1四点坐标   |
 >   |   preSegment    |    前一段点坐标    |
 >   | eyeSlopePosMark | 宕眼剪裁斜率标注位置坐标 |
 > 

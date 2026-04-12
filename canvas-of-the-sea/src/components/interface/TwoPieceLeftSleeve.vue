@@ -20,16 +20,20 @@
             </div>
             <div class="item">
                 <div class="item-title">网身横向目数:</div><input v-model="netGroup['leftSleeve'][`${segment}`][2]"
-                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['leftSleeve'][`${segment - 1}`]?.[2] || '横向目数' : '横向目数'"
+                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['leftSleeve'][`${segment - 1}`]?.[2] || netGroup['netBody'][0]?.[2] : '横向目数'"
                     type="number">
             </div>
             <div class="item">
-                <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['leftSleeve'][`${segment}`][3]"
-                    placeholder="剪裁斜率默认 1:0" type="text">
+                <div class="item-title">宕眼剪裁斜率:</div><input v-model="netGroup['leftSleeve'][`${segment}`][3]"
+                    placeholder="剪裁斜率默认 1:1" type="text">
             </div>
             <div class="item">
-                <div class="item-title">线径规格:</div><input v-model="netGroup['leftSleeve'][`${segment}`][4]"
-                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['leftSleeve'][`${segment - 1}`]?.[4] || '线径规格默认:' + coreConfig['defaultParam']['wireDiameter'] : '线径规格默认:' + coreConfig['defaultParam']['wireDiameter']"
+                <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['leftSleeve'][`${segment}`][4]"
+                    placeholder="剪裁斜率默认 1:1" type="text">
+            </div>
+            <div class="item">
+                <div class="item-title">线径规格:</div><input v-model="netGroup['leftSleeve'][`${segment}`][5]"
+                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['leftSleeve'][`${segment - 1}`]?.[5] || '线径规格默认:' + coreConfig['defaultParam']['wireDiameter'] : '线径规格默认:' + coreConfig['defaultParam']['wireDiameter']"
                     type="text">
             </div>
             <div class="item">
@@ -38,13 +42,14 @@
                     @click="() => { coreConfig['parameterInheritance'] = !coreConfig['parameterInheritance'] }">{{
                         coreConfig['parameterInheritance'] ?
                             '参数继承' : '参数摒弃' }}</div>
+                <div class="item-title choose-button"
+                    :class="{ 'lost-color': coreConfig['defaultParam']['-useSegmentSpacing'] === false }"
+                    @click="() => { coreConfig['defaultParam']['-useSegmentSpacing'] = !coreConfig['defaultParam']['-useSegmentSpacing'] }">
+                    {{
+                        coreConfig['defaultParam']['-useSegmentSpacing'] ?
+                            '启用横向间隙' : '禁用横向间隙' }}</div>
             </div>
-            <div class="item-title choose-button"
-                :class="{ 'lost-color': coreConfig['defaultParam']['-useSegmentSpacing'] === false }"
-                @click="() => { coreConfig['defaultParam']['-useSegmentSpacing'] = !coreConfig['defaultParam']['-useSegmentSpacing'] }">
-                {{
-                    coreConfig['defaultParam']['-useSegmentSpacing'] ?
-                        '启用横向间隙' : '禁用横向间隙' }}</div>
+
         </div>
         <div class="w100 ban-select">
             <div class="item">
@@ -73,6 +78,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts"
 import { netGroup, send_parma_to_cli } from "../../utils/core/startdraw.ts";
 import { init_cad_listen_group } from "../../utils/event.ts";
+import { set_content } from "../../utils/warn.ts";
 import { coreConfig, fishNetEXE } from "../../utils/MainIndex.ts";
 import { DTC } from "../../utils/core/startdraw.ts"
 const segment = ref<number>(1)
@@ -81,7 +87,7 @@ const router = useRouter()
 onMounted(() => {
     if (netGroup.value['leftSleeve'] && netGroup.value['leftSleeve']['segment'] === 0) {
         netGroup.value['leftSleeve']['segment'] += 1
-        netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`] = Array(5).fill(null)
+        netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`] = Array(6).fill(null)
     }
     segment.value = netGroup.value['leftSleeve']?.['segment'] || 0
     DTC.value?.flesh_node()  // 刷新设计树
@@ -93,6 +99,10 @@ watch(() => netGroup.value['leftSleeve']['segment'], () => {
 //     canvasRenderer.drawFromNetGroup(netGroup.value, 'leftSleeve')
 // }, { deep: true })
 const next_segment = () => {
+    if (netGroup.value['netBody'][0] !== undefined && netGroup.value['netBody'][0][0] === null || netGroup.value['netBody'][0] === undefined) {
+        set_content("未绘制网身第一段,无法定位参数化原点坐标", 3)
+        return
+    }
     cacheRouterPath.value = route.path
     netGroup.value["hasDraw"] = true
     if (coreConfig.value['parameterInheritance']) {
@@ -102,7 +112,7 @@ const next_segment = () => {
     send_parma_to_cli(collate_param());
     netGroup.value['leftSleeve']['segment'] += 1
     segment.value = netGroup.value['leftSleeve']['segment']
-    netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`] = Array(5).fill(null)
+    netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`] = Array(6).fill(null)
     DTC.value?.flesh_node()
 }
 const give_up_draw = () => {
@@ -122,8 +132,9 @@ const check_pre_segment = () => {
     });
 }
 const set_default_param = () => {
-    if (netGroup.value['leftSleeve'][`${segment.value}`][4] === null) netGroup.value['leftSleeve'][`${segment.value}`][4] = coreConfig.value['defaultParam']['wireDiameter']
-    if (netGroup.value['leftSleeve'][`${segment.value}`][3] === null && netGroup.value['drawNetSac']) { netGroup.value['leftSleeve'][`${segment.value}`][3] = "1:0" } else netGroup.value['leftSleeve'][`${segment.value}`][3] = "1:1"
+    if (netGroup.value['leftSleeve'][`${segment.value}`][5] === null) netGroup.value['leftSleeve'][`${segment.value}`][4] = coreConfig.value['defaultParam']['wireDiameter']
+    if (netGroup.value['leftSleeve'][`${segment.value}`][4] === null) netGroup.value['leftSleeve'][`${segment.value}`][3] = "1:1"
+    if (netGroup.value['leftSleeve'][`${segment.value}`][3] === null) netGroup.value['leftSleeve'][`${segment.value}`][3] = "1:1"
     netGroup.value['leftSleeve'][`${segment.value}`].forEach((val: string | number | null, index: number) => {
         if (val === null) netGroup.value['leftSleeve'][`${segment.value}`][index] = "None"
     });
@@ -132,9 +143,9 @@ const set_default_param = () => {
 const collate_param = (): string[] => {
     let param: string[] = []
     param.push("-i")
-    param.push(`${netGroup.value['leftSleeve'][`${segment.value}`].slice(0, 4)}`)
+    param.push(`${netGroup.value['leftSleeve'][`${segment.value}`].slice(0, 5)}`)
     param.push("-cfg-wireDiameter")
-    param.push(netGroup.value['leftSleeve'][segment.value][4])  // 该元素本来就是字符串无需``
+    param.push(netGroup.value['leftSleeve'][segment.value][5])  // 该元素本来就是字符串无需``
     if (coreConfig.value['defaultParam']['-useSegmentSpacing']) param.push("-useSegmentSpacing")
     return param
 }
