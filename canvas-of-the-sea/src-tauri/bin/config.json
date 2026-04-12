@@ -4,6 +4,7 @@
   },
   "core": {
     "bootLink": true,
+    "parameterInheritance": true,
     "defaultParam": {
       "originPosition": "0,0",
       "zoom": 0.01,

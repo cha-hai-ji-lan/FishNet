@@ -10,15 +10,15 @@
         <div class="w100 ban-select">
             <div class="item">
                 <div class="item-title">网身目大:</div><input v-model="netGroup['leftSleeve'][`${segment}`][0]"
-                    :placeholder="netGroup['leftSleeve'][`${segment - 1}`]?.[0] || '目大'" type="number">
+                    :placeholder="coreConfig['parameterInheritance']? netGroup['leftSleeve'][`${segment - 1}`]?.[0] ||'目大' : '目大'" type="number">
             </div>
             <div class="item">
                 <div class="item-title">网身纵向目数:</div><input v-model="netGroup['leftSleeve'][`${segment}`][1]"
-                    :placeholder="netGroup['leftSleeve'][`${segment - 1}`]?.[1] || '纵向目数'" type="number">
+                    :placeholder="coreConfig['parameterInheritance']? netGroup['leftSleeve'][`${segment - 1}`]?.[1] ||'纵向目数' : '纵向目数'" type="number">
             </div>
             <div class="item">
                 <div class="item-title">网身横向目数:</div><input v-model="netGroup['leftSleeve'][`${segment}`][2]"
-                    :placeholder="netGroup['leftSleeve'][`${segment - 1}`]?.[2] || '横向目数'" type="number">
+                    :placeholder="coreConfig['parameterInheritance']? netGroup['leftSleeve'][`${segment - 1}`]?.[2] || '横向目数' : '横向目数'" type="number">
             </div>
             <div class="item">
                 <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['leftSleeve'][`${segment}`][3]"
@@ -26,8 +26,13 @@
             </div>
             <div class="item">
                 <div class="item-title">线径规格:</div><input v-model="netGroup['leftSleeve'][`${segment}`][4]"
-                    :placeholder="netGroup['leftSleeve'][`${segment - 1}`]?.[4] || '线径规格默认:' + coreConfig['defaultParam']['wireDiameter']"
+                    :placeholder="coreConfig['parameterInheritance']? netGroup['leftSleeve'][`${segment - 1}`]?.[4] || '线径规格默认:' + coreConfig['defaultParam']['wireDiameter'] : '线径规格默认:' + coreConfig['defaultParam']['wireDiameter']"
                     type="text">
+            </div>
+            <div class="item">
+                <div class="item-title choose-button" :class="{ 'lost-color': coreConfig['parameterInheritance'] === false }"
+                    @click="() => { coreConfig['parameterInheritance']= !coreConfig['parameterInheritance'] }">{{ coreConfig['parameterInheritance'] ?
+                        '参数继承' : '参数摒弃' }}</div>
             </div>
         </div>
         <div class="w100 ban-select">

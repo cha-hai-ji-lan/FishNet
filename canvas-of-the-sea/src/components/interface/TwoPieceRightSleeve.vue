@@ -10,15 +10,18 @@
         <div class="w100 ban-select">
             <div class="item">
                 <div class="item-title">网身目大:</div><input v-model="netGroup['rightSleeve'][`${segment}`][0]"
-                    :placeholder="netGroup['rightSleeve'][`${segment - 1}`]?.[0] || '目大'" type="number">
+                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['rightSleeve'][`${segment - 1}`]?.[0] || '目大' : '目大'"
+                    type="number">
             </div>
             <div class="item">
                 <div class="item-title">网身纵向目数:</div><input v-model="netGroup['rightSleeve'][`${segment}`][1]"
-                    :placeholder="netGroup['rightSleeve'][`${segment - 1}`]?.[1] || '纵向目数'" type="number">
+                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['rightSleeve'][`${segment - 1}`]?.[1] || '纵向目数' : '纵向目数'"
+                    type="number">
             </div>
             <div class="item">
                 <div class="item-title">网身横向目数:</div><input v-model="netGroup['rightSleeve'][`${segment}`][2]"
-                    :placeholder="netGroup['rightSleeve'][`${segment - 1}`]?.[2] || '横向目数'" type="number">
+                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['rightSleeve'][`${segment - 1}`]?.[2] || '横向目数' : '横向目数'"
+                    type="number">
             </div>
             <div class="item">
                 <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['rightSleeve'][`${segment}`][3]"
@@ -26,8 +29,15 @@
             </div>
             <div class="item">
                 <div class="item-title">线径规格:</div><input v-model="netGroup['rightSleeve'][`${segment}`][4]"
-                    :placeholder="netGroup['rightSleeve'][`${segment - 1}`]?.[4] || '线径规格默认:' + coreConfig['defaultParam']['wireDiameter']"
+                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['rightSleeve'][`${segment - 1}`]?.[4] || '线径规格默认:' + coreConfig['defaultParam']['wireDiameter'] : '线径规格默认:' + coreConfig['defaultParam']['wireDiameter']"
                     type="text">
+            </div>
+            <div class="item">
+                <div class="item-title choose-button"
+                    :class="{ 'lost-color': coreConfig['parameterInheritance'] === false }"
+                    @click="() => { coreConfig['parameterInheritance'] = !coreConfig['parameterInheritance'] }">{{
+                        coreConfig['parameterInheritance'] ?
+                            '参数继承' : '参数摒弃' }}</div>
             </div>
 
         </div>
@@ -52,7 +62,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, watch} from "vue";
+import { ref, onMounted, watch } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useRoute, useRouter } from 'vue-router';
 import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts"
@@ -241,13 +251,9 @@ const clean_param = () => {
                 border: 2px solid rgba(var(--warn-note), 1);
                 border-radius: 1vmin;
                 margin: 0 1vmin;
-
-
             }
 
-
             &.item-button-give-up {
-
                 width: calc(40% - 2vmin);
                 text-align: center;
                 background-color: rgba(var(--error-note), var(--pTransparency));

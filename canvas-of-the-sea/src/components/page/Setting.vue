@@ -84,6 +84,14 @@
                 </div>
             </div>
             <div class="setting-item">
+                <div class="setting-title ban-select">绘段参数</div>
+                <div class="update-item" @click="() => { switch_but('parameterInheritance') }">
+                    <div class="set-but ban-select"
+                        :class="{ 'lost-color': coreConfig['parameterInheritance'] === false }">{{
+                            parameterInheritance }}</div>
+                </div>
+            </div>
+            <div class="setting-item">
                 <div class="setting-title ban-select">重启服务</div>
                 <div @click="() => { reset_cli() }" class="update-item">
                     <div class="set-but ban-select">重启服务端</div>
@@ -102,6 +110,7 @@
                     <div class="set-but ban-select">{{ undoMode }}</div>
                 </div>
             </div>
+
             <div class="setting-item">
                 <span id="app-default-setting" class="position-title ban-select">缺省参数设置</span>
             </div>
@@ -184,17 +193,18 @@ import { ref, computed, onMounted } from 'vue';
 import { invoke } from "@tauri-apps/api/core";
 import { useRouter } from "vue-router"; // 引入 useRoute
 import SelectBar from '../utils/SelectorBar.vue';
-import { themeTypes, cacheRouterPath} from '../../utils/Memory.ts'
+import { themeTypes, cacheRouterPath } from '../../utils/Memory.ts'
 import { init_cad_listen_group } from "../../utils/event.ts";
 import { themeConfig, interfaceStyle, coreConfig, fishNetEXE, init_color_palette, write_config, replace_config, init_app } from "../../utils/MainIndex.ts";
 
+const parameterInheritance = ref<string>("参数继承")
 const bootLink = ref<string>("开机连接")
 const focusDraw = ref<string>("启用中")
 const undoMode = ref<string>("段撤销")
 
 const router = useRouter()
 
-onMounted(()=>{
+onMounted(() => {
     set_info()  // 设置界面加载时各状态信息
 })
 
@@ -272,26 +282,40 @@ const switch_but = (who: string) => {  // 切换按钮样式
                 bootLink.value = "开机连接"
             }
             break;
+        case "parameterInheritance":
+            if (parameterInheritance.value === "参数继承") {
+                coreConfig.value["parameterInheritance"] = false;
+                parameterInheritance.value = "参数摒弃"
+            } else if ((parameterInheritance.value === "参数摒弃")) {
+                coreConfig.value["parameterInheritance"] = true;
+                parameterInheritance.value = "参数摒弃"
+            }
+            break;
         default:
             break;
     }
 
 }
-const set_info = () =>{
-    if ( CoreConfig.value['focusDraw'] === false){
+const set_info = () => {
+    if (CoreConfig.value['focusDraw'] === false) {
         focusDraw.value = "禁用中";
-    } else{
+    } else {
         focusDraw.value = "启用中";
     }
-    if (CoreConfig.value["backUpMode"] === "single-step"){
+    if (CoreConfig.value["backUpMode"] === "single-step") {
         undoMode.value = "步撤销"
-    }else{
+    } else {
         undoMode.value = "段撤销"
     }
-    if(coreConfig.value["bootLink"] === false){
+    if (coreConfig.value["bootLink"] === false) {
         bootLink.value = "开机断连"
     } else {
         bootLink.value = "开机连接"
+    }
+    if (coreConfig.value["parameterInheritance"] === false) {
+        parameterInheritance.value = "参数摒弃"
+    } else {
+        parameterInheritance.value = "参数继承"
     }
 }
 
