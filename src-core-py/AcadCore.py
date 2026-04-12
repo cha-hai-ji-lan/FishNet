@@ -145,6 +145,23 @@ class ACADBase:
             print(f"--undo-err--{str(e)}")
             return False
 
+    def undo_mark(self, steps: int = 1) -> bool:
+        """
+        撤销标记 - 使用 SendCommand
+        撤销限制：AutoCAD 的撤销步数受系统变量 UNDOCTL 和 UINDO 限制
+
+        :param steps: 要撤销的步数，默认为 1 步
+        :return: 撤销是否成功
+        """
+        try:
+            for _ in range(steps):
+                self.doc.SendCommand("_.UNDO\n_BACK\n")  # 撤销
+            print(f"--has-undo-mark--{steps}--step-opr")
+            return True
+        except Exception as e:
+            print(f"--undo-mark-err--{str(e)}")
+            return False
+
     def redo(self, steps: int = 1) -> bool:
         """
         重做指定的操作步骤数
@@ -300,8 +317,14 @@ class AcadDxf(ACADBase):
         temp: list = []
         for i in range(len(pos_list1)):
             temp.append(self.mid_val(pos_list1[i], pos_list2[i]))
-        print(temp)
         return temp
+
+    @staticmethod
+    def has_brackets(text: str) -> bool:
+        """检查字符串是否包含中英文括号"""
+        # 英文括号 + 中文括号
+        brackets = {'(', ')', '（', '）'}
+        return any(char in brackets for char in text)
 
     @staticmethod
     def s(val1, val2):
@@ -369,7 +392,7 @@ class AcadDxf(ACADBase):
             self.focus_interface()  # 聚焦
         if close_flag:
             rectangle.Closed = True
-        print(self.msp.Count)
+        # print(self.msp.Count)
 
     def m_txt(self, content: str, position: list, word_height: float = 0,
               insert_mode: int = 0, label_offset: list | None = None, rotary: tuple = (0, []),
@@ -418,6 +441,21 @@ class AcadDxf(ACADBase):
                 position[0] -= label_offset[0]
             elif label_offset[1] == 4:
                 position[0] += label_offset[0]
+            # 如果内容包含中文，自动切换到中文字体
+        # has_chinese = any('\u4e00' <= char <= '\u9fff' for char in content)
+        # if has_chinese or use_chinese_font:
+        #     # 保存当前文字样式
+        #     original_style = self.doc.ActiveTextStyle.Name
+        #
+        #     # 创建或切换到中文字体样式
+        #     try:
+        #         chinese_style = self.doc.TextStyles.Item("ChineseStyle")
+        #     except:
+        #         # 如果不存在则创建
+        #         chinese_style = self.doc.TextStyles.Add("ChineseStyle")
+        #         chinese_style.fontFile = "simsun.ttf"  # 宋体
+        #
+        #     self.doc.ActiveTextStyle = chinese_style
         # 设置文本插入点
         insert_pos = l2F(position)
         text_obj = self.msp.AddText(content, insert_pos, word_height)
@@ -482,7 +520,7 @@ class AcadDxf(ACADBase):
                     self.m_txt(i, position[:], word_height, insert_mode, label_offset, rotary, mirror)
                     position[1] -= word_height + self.cfg["annotationOffset"]
                 elif isinstance(i, list):
-                    self.m_txt(",".join(i), position[:], word_height, insert_mode, label_offset, rotary,mirror)
+                    self.m_txt(",".join(i), position[:], word_height, insert_mode, label_offset, rotary, mirror)
                     position[1] -= word_height + self.cfg["annotationOffset"]
                 # else:
                 #     if isinstance(i, str):
@@ -551,6 +589,11 @@ class AcadDxf(ACADBase):
         """
         self.doc.SendCommand("_.REGEN\n")  # 下划线确保命令识别，\n表示回车执行 刷新界面
         self.cache["eyeSlopePosMark"] = []
+        if self.cfg["-useSegmentSpacing"]:
+            self.s_pos[1] += self.cfg["segmentSpacing"]
+            self.s_pos[3] += self.cfg["segmentSpacing"]
+            self.s_pos[5] -= self.cfg["segmentSpacing"]
+            self.s_pos[7] -= self.cfg["segmentSpacing"]
         self.cache["preSegment"] = self.s_pos
         self.shears: dict = {"N": 0, "T": 0, "B": 0}  # 边旁 起剪 续剪 落剪参数
         self.eye_shears: dict = {"N": 0, "T": 0, "B": 0}  # 宕眼 起剪 续剪 落剪参数
@@ -611,13 +654,15 @@ class AcadTool(AcadDxf):
         print(f"-arg-org-st--{arg}--{type(arg)}")
         self.i_arg = []  # 清空当前原有参数
         result = arg[0].split(",")
-        for single_param in result:
-            if single_param in ["", "null", None]:
+        for index, single_param in enumerate(result):
+            if single_param in ["", "null", None, "None"]:
                 single_param = None
             elif single_param in [True, "True", "true"]:
                 single_param = True
             elif single_param in [False, "False", "false"]:
                 single_param = False
+            # elif index == 0 and self.has_brackets(single_param):
+            #     single_param = False
             else:
                 try:
                     single_param = float(single_param)
@@ -626,7 +671,14 @@ class AcadTool(AcadDxf):
             self.i_arg.append(single_param)
         if arg[1] == "-cfg-wireDiameter":  # 线径规格
             self.cfg["wireDiameter"] = arg[2]
-        print(self.i_arg)
+        if "-drawNetSac" in arg:
+            self.cfg["-drawNetSac"] = True
+        else:
+            self.cfg["-drawNetSac"] = False
+        if "-useSegmentSpacing" in arg:
+            self.cfg["-useSegmentSpacing"] = True
+        else:
+            self.cfg["-useSegmentSpacing"] = False
 
     def confirm_the_clipping_slope__two(self) -> None:
         """
@@ -808,7 +860,6 @@ class AcadTool(AcadDxf):
 
     def calculate_the_ratio(self):
         # 计算起剪数据
-        print("---self.slope--", self.slope)
         if isinstance(self.slope[0], str):
             number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.slope[0])]
             if "N" in self.slope[0]:
@@ -871,17 +922,12 @@ class AcadTool(AcadDxf):
                 if "N" in self.slope[1]:
                     self.shears["N"] += number_list[0]
                     temp_one_cycles_len += number_list[0]
-                    print("---temp_one_cycles_lenA--", temp_one_cycles_len)
-                    print("---cycles_total_lenB--", cycles_total_len)
                 if "T" in self.slope[1]:
                     self.shears["T"] += number_list[0]
                 if "B" in self.slope[1]:
                     self.shears["B"] += number_list[1] / 2
                     self.shears["N"] += number_list[1] / 2
                     temp_one_cycles_len += number_list[1] / 2
-                    print("---temp_one_cycles_lenB--", temp_one_cycles_len)
-                    print("---cycles_total_lenB--", cycles_total_len)
-
                 self.cycles += 1
                 if temp_one_cycles_len >= cycles_total_len:
                     break
@@ -1039,12 +1085,20 @@ class AcadTool(AcadDxf):
                 self.ORI[0] - (1.5 * self.cfg["tableOffset"]),
                 self.mid_val(pr[1], pr[7])
             ]
-            self.m_txt(
-                str(int(self.i_arg[0])),
-                mark_start_pos[:],
-                0, 1,
-                [self.THB / 2, 2]
-            )
+            if isinstance(self.i_arg[0], list):
+                self.m_txt(
+                    f"{int(self.i_arg[0][0])}({int(self.i_arg[0][1])})",
+                    mark_start_pos[:],
+                    0, 1,
+                    [self.THB / 2, 2]
+                )
+            else:
+                self.m_txt(
+                    str(int(self.i_arg[0])),
+                    mark_start_pos[:],
+                    0, 1,
+                    [self.THB / 2, 2]
+                )
             if self.part_obj == "tl" and self.i_arg[-1][0] == self.i_arg[-1][1]:
                 self.m_txt(
                     "2a",
@@ -1074,13 +1128,29 @@ class AcadTool(AcadDxf):
                            self.THB,
                            1)
             mark_start_pos[0] -= 0.25 * self.cfg["tableOffset"]
-            self.m_txt(
-                self.cfg["wireDiameter"],
-                mark_start_pos[:],
-                self.THB,
-                1,
-                [self.THB / 2, 2]
-            )
+            len_ = len(self.cfg["wireDiameter"])
+            if len_ > 5:
+                result = len_ // 5
+                if len_ % 5 != 0:
+                    result += 1
+                tmp_pos = mark_start_pos[:]
+                for i in range(result):
+                    self.m_txt(
+                        self.cfg["wireDiameter"][i * 5: (i * 5) + 5],
+                        tmp_pos,
+                        self.THB,
+                        1,
+                        [self.THB / 2, 2]
+                    )
+                    tmp_pos[1] -= self.THB + self.cfg["annotationOffset"]
+            else:
+                self.m_txt(
+                    self.cfg["wireDiameter"],
+                    mark_start_pos[:],
+                    self.THB,
+                    1,
+                    [self.THB / 2, 2]
+                )
             if self.part_obj == "tl" and self.i_arg[-1][0] != self.i_arg[-1][1]:
                 self.m_txt(
                     "MAT",
@@ -1091,13 +1161,22 @@ class AcadTool(AcadDxf):
 
                 )
             mark_start_pos[0] -= 0.25 * self.cfg["tableOffset"]
-            self.m_txt(
-                str((self.i_arg[0] * self.i_arg[1]) / 1e3),
-                mark_start_pos[:],
-                self.THB,
-                1,
-                [self.THB / 2, 2]
-            )
+            if isinstance(self.i_arg[0], list):
+                self.m_txt(
+                    str((self.i_arg[0][0] * self.i_arg[1]) / 1e3),
+                    mark_start_pos[:],
+                    self.THB,
+                    1,
+                    [self.THB / 2, 2]
+                )
+            else:
+                self.m_txt(
+                    str((self.i_arg[0] * self.i_arg[1]) / 1e3),
+                    mark_start_pos[:],
+                    self.THB,
+                    1,
+                    [self.THB / 2, 2]
+                )
             if self.part_obj == "tl" and self.i_arg[-1][0] == self.i_arg[-1][1]:
                 self.m_txt(
                     "NL",
@@ -1332,6 +1411,7 @@ class ACAD(AcadTool):
         self.doc.Application.Visible = True
         self.set_shx_text_style()
         self.load_line_type("ACAD_ISO04W100")  # 加载线型
+        self.doc.SendCommand("_.UNDO\n_MARK\n")  # 撤销标记
 
     def draw_two_piece_body(self, arg) -> None:
         """
@@ -1366,13 +1446,24 @@ class ACAD(AcadTool):
                 - (self.i_arg[0] * self.i_arg[1] * self.ZY)
             ])
             self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
-            print("---self.s_pos--", self.s_pos)
-            self.pos_write_to_adoc(self.s_pos)
             self.cache["netBody"] = self.s_pos
             self.has_draw_first_segment = True
+        elif self.cfg["-drawNetSac"]:
+            self.s_pos.extend(self.cache["preSegment"][6:])
+            self.s_pos.extend(self.cache["preSegment"][4:6])
+            if isinstance(self.i_arg[0], list):
+                self.s_pos.extend([
+                    self.s_pos[2],
+                    self.s_pos[3] - (self.i_arg[0][0] * self.i_arg[1] * self.ZY)
+                ])
+            else:
+                self.s_pos.extend([
+                    self.s_pos[2],
+                    self.s_pos[3] - (self.i_arg[0] * self.i_arg[1] * self.ZY)
+                ])
+            self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
         else:
-            mesh_len_ratio = (
-                    self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2) / self.i_arg[2]  # 裁剪后的横向目数比例
+            mesh_len_ratio = (self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2) / self.i_arg[2]  # 裁剪后的横向目数比例
             self.s_pos.extend(self.cache["preSegment"][6:])
             self.s_pos.extend(self.cache["preSegment"][4:6])
             self.s_pos.extend([
@@ -1382,31 +1473,31 @@ class ACAD(AcadTool):
                 - (self.i_arg[0] * self.i_arg[1] * self.ZY)
             ])
             self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
-            print("", self.s_pos)
             self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
-        self.m_txt(
-            str(int(self.i_arg[2])),
-            self.mid_pos(self.s_pos[:2], self.s_pos[2:4]),
-            0, 7,
-            [self.cfg["annotationOffset"], 2])
-        self.m_txt(
-            str(int(self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2)),
-            self.mid_pos(self.s_pos[4:6], self.s_pos[6:]),
-            0, 1,
-            [self.cfg["annotationOffset"], 1])
-        self.m_txt(
-            f"{int(self.i_arg[-1][0])}-{int(self.i_arg[-1][1])}",
-            self.mid_pos(self.s_pos[2:4], self.s_pos[4:6]),
-            -1, 7,
-            [self.cfg["annotationOffset"], 4],
-            (1, [self.s_pos[2:4], self.s_pos[4:6]])
-        )
-        self.mm_txt(
-            self.slope,
-            self.mid_pos(self.s_pos[2:4], self.s_pos[4:6]),
-            -1, 9,
-            [self.cfg["annotationOffset"] * 8, 4])
-
+        if self.i_arg[2] is not None:
+            self.m_txt(
+                str(int(self.i_arg[2])),
+                self.mid_pos(self.s_pos[:2], self.s_pos[2:4]),
+                0, 7,
+                [self.cfg["annotationOffset"], 2])
+            self.m_txt(
+                str(int(self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2)),
+                self.mid_pos(self.s_pos[4:6], self.s_pos[6:]),
+                0, 1,
+                [self.cfg["annotationOffset"], 1])
+            self.m_txt(
+                f"{int(self.i_arg[-1][0])}-{int(self.i_arg[-1][1])}",
+                self.mid_pos(self.s_pos[2:4], self.s_pos[4:6]),
+                -1, 7,
+                [self.cfg["annotationOffset"], 4],
+                (1, [self.s_pos[2:4], self.s_pos[4:6]])
+            )
+            self.mm_txt(
+                self.slope,
+                self.mid_pos(self.s_pos[2:4], self.s_pos[4:6]),
+                -1, 9,
+                [self.cfg["annotationOffset"] * 8, 4])
+        self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
         self.draw_sheet_two()
         self.refresh_pos()  # 最后刷新坐标并记录上一段点
         self.doc.EndUndoMark()

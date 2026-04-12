@@ -10,15 +10,18 @@
         <div class="w100 ban-select">
             <div class="item">
                 <div class="item-title">网身目大:</div><input v-model="netGroup['leftSleeve'][`${segment}`][0]"
-                    :placeholder="coreConfig['parameterInheritance']? netGroup['leftSleeve'][`${segment - 1}`]?.[0] ||'目大' : '目大'" type="number">
+                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['leftSleeve'][`${segment - 1}`]?.[0] || '目大' : '目大'"
+                    type="text">
             </div>
             <div class="item">
                 <div class="item-title">网身纵向目数:</div><input v-model="netGroup['leftSleeve'][`${segment}`][1]"
-                    :placeholder="coreConfig['parameterInheritance']? netGroup['leftSleeve'][`${segment - 1}`]?.[1] ||'纵向目数' : '纵向目数'" type="number">
+                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['leftSleeve'][`${segment - 1}`]?.[1] || '纵向目数' : '纵向目数'"
+                    type="number">
             </div>
             <div class="item">
                 <div class="item-title">网身横向目数:</div><input v-model="netGroup['leftSleeve'][`${segment}`][2]"
-                    :placeholder="coreConfig['parameterInheritance']? netGroup['leftSleeve'][`${segment - 1}`]?.[2] || '横向目数' : '横向目数'" type="number">
+                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['leftSleeve'][`${segment - 1}`]?.[2] || '横向目数' : '横向目数'"
+                    type="number">
             </div>
             <div class="item">
                 <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['leftSleeve'][`${segment}`][3]"
@@ -26,14 +29,22 @@
             </div>
             <div class="item">
                 <div class="item-title">线径规格:</div><input v-model="netGroup['leftSleeve'][`${segment}`][4]"
-                    :placeholder="coreConfig['parameterInheritance']? netGroup['leftSleeve'][`${segment - 1}`]?.[4] || '线径规格默认:' + coreConfig['defaultParam']['wireDiameter'] : '线径规格默认:' + coreConfig['defaultParam']['wireDiameter']"
+                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['leftSleeve'][`${segment - 1}`]?.[4] || '线径规格默认:' + coreConfig['defaultParam']['wireDiameter'] : '线径规格默认:' + coreConfig['defaultParam']['wireDiameter']"
                     type="text">
             </div>
             <div class="item">
-                <div class="item-title choose-button" :class="{ 'lost-color': coreConfig['parameterInheritance'] === false }"
-                    @click="() => { coreConfig['parameterInheritance']= !coreConfig['parameterInheritance'] }">{{ coreConfig['parameterInheritance'] ?
-                        '参数继承' : '参数摒弃' }}</div>
+                <div class="item-title choose-button"
+                    :class="{ 'lost-color': coreConfig['parameterInheritance'] === false }"
+                    @click="() => { coreConfig['parameterInheritance'] = !coreConfig['parameterInheritance'] }">{{
+                        coreConfig['parameterInheritance'] ?
+                            '参数继承' : '参数摒弃' }}</div>
             </div>
+            <div class="item-title choose-button"
+                :class="{ 'lost-color': coreConfig['defaultParam']['-useSegmentSpacing'] === false }"
+                @click="() => { coreConfig['defaultParam']['-useSegmentSpacing'] = !coreConfig['defaultParam']['-useSegmentSpacing'] }">
+                {{
+                    coreConfig['defaultParam']['-useSegmentSpacing'] ?
+                        '启用横向间隙' : '禁用横向间隙' }}</div>
         </div>
         <div class="w100 ban-select">
             <div class="item">
@@ -84,10 +95,11 @@ watch(() => netGroup.value['leftSleeve']['segment'], () => {
 const next_segment = () => {
     cacheRouterPath.value = route.path
     netGroup.value["hasDraw"] = true
-    check_pre_segment()
+    if (coreConfig.value['parameterInheritance']) {
+        check_pre_segment()
+    }
     set_default_param()
-    send_parma_to_cli(["-i", `${netGroup.value['leftSleeve'][`${segment.value}`].slice(0, 4)}`,
-        "-cfg-wireDiameter", netGroup.value['leftSleeve'][`${segment.value}`][4]]);
+    send_parma_to_cli(collate_param());
     netGroup.value['leftSleeve']['segment'] += 1
     segment.value = netGroup.value['leftSleeve']['segment']
     netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`] = Array(5).fill(null)
@@ -112,7 +124,19 @@ const check_pre_segment = () => {
 const set_default_param = () => {
     if (netGroup.value['leftSleeve'][`${segment.value}`][4] === null) netGroup.value['leftSleeve'][`${segment.value}`][4] = coreConfig.value['defaultParam']['wireDiameter']
     if (netGroup.value['leftSleeve'][`${segment.value}`][3] === null && netGroup.value['drawNetSac']) { netGroup.value['leftSleeve'][`${segment.value}`][3] = "1:0" } else netGroup.value['leftSleeve'][`${segment.value}`][3] = "1:1"
+    netGroup.value['leftSleeve'][`${segment.value}`].forEach((val: string | number | null, index: number) => {
+        if (val === null) netGroup.value['leftSleeve'][`${segment.value}`][index] = "None"
+    });
 
+}
+const collate_param = (): string[] => {
+    let param: string[] = []
+    param.push("-i")
+    param.push(`${netGroup.value['leftSleeve'][`${segment.value}`].slice(0, 4)}`)
+    param.push("-cfg-wireDiameter")
+    param.push(netGroup.value['leftSleeve'][segment.value][4])  // 该元素本来就是字符串无需``
+    if (coreConfig.value['defaultParam']['-useSegmentSpacing']) param.push("-useSegmentSpacing")
+    return param
 }
 const clean_param = () => {
     netGroup.value['leftSleeve'][`${segment.value}`].fill(null)
@@ -221,7 +245,7 @@ const clean_param = () => {
             max-width: 300px;
 
             &.choose-button {
-                width: 10%;
+                width: fit-content;
                 text-align: center;
                 background-color: rgba(var(--ready-note), var(--pTransparency));
                 border: 2px solid rgba(var(--ready-note), 1);
@@ -258,10 +282,11 @@ const clean_param = () => {
                 border-radius: 1vmin;
                 margin: 0 1vmin;
             }
+
             &.lost-color {
-                    border: 2px solid rgba(var(--normal-note), 1);
-                    background-color: rgba(var(--normal-note), var(--pTransparency));
-                }
+                border: 2px solid rgba(var(--normal-note), 1);
+                background-color: rgba(var(--normal-note), var(--pTransparency));
+            }
 
             &.item-button-fin {
                 display: flex;

@@ -174,7 +174,13 @@
                 <div class="setting-item">
                     <div class="setting-title ban-select">线 径 规 格</div>
                     <div class="update-item nor-input">
-                        <input v-model="CoreConfig['wireDiameter']" type="text" :placeholder="CoreConfig['materal']">
+                        <input v-model="CoreConfig['wireDiameter']" type="text" :placeholder="CoreConfig['wireDiameter']">
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-title ban-select">横向间隙</div>
+                    <div class="update-item nor-input">
+                        <input v-model="CoreConfig['segmentSpacing']" type="text" :placeholder="CoreConfig['segmentSpacing']">
                     </div>
                 </div>
             </div>

@@ -16,7 +16,11 @@
       "annotationOffset": 2,
       "wireDiameter": "25X3",
       "focusDraw": true,
-      "backUpMode": "segment-step"
+      "backUpMode": "segment-step",
+      "segmentSpacing": 5,
+      "-drawNetSac": false,
+      "-useSegmentSpacing": false
+
     }
   },
   "colorPalette": {

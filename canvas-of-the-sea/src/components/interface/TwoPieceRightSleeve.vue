@@ -11,7 +11,7 @@
             <div class="item">
                 <div class="item-title">网身目大:</div><input v-model="netGroup['rightSleeve'][`${segment}`][0]"
                     :placeholder="coreConfig['parameterInheritance'] ? netGroup['rightSleeve'][`${segment - 1}`]?.[0] || '目大' : '目大'"
-                    type="number">
+                    type="text">
             </div>
             <div class="item">
                 <div class="item-title">网身纵向目数:</div><input v-model="netGroup['rightSleeve'][`${segment}`][1]"
@@ -39,6 +39,12 @@
                         coreConfig['parameterInheritance'] ?
                             '参数继承' : '参数摒弃' }}</div>
             </div>
+           <div class="item-title choose-button"
+                :class="{ 'lost-color': coreConfig['defaultParam']['-useSegmentSpacing'] === false }"
+                @click="() => { coreConfig['defaultParam']['-useSegmentSpacing'] = !coreConfig['defaultParam']['-useSegmentSpacing'] }">
+                {{
+                    coreConfig['defaultParam']['-useSegmentSpacing'] ?
+                        '启用横向间隙' : '禁用横向间隙' }}</div>
 
         </div>
         <div class="w100 ban-select">
@@ -90,11 +96,11 @@ watch(() => netGroup.value['rightSleeve']['segment'], () => {
 const next_segment = () => {
     cacheRouterPath.value = route.path
     netGroup.value["hasDraw"] = true
-    check_pre_segment()
+    if (coreConfig.value['parameterInheritance']) {
+        check_pre_segment()
+    }
     set_default_param()
-    send_parma_to_cli(["-i", `${netGroup.value['rightSleeve'][`${segment.value}`].slice(0, 4)}`,
-        "-cfg-wireDiameter", netGroup.value['rightSleeve'][`${segment.value}`][4]]);
-
+    send_parma_to_cli(collate_param());
     netGroup.value['rightSleeve']['segment'] += 1
     segment.value = netGroup.value['rightSleeve']['segment']
     netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`] = Array(5).fill(null)
@@ -118,7 +124,19 @@ const check_pre_segment = () => {
 const set_default_param = () => {
     if (netGroup.value['rightSleeve'][`${segment.value}`][4] === null) netGroup.value['rightSleeve'][`${segment.value}`][4] = coreConfig.value['defaultParam']['wireDiameter']
     if (netGroup.value['rightSleeve'][`${segment.value}`][3] === null && netGroup.value['drawNetSac']) { netGroup.value['rightSleeve'][`${segment.value}`][3] = "1:0" } else netGroup.value['rightSleeve'][`${segment.value}`][3] = "1:1"
+    netGroup.value['rightSleeve'][`${segment.value}`].forEach((val: string | number | null, index: number) => {
+        if (val === null) netGroup.value['rightSleeve'][`${segment.value}`][index] = "None"
+    });
 
+}
+const collate_param = (): string[] => {
+    let param: string[] = []
+    param.push("-i")
+    param.push(`${netGroup.value['rightSleeve'][`${segment.value}`].slice(0, 4)}`)
+    param.push("-cfg-wireDiameter")
+    param.push(netGroup.value['rightSleeve'][segment.value][4])  // 该元素本来就是字符串无需``
+    if (coreConfig.value['defaultParam']['-useSegmentSpacing']) param.push("-useSegmentSpacing")
+    return param
 }
 const clean_param = () => {
     netGroup.value['rightSleeve'][`${segment.value}`].fill(null)
@@ -227,7 +245,7 @@ const clean_param = () => {
             max-width: 300px;
 
             &.choose-button {
-                width: 10%;
+                width: fit-content;
                 text-align: center;
                 background-color: rgba(var(--ready-note), var(--pTransparency));
                 border: 2px solid rgba(var(--ready-note), 1);
