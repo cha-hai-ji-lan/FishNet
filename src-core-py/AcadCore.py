@@ -685,9 +685,8 @@ class AcadTool(AcadDxf):
             self.cfg["-useSegmentSpacing"] = True
         else:
             self.cfg["-useSegmentSpacing"] = False
-        if not self.has_draw_left_sleeve_first_segment and self.i_arg[0] is None :
+        if not self.has_draw_left_sleeve_first_segment and self.i_arg[0] is None:
             self.i_arg[0] = self.cache["netBodyArg"][0]
-
 
     def confirm_the_clipping_slope__two(self) -> None:
         """
@@ -1524,7 +1523,31 @@ class ACAD(AcadTool):
         self.confirm_the_clipping_slope__two()
         self.calculate_the_ratio()
         if not self.has_draw_left_sleeve_first_segment:
-
+            mesh_len = self.i_arg[2] - self.shears["T"] + self.shears["B"]
+            self.s_pos.extend(self.cache["netBody"][0:2])
+            self.s_pos.extend([
+                self.ORI[0] - mesh_len / 2,
+                self.s_pos[1]
+                + (self.i_arg[0] * self.i_arg[1] * self.ZY)]
+            )
+            self.s_pos.extend([
+                self.ORI[0],
+                self.s_pos[3]]
+            )
+            self.s_pos.extend(self.ORI[:])
+        else:
+            mesh_len = self.i_arg[2] + self.shears["T"] + self.shears["B"] - self.eye_shears["T"] - self.eye_shears["B"]
+            self.s_pos.extend(self.cache["preSegment"][0:2])
+            self.s_pos.extend([
+                self.s_pos[2]
+                - (mesh_len / 2),
+                self.s_pos[3]
+                + (self.i_arg[0] * self.i_arg[1] * self.ZY)
+            ])
+            self.s_pos.extend([
+                self.s_pos[2],
+                self.s_pos[3]]
+            )
 
         self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
         self.draw_sheet_two()
@@ -1547,8 +1570,6 @@ class ACAD(AcadTool):
         self.calculate_the_ratio()
         if not self.has_draw_right_sleeve_first_segment:
             mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
-
-
 
         self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
         self.draw_sheet_two()

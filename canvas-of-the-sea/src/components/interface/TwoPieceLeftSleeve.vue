@@ -18,13 +18,13 @@
                     :placeholder="coreConfig['parameterInheritance'] ? netGroup['leftSleeve'][`${segment - 1}`]?.[1] || '纵向目数' : '纵向目数'"
                     type="number">
             </div>
-            <div class="item">
+            <div  v-if="segment !== 1" class="item">
                 <div class="item-title">网身横向目数:</div><input v-model="netGroup['leftSleeve'][`${segment}`][2]"
                     :placeholder="coreConfig['parameterInheritance'] ? netGroup['leftSleeve'][`${segment - 1}`]?.[2] || netGroup['netBody'][0]?.[2] : '横向目数'"
                     type="number">
             </div>
-            <div class="item">
-                <div class="item-title">宕眼剪裁斜率:</div><input v-model="netGroup['leftSleeve'][`${segment}`][3]"
+            <div v-if="segment !== 1" class="item">
+                <div  class="item-title">宕眼剪裁斜率:</div><input v-model="netGroup['leftSleeve'][`${segment}`][3]"
                     placeholder="剪裁斜率默认 1:1" type="text">
             </div>
             <div class="item">
