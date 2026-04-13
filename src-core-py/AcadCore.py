@@ -9,6 +9,14 @@ from typeInfoConfig import (
 from staticParam import cut_slope, eye_cut_slope, base_param
 
 
+# TODO::网身第一段也可为矩形
+# TODO::天井段 不一定会画 加入网身可选项
+# TODO:: 119 * 200 / 1000 / 2
+# TODO:: 比例 1:2 1:4
+# TODO:: 缝合目数 上下
+# TODO:: 保留箭头横线
+# TODO:: AB 全斜边    AN: 直边 斜边    N全直边    B: 1:1
+# TODO:: 150 119 算 4:3 以及对应 开剪 续剪 落剪
 class ACADBase:
     def __init__(self):
         self.cad = None  # CAD对象
@@ -128,57 +136,7 @@ class ACADBase:
             import traceback
             traceback.print_exc()
 
-    def undo(self, steps: int = 1) -> bool:
-        """
-        撤销指定的操作步骤数
-        撤销限制：AutoCAD 的撤销步数受系统变量 UNDOCTL 和 UINDO 限制
-
-        :param steps: 要撤销的步数，默认为 1 步
-        :return: 撤销是否成功
-        """
-        try:
-            for _ in range(steps):
-                self.doc.Undo()
-            print(f"--has-undo--{steps}--step-opr")
-            return True
-        except Exception as e:
-            print(f"--undo-err--{str(e)}")
-            return False
-
-    def undo_mark(self, steps: int = 1) -> bool:
-        """
-        撤销标记 - 使用 SendCommand
-        撤销限制：AutoCAD 的撤销步数受系统变量 UNDOCTL 和 UINDO 限制
-
-        :param steps: 要撤销的步数，默认为 1 步
-        :return: 撤销是否成功
-        """
-        try:
-            for _ in range(steps):
-                self.doc.SendCommand("_.UNDO\n_BACK\n")  # 撤销
-            print(f"--has-undo-mark--{steps}--step-opr")
-            return True
-        except Exception as e:
-            print(f"--undo-mark-err--{str(e)}")
-            return False
-
-    def redo(self, steps: int = 1) -> bool:
-        """
-        重做指定的操作步骤数
-
-        :param steps: 要重做的步数，默认为 1 步
-        :return: 重做是否成功
-        """
-        try:
-            for _ in range(steps):
-                self.doc.Redo()
-            print(f"--has-redo-{steps}--step-opr")
-            return True
-        except Exception as e:
-            print(f"--redo-err--{str(e)}")
-            return False
-
-    def clean_model(self):
+    def clean_model(self, *args, **kwargs):
         """
         清除模型空间中的所有对象
         :return:
@@ -376,6 +334,52 @@ class AcadDxf(ACADBase):
         :return: 弧度
         """
         return math.atan((pos2[1] - pos1[1]) / (pos2[0] - pos1[0]))
+
+    def undo(self, *args, **kwargs) -> bool:
+        """
+        撤销指定的操作步骤数
+        撤销限制：AutoCAD 的撤销步数受系统变量 UNDOCTL 和 UINDO 限制
+
+        :param steps: 要撤销的步数，默认为 1 步
+        :return: 撤销是否成功
+        """
+        try:
+            self.doc.SendCommand("_.UNDO\n1\n")
+            print(f"--has-undo-1-step-opr")
+            return True
+        except Exception as e:
+            print(f"--undo-err--{str(e)}")
+            return False
+
+    def undo_mark(self, steps: int = 1) -> bool:
+        """
+        撤销标记 - 使用 SendCommand
+        撤销限制：AutoCAD 的撤销步数受系统变量 UNDOCTL 和 UINDO 限制
+
+        :param steps: 要撤销的步数，默认为 1 步
+        :return: 撤销是否成功
+        """
+        try:
+            for _ in range(steps):
+                self.doc.SendCommand("_.UNDO\n_BACK\n")  # 撤销
+            print(f"--has-undo-mark--{steps}--step-opr")
+            return True
+        except Exception as e:
+            print(f"--undo-mark-err--{str(e)}")
+            return False
+
+    def redo(self, *args, **kwargs) -> bool:
+        """
+        重做指定的操作步骤数
+        :return: 重做是否成功
+        """
+        try:
+            self.doc.SendCommand("_.REDO\n1\n")
+            print(f"--has-redo-1-step-opr")
+            return True
+        except Exception as e:
+            print(f"--redo-err--{str(e)}")
+            return False
 
     def pos_write_to_adoc(self, pos_list: list, close_flag: bool = True):
         """
@@ -596,6 +600,8 @@ class AcadDxf(ACADBase):
             self.s_pos[3] += self.cfg["segmentSpacing"]
             self.s_pos[5] -= self.cfg["segmentSpacing"]
             self.s_pos[7] -= self.cfg["segmentSpacing"]
+        if "preSegment" in self.cache.keys():
+            self.cache["undoPreSegment"] = self.cache["preSegment"]
         self.cache["preSegment"] = self.s_pos
         if self.has_draw_first_segment is False:
             self.cache["netBody"] = self.s_pos
@@ -1508,70 +1514,70 @@ class ACAD(AcadTool):
         self.refresh_pos()  # 最后刷新坐标并记录上一段点
         self.doc.EndUndoMark()
 
-    def draw_two_piece_left_sleeve(self, arg) -> None:
-        """
-        绘制两片式网身左袖
-        :param arg:
-        :return:
-        """
-        if self.cache["netBody"] is None:
-            print("--no-net-body-first-segment")
-            return
-        self.part_obj = "tb"  # 网身 two-body
-        self.doc.StartUndoMark()
-        self.collate_param(arg)
-        self.confirm_the_clipping_slope__two()
-        self.calculate_the_ratio()
-        if not self.has_draw_left_sleeve_first_segment:
-            mesh_len = self.i_arg[2] - self.shears["T"] + self.shears["B"]
-            self.s_pos.extend(self.cache["netBody"][0:2])
-            self.s_pos.extend([
-                self.ORI[0] - mesh_len / 2,
-                self.s_pos[1]
-                + (self.i_arg[0] * self.i_arg[1] * self.ZY)]
-            )
-            self.s_pos.extend([
-                self.ORI[0],
-                self.s_pos[3]]
-            )
-            self.s_pos.extend(self.ORI[:])
-        else:
-            mesh_len = self.i_arg[2] + self.shears["T"] + self.shears["B"] - self.eye_shears["T"] - self.eye_shears["B"]
-            self.s_pos.extend(self.cache["preSegment"][0:2])
-            self.s_pos.extend([
-                self.s_pos[2]
-                - (mesh_len / 2),
-                self.s_pos[3]
-                + (self.i_arg[0] * self.i_arg[1] * self.ZY)
-            ])
-            self.s_pos.extend([
-                self.s_pos[2],
-                self.s_pos[3]]
-            )
-
-        self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
-        self.draw_sheet_two()
-        self.refresh_pos()  # 最后刷新坐标并记录上一段点
-        self.doc.EndUndoMark()
-
-    def draw_two_piece_right_sleeve(self, arg) -> None:
-        """
-        绘制两片式网身右袖
-        :param arg:
-        :return:
-        """
-        if self.cache["netBody"] is None:
-            print("--no-net-body-first-segment")
-            return
-        self.part_obj = "tb"  # 网身 two-body
-        self.doc.StartUndoMark()
-        self.collate_param(arg)
-        self.confirm_the_clipping_slope__two()
-        self.calculate_the_ratio()
-        if not self.has_draw_right_sleeve_first_segment:
-            mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
-
-        self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
-        self.draw_sheet_two()
-        self.refresh_pos()  # 最后刷新坐标并记录上一段点
-        self.doc.EndUndoMark()
+    # def draw_two_piece_left_sleeve(self, arg) -> None:
+    #     """
+    #     绘制两片式网身左袖
+    #     :param arg:
+    #     :return:
+    #     """
+    #     if self.cache["netBody"] is None:
+    #         print("--no-net-body-first-segment")
+    #         return
+    #     self.part_obj = "tb"  # 网身 two-body
+    #     self.doc.StartUndoMark()
+    #     self.collate_param(arg)
+    #     self.confirm_the_clipping_slope__two()
+    #     self.calculate_the_ratio()
+    #     if not self.has_draw_left_sleeve_first_segment:
+    #         mesh_len = self.i_arg[2] - self.shears["T"] + self.shears["B"]
+    #         self.s_pos.extend(self.cache["netBody"][0:2])
+    #         self.s_pos.extend([
+    #             self.ORI[0] - mesh_len / 2,
+    #             self.s_pos[1]
+    #             + (self.i_arg[0] * self.i_arg[1] * self.ZY)]
+    #         )
+    #         self.s_pos.extend([
+    #             self.ORI[0],
+    #             self.s_pos[3]]
+    #         )
+    #         self.s_pos.extend(self.ORI[:])
+    #     else:
+    #         mesh_len = self.i_arg[2] + self.shears["T"] + self.shears["B"] - self.eye_shears["T"] - self.eye_shears["B"]
+    #         self.s_pos.extend(self.cache["preSegment"][0:2])
+    #         self.s_pos.extend([
+    #             self.s_pos[2]
+    #             - (mesh_len / 2),
+    #             self.s_pos[3]
+    #             + (self.i_arg[0] * self.i_arg[1] * self.ZY)
+    #         ])
+    #         self.s_pos.extend([
+    #             self.s_pos[2],
+    #             self.s_pos[3]]
+    #         )
+    #
+    #     self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
+    #     self.draw_sheet_two()
+    #     self.refresh_pos()  # 最后刷新坐标并记录上一段点
+    #     self.doc.EndUndoMark()
+    #
+    # def draw_two_piece_right_sleeve(self, arg) -> None:
+    #     """
+    #     绘制两片式网身右袖
+    #     :param arg:
+    #     :return:
+    #     """
+    #     if self.cache["netBody"] is None:
+    #         print("--no-net-body-first-segment")
+    #         return
+    #     self.part_obj = "tb"  # 网身 two-body
+    #     self.doc.StartUndoMark()
+    #     self.collate_param(arg)
+    #     self.confirm_the_clipping_slope__two()
+    #     self.calculate_the_ratio()
+    #     if not self.has_draw_right_sleeve_first_segment:
+    #         mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
+    #
+    #     self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
+    #     self.draw_sheet_two()
+    #     self.refresh_pos()  # 最后刷新坐标并记录上一段点
+    #     self.doc.EndUndoMark()

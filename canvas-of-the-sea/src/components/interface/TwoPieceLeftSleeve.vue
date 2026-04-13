@@ -58,11 +58,11 @@
             </div>
             <div class="item">
                 <div @click="() => { clean_param() }" class="item-title item-button-warn ban-select">清空</div>
-                <div @click="() => { clean_param() }" class="item-title item-button-warn ban-select">全部重置</div>
+                <div @click="() => { clean_param() }" class="item-title item-button-warn ban-select">清空活动页</div>
             </div>
             <div class="item">
-                <div class="item-title item-button-warn ban-select">退一步</div>
-                <div class="item-title item-button-warn ban-select">进一步</div>
+                <div @click="() => { undo_segment() }" class="item-title item-button-warn ban-select">退一步</div>
+                <div @click="() => { redo_segment() }" class="item-title item-button-warn ban-select">进一步</div>
             </div>
             <div class="item">
                 <div class="item-title item-button-fin ban-select"><span>完成</span></div>
@@ -151,6 +151,15 @@ const collate_param = (): string[] => {
 }
 const clean_param = () => {
     netGroup.value['leftSleeve'][`${segment.value}`].fill(null)
+}
+const clean_doc = () =>{
+    send_parma_to_cli(["-clean-doc"])
+}
+const undo_segment = () => {
+    send_parma_to_cli(["-undo-atom"])
+}
+const redo_segment = () => {
+    send_parma_to_cli(["-redo-atom"])
 }
 </script>
 <style scoped>

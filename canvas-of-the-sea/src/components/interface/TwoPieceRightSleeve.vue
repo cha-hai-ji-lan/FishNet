@@ -59,11 +59,11 @@
             </div>
             <div class="item">
                 <div @click="() => { clean_param() }" class="item-title item-button-warn ban-select">清空</div>
-                <div @click="() => { clean_param() }" class="item-title item-button-warn ban-select">全部重置</div>
+                <div @click="() => { clean_doc() }" class="item-title item-button-warn ban-select">清空活动页</div>
             </div>
             <div class="item">
-                <div class="item-title item-button-warn ban-select">退一步</div>
-                <div class="item-title item-button-warn ban-select">进一步</div>
+                <div @click="() => { undo_segment() }" class="item-title item-button-warn ban-select">退一步</div>
+                <div @click="() => { redo_segment() }" class="item-title item-button-warn ban-select">进一步</div>
             </div>
             <div class="item">
                 <div class="item-title item-button-fin ban-select"><span>完成</span></div>
@@ -148,6 +148,17 @@ const collate_param = (): string[] => {
     param.push(netGroup.value['rightSleeve'][segment.value][5])  // 该元素本来就是字符串无需``
     if (coreConfig.value['defaultParam']['-useSegmentSpacing']) param.push("-useSegmentSpacing")
     return param
+}
+
+const clean_doc = () =>{
+    send_parma_to_cli(["-clean-doc"])
+}
+
+const undo_segment = () => {
+    send_parma_to_cli(["-undo-atom"])
+}
+const redo_segment = () => {
+    send_parma_to_cli(["-redo-atom"])
 }
 const clean_param = () => {
     netGroup.value['rightSleeve'][`${segment.value}`].fill(null)
