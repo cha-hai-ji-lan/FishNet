@@ -140,9 +140,9 @@
                     </div>
                 </div>
                 <div class="setting-item">
-                    <div class="setting-title ban-select">水平比例尺</div>
-                    <div class="update-item nor-input">
-                        <input v-model="CoreConfig['scaleX']" type="number" :placeholder="CoreConfig['scaleX']">
+                    <div class="setting-title ban-select">纵横比例尺</div>
+                    <div class="update-item" @click="() => { switch_but('scaleX') }">
+                        <div class="set-button flex-s-c" >{{ CoreConfig['scaleX'] === 0.5 ? "1:2" : "1:4" }}</div>
                     </div>
                 </div>
                 <div class="setting-item">
@@ -174,13 +174,15 @@
                 <div class="setting-item">
                     <div class="setting-title ban-select">线 径 规 格</div>
                     <div class="update-item nor-input">
-                        <input v-model="CoreConfig['wireDiameter']" type="text" :placeholder="CoreConfig['wireDiameter']">
+                        <input v-model="CoreConfig['wireDiameter']" type="text"
+                            :placeholder="CoreConfig['wireDiameter']">
                     </div>
                 </div>
                 <div class="setting-item">
                     <div class="setting-title ban-select">横向间隙</div>
                     <div class="update-item nor-input">
-                        <input v-model="CoreConfig['segmentSpacing']" type="text" :placeholder="CoreConfig['segmentSpacing']">
+                        <input v-model="CoreConfig['segmentSpacing']" type="text"
+                            :placeholder="CoreConfig['segmentSpacing']">
                     </div>
                 </div>
             </div>
@@ -295,6 +297,13 @@ const switch_but = (who: string) => {  // 切换按钮样式
             } else if ((parameterInheritance.value === "参数摒弃")) {
                 coreConfig.value["parameterInheritance"] = true;
                 parameterInheritance.value = "参数摒弃"
+            }
+            break;
+        case 'scaleX':
+            if (CoreConfig.value["scaleX"] === 0.5) {
+                CoreConfig.value["scaleX"] = 0.25;
+            } else {
+                CoreConfig.value["scaleX"] = 0.5;
             }
             break;
         default:
@@ -448,6 +457,32 @@ const replace_default_config = async () => {
                 flex-direction: row;
                 margin-left: auto;
                 margin-right: 4vmin;
+                padding: 0.25vmin 3.5vmin;
+                border-radius: 1.5vmin;
+                border: 2px solid rgba(var(--normal-note), 1);
+                background-color: rgba(var(--normal-note), var(--pTransparency));
+
+                &:hover {
+                    filter: brightness(1.1);
+                }
+
+                &:active {
+                    filter: brightness(1.35);
+
+                }
+
+                &.lost-color {
+                    border: 2px solid rgba(var(--border-line), 1);
+                    background-color: rgba(var(--background), var(--pTransparency));
+                }
+            }
+            & .set-button {
+                width: fit-content;
+                height: fit-content;
+                display: flex;
+                align-items: start;
+                justify-content: start;
+                flex-direction: row;
                 padding: 0.25vmin 3.5vmin;
                 border-radius: 1.5vmin;
                 border: 2px solid rgba(var(--normal-note), 1);

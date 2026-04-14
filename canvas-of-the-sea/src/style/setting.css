@@ -23,6 +23,13 @@
     align-items: center;
     flex-direction: row;
 }
+.flex-s-c{
+    display: flex;
+    justify-content: center;
+    justify-self: center;
+    align-items: center;
+    flex-direction: row;
+}
 .mar-l-2vm {
     margin-left: 2vmin;
 }
