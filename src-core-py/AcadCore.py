@@ -683,15 +683,15 @@ class AcadTool(AcadDxf):
             self.i_arg.append(single_param)
         if arg[1] == "-cfg-wireDiameter":  # 线径规格
             self.cfg["wireDiameter"] = arg[2]
-        if "-drawNetSac" in arg:
+        if "-drawNetSac" in arg:  # 绘制网囊
             self.cfg["-drawNetSac"] = True
         else:
             self.cfg["-drawNetSac"] = False
-        if "-useSegmentSpacing" in arg:
+        if "-useSegmentSpacing" in arg:  # 段间距
             self.cfg["-useSegmentSpacing"] = True
         else:
             self.cfg["-useSegmentSpacing"] = False
-        if not self.has_draw_left_sleeve_first_segment and self.i_arg[0] is None:
+        if not self.has_draw_left_sleeve_first_segment and self.i_arg[0] is None:  # 如果上袖第一段还未绘制并且参数第一个参数为None
             self.i_arg[0] = self.cache["netBodyArg"][0]
 
     def confirm_the_clipping_slope__two(self) -> None:
@@ -1442,8 +1442,9 @@ class ACAD(AcadTool):
         self.collate_param(arg)
         self.confirm_the_clipping_slope__two()
         self.calculate_the_ratio()
+        mesh_len = 0  # 小头横向长度
         # 计算裁剪后的横向目数
-        if not self.has_draw_first_segment:
+        if not self.has_draw_first_segment and self.cfg["-drawNetSac"] is False:
             mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
             self.s_pos.extend([
                 self.ORI[0]
@@ -1458,6 +1459,21 @@ class ACAD(AcadTool):
                 + (mesh_len / 2),
                 self.s_pos[3]
                 - (self.i_arg[0] * self.i_arg[1] * self.ZY)
+            ])
+            self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
+        elif not self.has_draw_first_segment and self.cfg["-drawNetSac"]:  # 第一段时是网囊
+            # TODO::注意第一段必须有横向目数
+            self.s_pos.extend([
+                self.ORI[0]
+                - (self.i_arg[0]  # 目大参数
+                   * self.i_arg[2]  # 横向目数
+                   * self.ZX  # X尺寸比例缩放
+                   * 0.5  # 取长度一半
+                   ), self.ORI[1]])
+            self.s_pos.extend([self.ori_mir(self.s_pos[0]), self.s_pos[1]])
+            self.s_pos.extend([
+                self.s_pos[2],
+                self.s_pos[3] - (self.i_arg[0] * self.i_arg[1] * self.ZY)
             ])
             self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
         elif self.cfg["-drawNetSac"]:
@@ -1475,12 +1491,13 @@ class ACAD(AcadTool):
                 ])
             self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
         else:
-            mesh_len_ratio = (self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2) / self.i_arg[2]  # 裁剪后的横向目数比例
+            mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
+            mesh_length = (mesh_len * self.i_arg[0] * self.cfg["zoom"]) / 2
             self.s_pos.extend(self.cache["preSegment"][6:])
             self.s_pos.extend(self.cache["preSegment"][4:6])
             self.s_pos.extend([
                 self.ORI[0]
-                + (mesh_len_ratio * self.S(self.cache["preSegment"][6:], self.cache["preSegment"][4:6]) / 2).__ceil__(),
+                + (mesh_length / 2),
                 self.s_pos[3]
                 - (self.i_arg[0] * self.i_arg[1] * self.ZY)
             ])
@@ -1492,23 +1509,30 @@ class ACAD(AcadTool):
                 self.mid_pos(self.s_pos[:2], self.s_pos[2:4]),
                 0, 7,
                 [self.cfg["annotationOffset"], 2])
-            self.m_txt(
-                str(int(self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2)),
-                self.mid_pos(self.s_pos[4:6], self.s_pos[6:]),
-                0, 1,
-                [self.cfg["annotationOffset"], 1])
-            self.m_txt(
-                f"{int(self.i_arg[-1][0])}-{int(self.i_arg[-1][1])}",
-                self.mid_pos(self.s_pos[2:4], self.s_pos[4:6]),
-                -1, 7,
-                [self.cfg["annotationOffset"], 4],
-                (1, [self.s_pos[2:4], self.s_pos[4:6]])
-            )
-            self.mm_txt(
-                self.slope,
-                self.mid_pos(self.s_pos[2:4], self.s_pos[4:6]),
-                -1, 9,
-                [self.cfg["annotationOffset"] * 8, 4])
+            if self.cfg["-drawNetSac"]:  # 如果有横向目数并且,在网囊段绘制横向目数
+                self.m_txt(
+                    str(int(self.i_arg[2])),
+                    self.mid_pos(self.s_pos[4:6], self.s_pos[6:]),
+                    0, 1,
+                    [self.cfg["annotationOffset"], 1])
+            else:
+                self.m_txt(
+                    str(int(mesh_len)),
+                    self.mid_pos(self.s_pos[4:6], self.s_pos[6:]),
+                    0, 1,
+                    [self.cfg["annotationOffset"], 1])
+                self.m_txt(
+                    f"{int(self.i_arg[-1][0])}-{int(self.i_arg[-1][1])}",
+                    self.mid_pos(self.s_pos[2:4], self.s_pos[4:6]),
+                    -1, 7,
+                    [self.cfg["annotationOffset"], 4],
+                    (1, [self.s_pos[2:4], self.s_pos[4:6]])
+                )
+                self.mm_txt(
+                    self.slope,
+                    self.mid_pos(self.s_pos[2:4], self.s_pos[4:6]),
+                    -1, 9,
+                    [self.cfg["annotationOffset"] * 8, 4])
         self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
         self.draw_sheet_two()
         self.refresh_pos()  # 最后刷新坐标并记录上一段点

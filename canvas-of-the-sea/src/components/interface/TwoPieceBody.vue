@@ -25,7 +25,7 @@
             </div>
             <div class="item" v-if="netGroup['drawNetSac'] === false">
                 <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['netBody'][`${segment}`][3]"
-                    placeholder="剪裁斜率默认 1:1" type="text">
+                    placeholder="剪裁斜率默认 1:0" type="text">
             </div>
             <div class="item">
                 <div class="item-title">线径规格:</div><input v-model="netGroup['netBody'][`${segment}`][4]"
@@ -77,6 +77,7 @@ import { netGroup, send_parma_to_cli } from "../../utils/core/startdraw.ts";
 import { init_cad_listen_group } from "../../utils/event.ts";
 import { coreConfig, fishNetEXE } from "../../utils/MainIndex.ts";
 import { DTC } from "../../utils/core/startdraw.ts"
+import { set_content } from "../../utils/warn.ts";
 const segment = ref<number>(1)
 const route = useRoute()
 const router = useRouter()
@@ -100,6 +101,7 @@ watch(() => netGroup.value['netBody']['segment'], () => {
 //     // canvasRenderer.drawFromNetGroup(netGroup.value, 'netBody')
 // }, { deep: true })
 const next_segment = () => {
+    if (!check_err()) return
     cacheRouterPath.value = route.path;
     netGroup.value["hasDraw"] = true;
     if (coreConfig.value['parameterInheritance']) {
@@ -110,6 +112,22 @@ const next_segment = () => {
     netGroup.value['netBody']['segment'] += 1;
     netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(5).fill(null);
     DTC.value?.flesh_node()
+}
+
+const check_err = (): boolean => {
+    if (netGroup.value['netBody']['segment'] === 1) {
+        let err_text = "网身第一段由于没有"
+        if (netGroup.value['drawNetSac']) err_text = "网身且为网囊第一段没有"
+
+        if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][0] === null) err_text += "  目大参数 "
+        if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][1] === null) err_text += " 纵向目数参数 "
+        if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][2] === null) err_text += " 横向目数参数 "
+        if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][2] === null && !netGroup.value['drawNetSac']) err_text += " 剪裁斜率参数 "
+        err_text += "所以无法绘制该段"
+        set_content(err_text)
+        return false
+    }
+    return true
 }
 
 /**
@@ -127,7 +145,7 @@ const check_pre_segment = () => {
 const set_default_param = () => {
     if (netGroup.value['netBody'][`${segment.value}`][4] === null) netGroup.value['netBody'][`${segment.value}`][4] = coreConfig.value['defaultParam']['wireDiameter']
 
-    if (netGroup.value['netBody'][`${segment.value}`][3] === null && netGroup.value['drawNetSac']) { netGroup.value['netBody'][`${segment.value}`][3] = "1:0" } else if (netGroup.value['netBody'][`${segment.value}`][3] === null) netGroup.value['netBody'][`${segment.value}`][3] = "1:1"
+    if (netGroup.value['netBody'][`${segment.value}`][3] === null) netGroup.value['netBody'][`${segment.value}`][3] = "1:0"
     netGroup.value['netBody'][`${segment.value}`].forEach((val: string | number | null, index: number) => {
         if (val === null) netGroup.value['netBody'][`${segment.value}`][index] = "None"
     });
@@ -139,7 +157,7 @@ const collate_param = (): string[] => {
     param.push(`${netGroup.value['netBody'][`${segment.value}`].slice(0, 4)}`)
     param.push("-cfg-wireDiameter")
     param.push(netGroup.value['netBody'][segment.value][4])  // 该元素本来就是字符串无需``
-    if (netGroup.value['drawNetSac']) param.push("-drawNetSac")
+    if (netGroup.value['drawNetSac']) { param.push("-drawNetSac") } else if (netGroup.value['netBody'][`${segment.value}`][3] === "1:0") param.push("-drawNetSac")
     if (coreConfig.value['defaultParam']['-useSegmentSpacing']) param.push("-useSegmentSpacing")
     return param
 }
@@ -155,7 +173,7 @@ const give_up_draw = () => {
 const clean_param = () => {
     netGroup.value['netBody'][`${segment.value}`].fill(null)
 }
-const clean_doc = () =>{
+const clean_doc = () => {
     send_parma_to_cli(["-clean-doc"])
 }
 const undo_segment = () => {
