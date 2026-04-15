@@ -1460,9 +1460,9 @@ class ACAD(AcadTool):
                 self.s_pos[3]
                 - (self.i_arg[0] * self.i_arg[1] * self.ZY)
             ])
+
             self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
         elif not self.has_draw_first_segment and self.cfg["-drawNetSac"]:  # 第一段时是网囊
-            # TODO::注意第一段必须有横向目数
             self.s_pos.extend([
                 self.ORI[0]
                 - (self.i_arg[0]  # 目大参数

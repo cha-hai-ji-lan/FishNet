@@ -141,7 +141,7 @@ const back_drawing = () => {
 }
 
 const reset_server = () => {
-  if (CADToolState.value === "__FAIL__") {
+  if (CADToolState.value === "__FAIL__" || CADToolState.value === "__OUT_CONNECT__") {
     init_cad_listen_group()
     invoke("reset_cli", { acadToolPath: fishNetEXE.value, command1: ["-config-set", JSON.stringify(coreConfig.value["defaultParam"])] })
   }
@@ -269,6 +269,17 @@ h1 {
       border-top: 1px dashed rgba(var(--normal-note), var(--transparency));
       border-bottom: 1px dashed rgba(var(--normal-note), var(--transparency));
       background-color: rgba(var(--normal-note), var(--pTransparency));
+      box-shadow: 0 0 1.5vmin rgba(var(--normal-note), 0.75);
+      transition: transform 100ms;
+
+      &:hover {
+        filter: brightness(1.25);
+      }
+
+      &:active {
+        filter: brightness(1.5);
+        transform: scale(0.8);
+      }
 
     }
 

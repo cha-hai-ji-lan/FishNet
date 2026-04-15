@@ -122,7 +122,7 @@ const check_err = (): boolean => {
         if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][0] === null) err_text += "  目大参数 "
         if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][1] === null) err_text += " 纵向目数参数 "
         if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][2] === null) err_text += " 横向目数参数 "
-        if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][2] === null && !netGroup.value['drawNetSac']) err_text += " 剪裁斜率参数 "
+        if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][2] === null && !netGroup.value['drawNetSac']) err_text += " 边旁剪裁斜率参数 "
         err_text += "所以无法绘制该段"
         set_content(err_text)
         return false
