@@ -13,7 +13,7 @@ from staticParam import cut_slope, eye_cut_slope, base_param
 # TODO::天井段 不一定会画 加入网身可选项
 # TODO:: 119 * 200 / 1000 / 2
 # TODO:: 比例 1:2 1:4
-# TODO:: 缝合目数 上下
+# TODO:: 缝合目数 上下  上缝合目数 177 -(80 * 2) == 17   下缝合目数  150 - (66 * 2) == 18
 # TODO:: 保留箭头横线
 # TODO:: AB 全斜边    AN: 直边 斜边    N全直边    B: 1:1
 # TODO:: 150 119 算 4:3 以及对应 开剪 续剪 落剪
@@ -1522,6 +1522,20 @@ class ACAD(AcadTool):
                     self.s_pos[3] - (self.i_arg[0] * self.i_arg[1] * self.ZY)
                 ])
             self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
+        # 天井段
+        elif self.cfg["-drawCeil"]:
+            mesh_len = self.i_arg[2] + self.shears["T"] + self.shears["B"] * 2
+            self.s_pos.extend(self.cache["netBody"][0:2])
+            self.s_pos.extend([
+                self.ORI[0] - mesh_len / 2,
+                self.s_pos[1]
+                + (self.i_arg[0] * self.i_arg[1] * self.ZY)]
+            )
+            self.s_pos.extend([
+                self.ORI[0],
+                self.s_pos[3]]
+            )
+            self.s_pos.extend(self.ORI[:])
         else:
             mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
             mesh_length = (mesh_len * self.i_arg[0] * self.cfg["zoom"]) / 2
@@ -1585,7 +1599,7 @@ class ACAD(AcadTool):
         self.confirm_the_clipping_slope__two()
         self.calculate_the_ratio()
         if not self.has_draw_left_sleeve_first_segment:
-            mesh_len = self.i_arg[2] - self.shears["T"] + self.shears["B"]
+            mesh_len = self.i_arg[2] + self.shears["T"] + self.shears["B"] * 2
             self.s_pos.extend(self.cache["netBody"][0:2])
             self.s_pos.extend([
                 self.ORI[0] - mesh_len / 2,

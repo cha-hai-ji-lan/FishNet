@@ -131,7 +131,7 @@ const check_err = (): boolean => {
         if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][0] === null) err_text += "  目大参数 "
         if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][1] === null) err_text += " 纵向目数参数 "
         if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][2] === null) err_text += " 横向目数参数 "
-        if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][2] === null && !coreConfig.value['defaultParam']['-drawNetSac']) err_text += " 边旁剪裁斜率参数 "
+        if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][3] === null && !coreConfig.value['defaultParam']['-drawNetSac']) err_text += " 边旁剪裁斜率参数 "
         err_text += "所以无法绘制该段"
         set_content(err_text)
         return false
@@ -207,6 +207,10 @@ const draw_net_sac = () => {
 
 }
 const draw_ceil = () => {
+    if (netGroup.value['netBody']['segment'] <= 1){
+        set_content("网身第一段尚未绘制,无法定位天井的绘制位置")
+        return
+    }
     if (coreConfig.value['defaultParam']['-drawNetSac'] === false) {
         coreConfig.value['defaultParam']['-drawCeil'] = !coreConfig.value['defaultParam']['-drawCeil']
         if (coreConfig.value['defaultParam']['-drawCeil']) {

@@ -1,6 +1,6 @@
 {
   "app": {
-    "version": "0.1.71"
+    "version": "0.1.74"
   },
   "core": {
     "bootLink": true,

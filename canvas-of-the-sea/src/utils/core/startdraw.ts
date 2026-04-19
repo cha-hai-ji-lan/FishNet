@@ -103,13 +103,13 @@ class DesignTreeCtr {
       console.log(key)
       switch (part) {
          case 'two-net-body':
-            netGroup.value['netBody']['segment'] = key
+            netGroup.value['netBody']['segment'] = Number(key)
             break;
          case 'two-left-sleeve':
-            netGroup.value['leftSleeve']['segment'] = key
+            netGroup.value['leftSleeve']['segment'] = Number(key)
             break;
          case 'two-right-sleeve':
-            netGroup.value['rightSleeve']['segment'] = key
+            netGroup.value['rightSleeve']['segment'] = Number(key)
             break;
       
          default:

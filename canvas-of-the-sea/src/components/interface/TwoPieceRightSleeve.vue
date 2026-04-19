@@ -2,9 +2,9 @@
     <div class="two-piece-body" v-if="netGroup['rightSleeve'] && netGroup['rightSleeve']['segment'] > 0">
         <div class="blank-10pe"></div>
         <div class="item ban-select">
-            <div class="part-title "><span>下网翼</span></div>
+            <div class="part-title "><span>下网袖</span></div>
             <div class="part-title segments"><span>第{{ segment }}段</span></div>
-            <!-- <div v-if="netGroup['two-net-body']['segment'] === 1" class="part-title segments-port"><span>网口段</span></div> -->
+            <div v-if="netGroup['rightSleeve']['segment'] === 1" class="part-title segments-port"><span>网口段</span></div>
         </div>
 
         <div class="w100 ban-select">
@@ -20,7 +20,7 @@
             </div>
             <div class="item">
                 <div class="item-title">网身横向目数:</div><input v-model="netGroup['rightSleeve'][`${segment}`][2]"
-                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['rightSleeve'][`${segment - 1}`]?.[2] || netGroup['netBody'][0]?.[2] : '横向目数'"
+                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['rightSleeve'][`${segment - 1}`]?.[2] ||  '横向目数' : '横向目数'"
                     type="number">
             </div>
             <div class="item">
@@ -35,6 +35,10 @@
                 <div class="item-title">线径规格:</div><input v-model="netGroup['rightSleeve'][`${segment}`][5]"
                     :placeholder="coreConfig['parameterInheritance'] ? netGroup['rightSleeve'][`${segment - 1}`]?.[5] || '线径规格默认:' + coreConfig['defaultParam']['wireDiameter'] : '线径规格默认:' + coreConfig['defaultParam']['wireDiameter']"
                     type="text">
+            </div>
+            <div class="item">
+                <div class="item-title">缝合目数:</div><input v-model="netGroup['rightSleeve'][`${segment}`][6]"
+                    placeholder="缝合目数" type="number">
             </div>
             <div class="item">
                 <div class="item-title choose-button"
@@ -88,12 +92,14 @@ const router = useRouter()
 onMounted(() => {
     if (netGroup.value['rightSleeve'] && netGroup.value['rightSleeve']['segment'] === 0) {
         netGroup.value['rightSleeve']['segment'] += 1
-        netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`] = Array(6).fill(null)
+        netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`] = Array(7).fill(null)
     }
     segment.value = netGroup.value['rightSleeve']?.['segment'] || 0
     DTC.value?.flesh_node()  // 刷新设计树
 })
 watch(() => netGroup.value['rightSleeve']['segment'], () => {
+    console.log(netGroup.value['rightSleeve']['segment'])
+
     segment.value = netGroup.value['rightSleeve']['segment'];
 })
 // watch(() => netGroup.value['rightSleeve'], () => {
