@@ -18,6 +18,7 @@
       "focusDraw": true,
       "backUpMode": "segment-step",
       "segmentSpacing": 5,
+      "-drawCeil": false,
       "-drawNetSac": false,
       "-useSegmentSpacing": false
 

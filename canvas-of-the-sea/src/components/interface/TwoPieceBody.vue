@@ -4,7 +4,9 @@
         <div class="item ban-select">
             <div class="part-title "><span>网身</span></div>
             <div class="part-title segments"><span>第{{ segment }}段</span></div>
-            <div v-if="netGroup['drawNetSac']" class="part-title segments-port"><span>网囊段</span></div>
+            <div v-if="coreConfig['defaultParam']['-drawNetSac']" class="part-title segments-port"><span>网囊N</span>
+            </div>
+            <div v-if="coreConfig['defaultParam']['-drawCeil']" class="part-title segments-port"><span>天井AN</span></div>
         </div>
 
         <div class="w100 ban-select">
@@ -23,7 +25,7 @@
                     :placeholder="coreConfig['parameterInheritance'] ? netGroup['netBody'][`${segment - 1}`]?.[2] || '横向目数' : '横向目数'"
                     type="number">
             </div>
-            <div class="item" v-if="netGroup['drawNetSac'] === false">
+            <div class="item" v-if="coreConfig['defaultParam']['-drawNetSac'] === false">
                 <div class="item-title">边旁剪裁斜率:</div><input v-model="netGroup['netBody'][`${segment}`][3]"
                     placeholder="剪裁斜率默认 1:0" type="text">
             </div>
@@ -33,8 +35,14 @@
                     type="text">
             </div>
             <div class="item">
-                <div class="item-title choose-button" :class="{ 'lost-color': netGroup['drawNetSac'] === false }"
-                    @click="() => { draw_net_sac() }">{{ netGroup['drawNetSac'] ?
+                <div class="item-title choose-button"
+                    :class="{ 'lost-color': coreConfig['defaultParam']['-drawCeil'] === false }"
+                    @click="() => { draw_ceil() }">{{
+                        coreConfig['defaultParam']['-drawCeil'] ?
+                            '绘制天井' : '天井' }}</div>
+                <div class="item-title choose-button"
+                    :class="{ 'lost-color': coreConfig['defaultParam']['-drawNetSac'] === false }"
+                    @click="() => { draw_net_sac() }">{{ coreConfig['defaultParam']['-drawNetSac'] ?
                         '绘制网囊' : '网囊段' }}</div>
                 <div class="item-title choose-button"
                     :class="{ 'lost-color': coreConfig['parameterInheritance'] === false }"
@@ -47,6 +55,7 @@
                     {{
                         coreConfig['defaultParam']['-useSegmentSpacing'] ?
                             '启用横向间隙' : '禁用横向间隙' }}</div>
+
             </div>
         </div>
         <div class="w100 ban-select">
@@ -117,12 +126,12 @@ const next_segment = () => {
 const check_err = (): boolean => {
     if (netGroup.value['netBody']['segment'] === 1) {
         let err_text = "网身第一段由于没有"
-        if (netGroup.value['drawNetSac']) err_text = "网身且为网囊第一段没有"
+        if (coreConfig.value['defaultParam']['-drawNetSac']) err_text = "网身且为网囊第一段没有"
 
         if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][0] === null) err_text += "  目大参数 "
         if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][1] === null) err_text += " 纵向目数参数 "
         if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][2] === null) err_text += " 横向目数参数 "
-        if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][2] === null && !netGroup.value['drawNetSac']) err_text += " 边旁剪裁斜率参数 "
+        if (netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`][2] === null && !coreConfig.value['defaultParam']['-drawNetSac']) err_text += " 边旁剪裁斜率参数 "
         err_text += "所以无法绘制该段"
         set_content(err_text)
         return false
@@ -157,8 +166,9 @@ const collate_param = (): string[] => {
     param.push(`${netGroup.value['netBody'][`${segment.value}`].slice(0, 4)}`)
     param.push("-cfg-wireDiameter")
     param.push(netGroup.value['netBody'][segment.value][4])  // 该元素本来就是字符串无需``
-    if (netGroup.value['drawNetSac']) { param.push("-drawNetSac") } else if (netGroup.value['netBody'][`${segment.value}`][3] === "1:0") param.push("-drawNetSac")
+    if (coreConfig.value['defaultParam']['-drawNetSac']) { param.push("-drawNetSac") } else if (netGroup.value['netBody'][`${segment.value}`][3] === "1:0") param.push("-drawNetSac")
     if (coreConfig.value['defaultParam']['-useSegmentSpacing']) param.push("-useSegmentSpacing")
+    if (coreConfig.value['defaultParam']['-drawCeil']) param.push("-drawCeil")
     return param
 }
 
@@ -184,8 +194,30 @@ const redo_segment = () => {
 }
 
 const draw_net_sac = () => {
-    netGroup.value['drawNetSac'] = !netGroup.value['drawNetSac']
-    coreConfig.value['parameterInheritance'] = false
+    if (coreConfig.value['defaultParam']['-drawCeil'] === false) {
+        coreConfig.value['defaultParam']['-drawNetSac'] = !coreConfig.value['defaultParam']['-drawNetSac']
+        if (coreConfig.value['defaultParam']['-drawNetSac']) {
+            coreConfig.value['parameterInheritance'] = false
+        } else {
+            coreConfig.value['parameterInheritance'] = true
+        }
+    } else {
+        set_content("现在处于天井段,天井不应该为网囊")
+    }
+
+}
+const draw_ceil = () => {
+    if (coreConfig.value['defaultParam']['-drawNetSac'] === false) {
+        coreConfig.value['defaultParam']['-drawCeil'] = !coreConfig.value['defaultParam']['-drawCeil']
+        if (coreConfig.value['defaultParam']['-drawCeil']) {
+            coreConfig.value['parameterInheritance'] = false
+        } else {
+            coreConfig.value['parameterInheritance'] = true
+        }
+    } else {
+        set_content("现在处于网囊段,网囊不应该成为天井")
+    }
+
 }
 
 
