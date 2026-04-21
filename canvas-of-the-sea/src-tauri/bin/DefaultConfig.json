@@ -16,8 +16,9 @@
       "annotationOffset": 2,
       "wireDiameter": "25X3",
       "focusDraw": true,
-      "backUpMode": "single-step",
+      "backUpMode": "segment-step",
       "segmentSpacing": 5,
+      "-drawCeil": false,
       "-drawNetSac": false,
       "-useSegmentSpacing": false
     }

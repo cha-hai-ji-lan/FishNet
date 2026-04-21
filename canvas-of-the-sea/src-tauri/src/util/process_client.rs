@@ -383,4 +383,3 @@ pub fn clear_connector() -> Result<(), Error> {
     Ok(())
 }
 
-// ... existing code ...

@@ -64,6 +64,7 @@ export const write_config = async () => {
     mainConfig.value["colorPalette"]["theme"] = themeConfig.value;
     // 获取界面设置
     mainConfig.value["interfaceSetting"] = interfaceStyle.value;
+    // core配置将在setting中直接写入config
     await invoke("write_json_file", { filePath: configPathF.value, data: mainConfig.value })
 }
 

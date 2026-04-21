@@ -62,7 +62,7 @@
             </div>
             <div class="item">
                 <div @click="() => { clean_param() }" class="item-title item-button-warn ban-select">清空</div>
-                <div @click="() => { clean_param() }" class="item-title item-button-warn ban-select">清空活动页</div>
+                <div @click="() => { clean_doc() }" class="item-title item-button-warn ban-select">清空活动页</div>
             </div>
             <div class="item">
                 <div @click="() => { undo_segment() }" class="item-title item-button-warn ban-select">退一步</div>
