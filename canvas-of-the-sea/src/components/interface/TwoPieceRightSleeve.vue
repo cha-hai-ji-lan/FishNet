@@ -20,7 +20,7 @@
             </div>
             <div class="item">
                 <div class="item-title">网身横向目数:</div><input v-model="netGroup['rightSleeve'][`${segment}`][2]"
-                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['rightSleeve'][`${segment - 1}`]?.[2] ||  '横向目数' : '横向目数'"
+                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['rightSleeve'][`${segment - 1}`]?.[2] || '横向目数' : '横向目数'"
                     type="number">
             </div>
             <div class="item">
@@ -106,10 +106,7 @@ watch(() => netGroup.value['rightSleeve']['segment'], () => {
 //     canvasRenderer.drawFromNetGroup(netGroup.value, 'rightSleeve')
 // }, { deep: true })
 const next_segment = () => {
-    if (netGroup.value['netBody'][0] !== undefined && netGroup.value['netBody'][0][0] === null || netGroup.value['netBody'][0] === undefined) {
-        set_content("未绘制网身第一段,无法定位参数化原点坐标", 3)
-        return
-    }
+    if (!check_err()) return
     cacheRouterPath.value = route.path
     netGroup.value["hasDraw"] = true
     if (coreConfig.value['parameterInheritance']) {
@@ -121,6 +118,46 @@ const next_segment = () => {
     segment.value = netGroup.value['rightSleeve']['segment']
     netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`] = Array(6).fill(null)
     DTC.value?.flesh_node()
+}
+const check_err = (): boolean => {
+    let state = true
+    if (netGroup.value['rightSleeve']['segment'] === 1) {
+        let err_text = "下袖第一段由于没有"
+        if (netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`][0] === null) {
+            err_text += "  目大参数 "
+            state = false
+        }
+        if (netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`][1] === null) {
+            err_text += " 纵向目数参数 "
+            state = false
+        }
+        if (netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`][2] === null) {
+            err_text += " 横向目数参数 "
+            state = false
+        }
+        if (netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`][3] === null) {
+            err_text += " 宕眼剪裁斜率参数 "
+            state = false
+        }
+        if (netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`][4] === null) {
+            err_text += " 边旁剪裁斜率参数 "
+            state = false
+        }
+        if (netGroup.value['rightSleeve'][`${netGroup.value['rightSleeve']['segment']}`][6] === null) {
+            err_text += " 缝合目数参数 "
+            state = false
+        }
+        err_text += "所以无法绘制该段"
+        if (!state) {
+            set_content(err_text)
+            return false
+        }
+    }
+    if (netGroup.value['netBody'][0] !== undefined && netGroup.value['netBody'][0][0] === null || netGroup.value['netBody'][0] === undefined) {
+        set_content("未绘制网身第一段,无法定位参数化原点坐标", 3)
+        return false
+    }
+    return true
 }
 const give_up_draw = () => {
     router.push('/')  // 返回首页
@@ -149,14 +186,25 @@ const set_default_param = () => {
 const collate_param = (): string[] => {
     let param: string[] = []
     param.push("-i")
-    param.push(`${netGroup.value['rightSleeve'][`${segment.value}`].slice(0, 5)}`)
+    if (netGroup.value['rightSleeve']['segment'] === 1) {
+        netGroup.value['rightSleeve'][`${segment.value}`].splice(3, 0, netGroup.value['rightSleeve'][`${segment.value}`][6])
+        param.push(`${netGroup.value['rightSleeve'][`${segment.value}`].slice(0, 6)}`)
+    } else {
+        param.push(`${netGroup.value['rightSleeve'][`${segment.value}`].slice(0, 5)}`)
+    }
     param.push("-cfg-wireDiameter")
-    param.push(netGroup.value['rightSleeve'][segment.value][5])  // 该元素本来就是字符串无需``
+    if (netGroup.value['rightSleeve']['segment'] === 1) {
+        param.push(netGroup.value['rightSleeve'][segment.value][6])  // 该元素本来就是字符串无需``
+    } else {
+        param.push(netGroup.value['rightSleeve'][segment.value][5])  // 该元素本来就是字符串无需``
+
+    }
+
     if (coreConfig.value['defaultParam']['-useSegmentSpacing']) param.push("-useSegmentSpacing")
     return param
 }
 
-const clean_doc = () =>{
+const clean_doc = () => {
     send_parma_to_cli(["-clean-doc"])
 }
 

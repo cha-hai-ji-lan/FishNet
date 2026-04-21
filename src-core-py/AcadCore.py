@@ -1500,7 +1500,7 @@ class ACAD(AcadTool):
             # 如果网囊的前一段是网囊
             if self.cache["preConfig"]["-drawNetSac"]:
                 pre_len = self.cache["preSegment"][2] - self.cache["preSegment"][0]
-                proportion = (self.i_arg[0] * self.i_arg[2])/ (self.cache["preArg"][0] * self.cache["preArg"][2])
+                proportion = (self.i_arg[0] * self.i_arg[2]) / (self.cache["preArg"][0] * self.cache["preArg"][2])
                 now_len = pre_len * proportion
                 self.s_pos.extend([
                     self.ORI[0] - (now_len / 2),
@@ -1536,6 +1536,7 @@ class ACAD(AcadTool):
                 self.s_pos[3]]
             )
             self.s_pos.extend(self.ORI[:])
+        # AB段
         else:
             mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
             mesh_length = (mesh_len * self.i_arg[0] * self.cfg["zoom"]) / 2

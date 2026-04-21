@@ -18,9 +18,9 @@
                     :placeholder="coreConfig['parameterInheritance'] ? netGroup['leftSleeve'][`${segment - 1}`]?.[1] || '纵向目数' : '纵向目数'"
                     type="number">
             </div>
-            <div  class="item">
+            <div class="item">
                 <div class="item-title">网身横向目数:</div><input v-model="netGroup['leftSleeve'][`${segment}`][2]"
-                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['leftSleeve'][`${segment - 1}`]?.[2] || '横向目数': '横向目数'"
+                    :placeholder="coreConfig['parameterInheritance'] ? netGroup['leftSleeve'][`${segment - 1}`]?.[2] || '横向目数' : '横向目数'"
                     type="number">
             </div>
             <div class="item">
@@ -106,10 +106,6 @@ watch(() => netGroup.value['leftSleeve']['segment'], () => {
 // }, { deep: true })
 const next_segment = () => {
     if (!check_err()) return
-    if (netGroup.value['netBody'][0] !== undefined && netGroup.value['netBody'][0][0] === null || netGroup.value['netBody'][0] === undefined) {
-        set_content("未绘制网身第一段,无法定位参数化原点坐标", 3)
-        return
-    }
     cacheRouterPath.value = route.path
     netGroup.value["hasDraw"] = true
     if (coreConfig.value['parameterInheritance']) {
@@ -124,16 +120,41 @@ const next_segment = () => {
 }
 
 const check_err = (): boolean => {
+    let state = true
     if (netGroup.value['leftSleeve']['segment'] === 1) {
         let err_text = "上袖第一段由于没有"
-        if (netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`][0] === null) err_text += "  目大参数 "
-        if (netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`][1] === null) err_text += " 纵向目数参数 "
-        if (netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`][2] === null) err_text += " 横向目数参数 "
-        if (netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`][3] === null) err_text += " 宕眼剪裁斜率参数 "
-        if (netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`][4] === null) err_text += " 边旁剪裁斜率参数 "
-        if (netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`][6] === null) err_text += " 缝合目数参数 "
+        if (netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`][0] === null) {
+            err_text += "  目大参数 "
+            state = false
+        }
+        if (netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`][1] === null) {
+            err_text += " 纵向目数参数 "
+            state = false
+        }
+        if (netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`][2] === null) {
+            err_text += " 横向目数参数 "
+            state = false
+        }
+        if (netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`][3] === null) {
+            err_text += " 宕眼剪裁斜率参数 "
+            state = false
+        }
+        if (netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`][4] === null) {
+            err_text += " 边旁剪裁斜率参数 "
+            state = false
+        }
+        if (netGroup.value['leftSleeve'][`${netGroup.value['leftSleeve']['segment']}`][6] === null) {
+            err_text += " 缝合目数参数 "
+            state = false
+        }
         err_text += "所以无法绘制该段"
-        set_content(err_text)
+        if (!state) {
+            set_content(err_text)
+            return false
+        }
+    }
+    if (netGroup.value['netBody'][0] !== undefined && netGroup.value['netBody'][0][0] === null || netGroup.value['netBody'][0] === undefined) {
+        set_content("未绘制网身第一段,无法定位参数化原点坐标", 3)
         return false
     }
     return true
@@ -166,9 +187,18 @@ const set_default_param = () => {
 const collate_param = (): string[] => {
     let param: string[] = []
     param.push("-i")
-    param.push(`${netGroup.value['leftSleeve'][`${segment.value}`].slice(0, 5)}`)
+    if (netGroup.value['leftSleeve']['segment'] === 1) {
+        netGroup.value['leftSleeve'][`${segment.value}`].splice(3, 0, netGroup.value['leftSleeve'][`${segment.value}`][6])
+        param.push(`${netGroup.value['leftSleeve'][`${segment.value}`].slice(0, 6)}`)
+    } else {
+        param.push(`${netGroup.value['leftSleeve'][`${segment.value}`].slice(0, 5)}`)
+    }
     param.push("-cfg-wireDiameter")
-    param.push(netGroup.value['leftSleeve'][segment.value][5])  // 该元素本来就是字符串无需``
+    if (netGroup.value['leftSleeve']['segment'] === 1) {
+        param.push(netGroup.value['leftSleeve'][segment.value][6])
+    } else {
+        param.push(netGroup.value['leftSleeve'][segment.value][5])  // 该元素本来就是字符串无需``
+    }
     if (coreConfig.value['defaultParam']['-useSegmentSpacing']) param.push("-useSegmentSpacing")
     return param
 }
