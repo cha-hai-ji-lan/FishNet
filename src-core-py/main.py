@@ -19,7 +19,7 @@ class CLIHandler:
         """注册默认命令"""
         self.register_command('-help', self.help_command, "show help information")
         self.register_command('-config-set', self.set_config_command, "Set the configuration parameters")
-        self.register_command('-i', self.echo_command, "echo input command")
+        self.register_command('-echo', self.echo_command, "echo input command")
         self.register_command('-i-tb', self.acad.draw_two_piece_body, "draw Two-piece mesh body")
         self.register_command('-undo-atom', self.acad.undo, "undo smallest unit")
         self.register_command('-redo-atom', self.acad.redo, "redo smallest unit")
@@ -80,7 +80,7 @@ class CLIHandler:
         """回显命令"""
         if args:
             print("echo:")
-            print("-fin-", "-".join(args))
+            print("-echo ", " ".join(args))
         else:
             print("enter_what_you_want_to_echo")
 

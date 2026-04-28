@@ -78,12 +78,12 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useRoute, useRouter } from 'vue-router';
 import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts";
 import { netGroup, send_parma_to_cli } from "../../utils/core/startdraw.ts";
-import { init_cad_listen_group } from "../../utils/event.ts";
+import { init_cad_listen_group, handleKeyDown } from "../../utils/event.ts";
 import { coreConfig, fishNetEXE } from "../../utils/MainIndex.ts";
 import { DTC } from "../../utils/core/startdraw.ts"
 import { set_content } from "../../utils/warn.ts";
@@ -100,9 +100,12 @@ onMounted(() => {
     };
     segment.value = netGroup.value['netBody']?.['segment'] || 0;
     DTC.value?.flesh_node()  // 刷新设计树
+    document.addEventListener('keydown', handleKeyDown)  // 监听 ↓ 按键
 
 })
-
+onUnmounted(() => {
+    document.removeEventListener('keydown', handleKeyDown)  // 移除监听
+})
 watch(() => netGroup.value['netBody']['segment'], () => {
     segment.value = netGroup.value['netBody']['segment'];
 })
@@ -188,7 +191,10 @@ const collate_param = (): string[] => {
     param.push(netGroup.value['netBody'][segment.value][4])  // 该元素本来就是字符串无需``
     if (coreConfig.value['defaultParam']['-drawNetSac']) { param.push("-drawNetSac") } else if (netGroup.value['netBody'][`${segment.value}`][3] === "1:0") param.push("-drawNetSac")
     if (coreConfig.value['defaultParam']['-useSegmentSpacing']) param.push("-useSegmentSpacing")
-    if (coreConfig.value['defaultParam']['-drawCeil']) param.push("-drawCeil")
+    if (coreConfig.value['defaultParam']['-drawCeil']) {
+        param.push("-drawCeil")
+        draw_ceil()  // 天井只需要绘制一段所以绘制天井后就应该回退到一般网段
+    }
     return param
 }
 
@@ -243,6 +249,7 @@ const draw_ceil = () => {
     }
 
 }
+
 
 
 </script>

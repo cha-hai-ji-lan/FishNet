@@ -147,3 +147,35 @@ export const cleanup_cad_listen_group = () => {
 export const cleanup_event_listeners = (): void => {
     cleanup_cad_listen_group()
 }
+
+
+/**
+ * 前端可监听事件
+ * 
+ * 键盘上下键监听 -- 用于切换注视input
+*/
+
+export const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        const inputs = Array.from(document.querySelectorAll('.two-piece-body input')) as HTMLInputElement[]
+        const currentIndex = inputs.findIndex(input => input === document.activeElement)
+
+        if (currentIndex !== -1) {
+            const nextIndex = (currentIndex + 1) % inputs.length
+            inputs[nextIndex].focus()
+        } else if (inputs.length > 0) {
+            inputs[0].focus()
+        }
+    } else if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        const inputs = Array.from(document.querySelectorAll('.two-piece-body input')) as HTMLInputElement[]
+        const currentIndex = inputs.findIndex(input => input === document.activeElement)
+        if (currentIndex !== -1) {
+            const prevIndex = (currentIndex - 1 + inputs.length) % inputs.length
+            inputs[prevIndex].focus()
+        } else if (inputs.length > 0) {
+            inputs[inputs.length - 1].focus()
+        }
+    }
+}

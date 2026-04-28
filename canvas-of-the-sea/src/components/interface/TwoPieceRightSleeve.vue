@@ -77,13 +77,13 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useRoute, useRouter } from 'vue-router';
 import { cacheRouterPath, isNewFile } from "../../utils/Memory.ts"
 import { netGroup, send_parma_to_cli } from "../../utils/core/startdraw.ts";
 import { set_content } from "../../utils/warn.ts";
-import { init_cad_listen_group } from "../../utils/event.ts";
+import { init_cad_listen_group, handleKeyDown } from "../../utils/event.ts";
 import { coreConfig, fishNetEXE } from "../../utils/MainIndex.ts";
 import { DTC } from "../../utils/core/startdraw.ts"
 const segment = ref<number>(1)
@@ -96,11 +96,18 @@ onMounted(() => {
     }
     segment.value = netGroup.value['rightSleeve']?.['segment'] || 0
     DTC.value?.flesh_node()  // 刷新设计树
+
+    document.addEventListener('keydown', handleKeyDown)  // 监听 ↓ 按键
+
 })
 watch(() => netGroup.value['rightSleeve']['segment'], () => {
     console.log(netGroup.value['rightSleeve']['segment'])
 
     segment.value = netGroup.value['rightSleeve']['segment'];
+})
+
+onUnmounted(() => {
+    document.removeEventListener('keydown', handleKeyDown)
 })
 // watch(() => netGroup.value['rightSleeve'], () => {
 //     canvasRenderer.drawFromNetGroup(netGroup.value, 'rightSleeve')
