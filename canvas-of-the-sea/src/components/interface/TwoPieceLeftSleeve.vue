@@ -160,8 +160,12 @@ const check_err = (): boolean => {
             return false
         }
     }
-    if (netGroup.value['netBody'][0] !== undefined && netGroup.value['netBody'][0][0] === null || netGroup.value['netBody'][0] === undefined) {
+    console.log(netGroup.value['netBody']["1"])
+    if (netGroup.value['netBody']["1"] !== undefined && netGroup.value['netBody']["1"][0] === null || netGroup.value['netBody']["1"] === undefined) {
         set_content("未绘制网身第一段,无法定位参数化原点坐标", 3)
+        return false
+    } else if(netGroup.value['netBody']["1"] === undefined ){
+        set_content("网身第一段参数未定义,无法绘制该段", 3)
         return false
     }
     return true
