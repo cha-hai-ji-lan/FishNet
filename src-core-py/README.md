@@ -48,17 +48,27 @@
 
 > 配置文件字典
 >
-> |       key        |  info  | defaultValue |
-> |:----------------:|:------:|:------------:|
-> | annotationOffset |  注释偏移  |      2       |
-> | sheetTextHeight  | 表格文字高度 |      7       |
-> |     material     |   材质   |     PA6      |
-> |  originPosition  |  原点位置  |   100,100    |
-> |      scaleX      |  X缩放   |     0.5      |
-> |      scaleY      |  Y缩放   |      1       |
-> |   tableOffset    |  表格偏移  |     100      |
-> |    textHeight    |  文字高度  |     2.5      |
-> |       zoom       |   缩放   |     0.01     |
+> |        key         |        info         |  defaultValue  |
+> |:------------------:|:-------------------:|:--------------:|
+> |   originPosition   |        原点位置         |    100,100     |
+> |        zoom        |         缩放          |      0.01      |
+> |    tableOffset     |        表格偏移         |      100       |
+> |       scaleX       |         X缩放         |      0.5       |
+> |       scaleY       |         Y缩放         |       1        |
+> |     textHeight     |        文字高度         |      2.5       |
+> |  sheetTextHeight   |       表格文字高度        |       7        |
+> |  annotationOffset  |        注释偏移         |       2        |
+> |    wireDiameter    |        线径规格         |      25X3      |
+> |    wireDiameter    |        线径规格         |      25X3      |
+> |     focusDraw      |      是否启用聚焦绘图       |      true      |
+> |     backUpMode     |        撤销模式         | "segment-step" |
+> |   segmentSpacing   |        段间距mm        |       5        |
+> |     -drawCeil      |       该段是否是天井       |     false      |
+> |    -drawNetSac     |       该段是否是网囊       |     false      |
+> | -useSegmentSpacing |      该段是否使用段间距      |     false      |
+> |  -leftSleeveMesh   | 前一段的横向目数,用于计算下一段点位置 |     false      |
+> |  -rightSleeveMesh  | 前一段的横向目数,用于计算下一段点位置 |     false      |
+
 >
 
 **注意：**

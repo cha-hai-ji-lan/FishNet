@@ -353,7 +353,6 @@ const draw_ceil = () => {
         }
         
         & .segments {
-            color: rgba(var(--normal-note), 1);
             margin-left: 2vmin;
             padding: 0.5vmin 1vmin;
             border: 2px solid rgba(var(--normal-note), 1);
@@ -369,8 +368,6 @@ const draw_ceil = () => {
             font-weight: bold;
 
             &.segments-port {
-                /* 修改 段提示文字为同系色*/
-                color: rgba(var(--warn-note), 1);
                 margin-left: 2vmin;
                 padding: 0.5vmin 1vmin;
                 border: 2px solid rgba(var(--warn-note), 1);

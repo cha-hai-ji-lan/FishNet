@@ -309,7 +309,6 @@ const redo_segment = () => {
         }
 
         & .segments {
-            color: rgba(var(--normal-note), 1);
             margin-left: 2vmin;
             padding: 0.5vmin 1vmin;
             border: 2px solid rgba(var(--normal-note), 1);
@@ -318,7 +317,6 @@ const redo_segment = () => {
         }
 
         & .segments-port {
-            color: rgba(var(--warn-note), 1);
             margin-left: 2vmin;
             padding: 0.5vmin 1vmin;
             border: 2px solid rgba(var(--warn-note), 1);

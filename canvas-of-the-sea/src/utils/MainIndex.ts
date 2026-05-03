@@ -35,7 +35,6 @@ export const init_app = async () => {
 }
 
 export const init_color_palette = async () => {
-    console.log(themeConfig.value["currentTheme"])
     // 主题颜色
     document.documentElement.style.setProperty("--ready-note", `${themeConfig.value["readyNote"]}`)
     document.documentElement.style.setProperty("--normal-note", `${themeConfig.value["normalNote"]}`)

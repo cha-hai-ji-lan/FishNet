@@ -112,7 +112,8 @@ class ACADBase:
         """
         try:
             # 使用 AutoCAD 命令行方式创建文字样式,这样更可靠
-            self.doc.SendCommand("_.-STYLE\nStandard\ntxt\n0\n1\n0\nN\nN\nN\n")  # 启动 STYLE 命令
+            # self.doc.SendCommand("_.-STYLE\nStandard\ntxt\n0\n1\n0\nN\nN\nN\n")  # 启动 STYLE 命令
+            self.doc.SendCommand("_.-STYLE\nStandard\ntxt.shx\n0\n1\n0\nN\nN\nN\nY\nhzfs.shx\n")
             # self.doc.SendCommand("TXT_Style\n")  # 样式名称
             # self.doc.SendCommand("txt.shx\n")  # 字体文件名
             # self.doc.SendCommand("0\n")  # 高度(0=可变)
@@ -712,9 +713,12 @@ class AcadTool(AcadDxf):
 
     def confirm_the_clipping_slope__two(self) -> None:
         """
-        通过比率计算拖网剪裁斜率
+        获得拖网剪裁斜率代号
 
-        获得起剪 续剪 落剪代号
+        已知 起始横向目数, 剪裁斜率(比例)
+
+        获得 剪裁斜率代号--起剪 续剪 落剪代号
+
         :return:
         """
         tmp_slope1 = self.i_arg[-1][0]
@@ -859,6 +863,16 @@ class AcadTool(AcadDxf):
                 else:
                     print("-shear-slope-support-err")
 
+    def confirm_the_clipping_slope_codename__two(self) -> None:
+        """
+        获得拖网剪裁斜率代号
+
+        已知 结束横向目数, 剪裁斜率(比例)
+
+        获得 剪裁斜率代号--起剪 续剪 落剪代号
+
+        :return: None
+        """
     def confirm_the_eye_clipping_slope__two(self) -> None:
         tmp_slope1 = self.i_arg[-2][0]
         tmp_slope2 = self.i_arg[-2][-1]
@@ -890,7 +904,7 @@ class AcadTool(AcadDxf):
                     self.eye_slope = ["null"]
                     print("-null-eye-slope")
 
-    def calculate_the_ratio(self):
+    def calculate_cut_out_the_mesh(self):
         """
         计算剪裁掉的目数
         :return:
@@ -1472,7 +1486,7 @@ class ACAD(AcadTool):
         self.doc.StartUndoMark()
         self.collate_param(arg)
         self.confirm_the_clipping_slope__two()
-        self.calculate_the_ratio()
+        self.calculate_cut_out_the_mesh()
         mesh_len = 0  # 小头横向长度
         # 计算裁剪后的横向目数
         # 第一段不为网囊
@@ -1613,7 +1627,7 @@ class ACAD(AcadTool):
         self.doc.StartUndoMark()
         self.collate_param(arg)
         self.confirm_the_clipping_slope__two()
-        self.calculate_the_ratio()
+        self.calculate_cut_out_the_mesh()
         if not self.has_draw_two_left_sleeve_first_segment:  # 上袖第一段
             mesh_len = self.i_arg[2] + self.shears["T"] + (self.shears["B"] * 2) - self.eye_shears["T"] - (
                     self.eye_shears["B"] * 2)  # 计算后的横向目数
@@ -1661,7 +1675,7 @@ class ACAD(AcadTool):
         self.doc.StartUndoMark()
         self.collate_param(arg)
         self.confirm_the_clipping_slope__two()
-        self.calculate_the_ratio()
+        self.calculate_cut_out_the_mesh()
         if not self.has_draw_two_right_sleeve_first_segment:
             mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
 

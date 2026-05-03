@@ -62,11 +62,9 @@ const router = useRouter()
 
 onMounted(() => {
   updateTime(); // 立即更新一次时间
-  console.log(typeof netGroup.value)
 });
 
 watch(drawMode, (NewVal: string) => {
-  console.log(netGroup.value)
   switch (NewVal) {  // 纯数据对象深拷贝
     case '两片式':
       netGroup.value = JSON.parse(JSON.stringify(twoNetT.value))
@@ -81,7 +79,6 @@ watch(drawMode, (NewVal: string) => {
     default:
       break;
   }
-  console.log(netGroup.value)
 })
 const updateTime = () => {
   const now = new Date().getHours();
@@ -105,7 +102,6 @@ const updateTime = () => {
     welcomeTitle.value = "🌙午夜好";
     careTitle.value = "已经到凌晨了,这么晚工作对身体不好早点休息吧";
   }
-  console.log(currentTime.value)
 };
 
 const start_drawing = () => {

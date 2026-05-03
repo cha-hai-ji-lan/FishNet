@@ -20,7 +20,9 @@
       "segmentSpacing": 5,
       "-drawCeil": false,
       "-drawNetSac": false,
-      "-useSegmentSpacing": false
+      "-useSegmentSpacing": false,
+      "-leftSleeveMesh": -1,
+      "-RightSleeveMesh": -1
     }
   },
   "colorPalette": {
