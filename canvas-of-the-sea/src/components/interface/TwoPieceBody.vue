@@ -88,6 +88,7 @@ import { coreConfig, fishNetEXE } from "../../utils/MainIndex.ts";
 import { DTC } from "../../utils/core/startdraw.ts"
 import { set_content } from "../../utils/warn.ts";
 const segment = ref<number>(1)
+const cache_segment = ref<number>(-1)  // 用于段向后偏移后返回段的位置 无缓存时用-1占位
 const route = useRoute()
 const router = useRouter()
 
@@ -121,11 +122,25 @@ const next_segment = () => {
     }
     set_default_param()
     send_parma_to_cli(collate_param());
-    netGroup.value['netBody']['segment'] += 1;
-    netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(5).fill(null);
-    DTC.value?.flesh_node()
+    push_dtc()
+
 }
 
+/**
+ * 用于增添一段网段参数列表空间
+*/
+const push_dtc = () => {
+    if (cache_segment.value !== -1) {
+        netGroup.value['netBody']['segment'] = cache_segment.value
+        cache_segment.value = -1
+    } else {
+        netGroup.value['netBody']['segment'] += 1;
+        netGroup.value['netBody'][`${netGroup.value['netBody']['segment']}`] = Array(5).fill(null);
+    }
+    DTC.value?.flesh_node()  // 刷新设计树
+
+
+}
 const check_err = (): boolean => {
     if (netGroup.value['netBody']['segment'] === 1) {
         let state = true
@@ -233,6 +248,17 @@ const draw_net_sac = () => {
 
 }
 const draw_ceil = () => {
+    /**
+     * 检查是否绘制过天井
+     * 如果绘制过天井 则返回天井所在的位置
+     */
+    if (netGroup.value["hasDrawPatio"]) {  // 绘制过天井则返回到天井所在段, 并储存当前段信息
+        cache_segment.value = netGroup.value['netBody']['segment']
+        netGroup.value['netBody']['segment'] = netGroup.value["PatioSegment"]
+
+    } else {
+        netGroup.value["PatioSegment"] = netGroup.value['netBody']['segment']
+    }
     if (netGroup.value['netBody']['segment'] <= 1) {
         set_content("网身第一段尚未绘制,无法定位天井的绘制位置")
         return
@@ -325,7 +351,15 @@ const draw_ceil = () => {
                 border: 2px dashed rgba(var(--normal-note), 0.75);
             }
         }
-
+        
+        & .segments {
+            color: rgba(var(--normal-note), 1);
+            margin-left: 2vmin;
+            padding: 0.5vmin 1vmin;
+            border: 2px solid rgba(var(--normal-note), 1);
+            background-color: rgba(var(--normal-note), var(--pTransparency));
+            border-radius: 2vmin;
+        }
         & .part-title {
             display: flex;
             justify-content: center;
@@ -335,6 +369,8 @@ const draw_ceil = () => {
             font-weight: bold;
 
             &.segments-port {
+                /* 修改 段提示文字为同系色*/
+                color: rgba(var(--warn-note), 1);
                 margin-left: 2vmin;
                 padding: 0.5vmin 1vmin;
                 border: 2px solid rgba(var(--warn-note), 1);
@@ -343,13 +379,6 @@ const draw_ceil = () => {
             }
         }
 
-        & .segments {
-            margin-left: 2vmin;
-            padding: 0.5vmin 1vmin;
-            border: 2px solid rgba(var(--normal-note), 1);
-            background-color: rgba(var(--normal-note), var(--pTransparency));
-            border-radius: 2vmin;
-        }
 
         & .item-title {
             width: 50%;

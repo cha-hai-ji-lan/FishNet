@@ -164,7 +164,7 @@ const check_err = (): boolean => {
     if (netGroup.value['netBody']["1"] !== undefined && netGroup.value['netBody']["1"][0] === null || netGroup.value['netBody']["1"] === undefined) {
         set_content("未绘制网身第一段,无法定位参数化原点坐标", 3)
         return false
-    } else if(netGroup.value['netBody']["1"] === undefined ){
+    } else if (netGroup.value['netBody']["1"] === undefined) {
         set_content("网身第一段参数未定义,无法绘制该段", 3)
         return false
     }
@@ -309,6 +309,7 @@ const redo_segment = () => {
         }
 
         & .segments {
+            color: rgba(var(--normal-note), 1);
             margin-left: 2vmin;
             padding: 0.5vmin 1vmin;
             border: 2px solid rgba(var(--normal-note), 1);
@@ -317,6 +318,7 @@ const redo_segment = () => {
         }
 
         & .segments-port {
+            color: rgba(var(--warn-note), 1);
             margin-left: 2vmin;
             padding: 0.5vmin 1vmin;
             border: 2px solid rgba(var(--warn-note), 1);

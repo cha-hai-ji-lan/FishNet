@@ -109,7 +109,7 @@ pub fn run() {
             write_json_file,   // 写入json文件
             connect_cad_cli,   // 连接CAD_Tool_CLI
             send_param_to_cli, // 发送参数给CAD_Tool_CLI
-            reset_cli,         // 杀死CLI链接CAD进程
+            reset_cli,         // 杀死CLI链接CAD进程  重新连接CAD_Tool_CLI
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

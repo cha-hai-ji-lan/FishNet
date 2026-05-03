@@ -157,9 +157,9 @@ class AcadDxf(ACADBase):
     def __init__(self):
         super().__init__()
         self.cache = {}  # 坐标缓存记录
-        self.has_draw_first_segment = False  # 是否绘制了网身第一段
-        self.has_draw_left_sleeve_first_segment = False  # 是否绘制了左袖第一段
-        self.has_draw_right_sleeve_first_segment = False  # 是否绘制了右袖第一段
+        self.has_draw_two_first_segment = False  # 是否绘制了网身第一段
+        self.has_draw_two_left_sleeve_first_segment = False  # 是否绘制了左袖第一段
+        self.has_draw_two_right_sleeve_first_segment = False  # 是否绘制了右袖第一段
 
     def get_all_entities(self) -> list:
         """
@@ -334,6 +334,11 @@ class AcadDxf(ACADBase):
         :return: 弧度
         """
         return math.atan((pos2[1] - pos1[1]) / (pos2[0] - pos1[0]))
+
+    def span(self, seed: float) -> float:
+        if self.cfg["scaleX"] == 0:
+            print("-horizontal-scale-zero")
+        return seed * self.i_arg[0] / 100 / (1 / self.cfg["scaleX"])
 
     def undo(self, *args, **kwargs) -> bool:
         """
@@ -595,7 +600,7 @@ class AcadDxf(ACADBase):
         """
         self.doc.SendCommand("_.REGEN\n")  # 下划线确保命令识别，\n表示回车执行 刷新界面
         self.cache["eyeSlopePosMark"] = []
-        if self.cfg["-useSegmentSpacing"]:
+        if self.cfg["-useSegmentSpacing"]:  # 启用段间距
             self.s_pos[1] += self.cfg["segmentSpacing"]
             self.s_pos[3] += self.cfg["segmentSpacing"]
             self.s_pos[5] -= self.cfg["segmentSpacing"]
@@ -607,10 +612,13 @@ class AcadDxf(ACADBase):
         self.cache["preSegment"] = self.s_pos  # 缓存上一段坐标组数据
         self.cache["preArg"] = self.i_arg  # 缓存上一段输入参数
         self.cache["preConfig"] = self.cfg  # 缓存上段配置数据
-        if self.has_draw_first_segment is False:
+        if self.has_draw_two_first_segment is False:
             self.cache["netBody"] = self.s_pos
             self.cache["netBodyArg"] = self.i_arg
-            self.has_draw_first_segment = True
+            self.has_draw_two_first_segment = True
+        if self.cfg["-drawCeil"]:  # 当前绘制段是天井 缓存天井数据
+            self.cache["netCeil"] = self.s_pos
+            self.cache["netCeilArg"] = self.i_arg
         self.shears: dict = {"N": 0, "T": 0, "B": 0}  # 边旁 起剪 续剪 落剪参数
         self.eye_shears: dict = {"N": 0, "T": 0, "B": 0}  # 宕眼 起剪 续剪 落剪参数
         self.s_pos = []  # 清空s_pos
@@ -682,7 +690,7 @@ class AcadTool(AcadDxf):
             else:
                 try:
                     single_param = float(single_param)
-                except ValueError:
+                except ValueError:  # 可能是 剪裁斜率 提取参数
                     single_param = [float(x) for x in re.findall(r'\d+\.\d+|\d+', single_param)]
             self.i_arg.append(single_param)
         if arg[1] == "-cfg-wireDiameter":  # 线径规格
@@ -699,12 +707,14 @@ class AcadTool(AcadDxf):
             self.cfg["-drawCeil"] = True
         else:
             self.cfg["-drawCeil"] = False
-        if not self.has_draw_left_sleeve_first_segment and self.i_arg[0] is None:  # 如果上袖第一段还未绘制并且参数第一个参数为None
+        if not self.has_draw_two_left_sleeve_first_segment and self.i_arg[0] is None:  # 如果上袖第一段还未绘制并且参数第一个参数为None
             self.i_arg[0] = self.cache["netBodyArg"][0]
 
     def confirm_the_clipping_slope__two(self) -> None:
         """
         通过比率计算拖网剪裁斜率
+
+        获得起剪 续剪 落剪代号
         :return:
         """
         tmp_slope1 = self.i_arg[-1][0]
@@ -881,6 +891,10 @@ class AcadTool(AcadDxf):
                     print("-null-eye-slope")
 
     def calculate_the_ratio(self):
+        """
+        计算剪裁掉的目数
+        :return:
+        """
         # 计算起剪数据
         if isinstance(self.slope[0], str):
             number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.slope[0])]
@@ -1462,7 +1476,7 @@ class ACAD(AcadTool):
         mesh_len = 0  # 小头横向长度
         # 计算裁剪后的横向目数
         # 第一段不为网囊
-        if not self.has_draw_first_segment and self.cfg["-drawNetSac"] is False:
+        if not self.has_draw_two_first_segment and self.cfg["-drawNetSac"] is False:
             mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
             self.s_pos.extend([
                 self.ORI[0]
@@ -1481,7 +1495,7 @@ class ACAD(AcadTool):
 
             self.s_pos.extend([self.ori_mir(self.s_pos[4]), self.s_pos[5]])
         # 第一段为网囊
-        elif not self.has_draw_first_segment and self.cfg["-drawNetSac"]:  # 第一段时是网囊
+        elif not self.has_draw_two_first_segment and self.cfg["-drawNetSac"]:  # 第一段时是网囊
             self.s_pos.extend([
                 self.ORI[0]
                 - (self.i_arg[0]  # 目大参数
@@ -1525,9 +1539,10 @@ class ACAD(AcadTool):
         # 天井段
         elif self.cfg["-drawCeil"]:
             mesh_len = self.i_arg[2] + self.shears["T"] + self.shears["B"] * 2
+            true_len = self.span(mesh_len)
             self.s_pos.extend(self.cache["netBody"][0:2])
             self.s_pos.extend([
-                self.ORI[0] - mesh_len / 2,
+                self.ORI[0] - true_len / 2,
                 self.s_pos[1]
                 + (self.i_arg[0] * self.i_arg[1] * self.ZY)]
             )
@@ -1539,12 +1554,12 @@ class ACAD(AcadTool):
         # AB段
         else:
             mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
-            mesh_length = (mesh_len * self.i_arg[0] * self.cfg["zoom"]) / 2
+            true_len = self.span(mesh_len)
             self.s_pos.extend(self.cache["preSegment"][6:])
             self.s_pos.extend(self.cache["preSegment"][4:6])
             self.s_pos.extend([
                 self.ORI[0]
-                + (mesh_length / 2),
+                + (true_len / 2),
                 self.s_pos[3]
                 - (self.i_arg[0] * self.i_arg[1] * self.ZY)
             ])
@@ -1594,16 +1609,18 @@ class ACAD(AcadTool):
         if self.cache["netBody"] is None:
             print("--no-net-body-first-segment")
             return
-        self.part_obj = "tb"  # 网身 two-body
+        self.part_obj = "tl"  # 上袖 two-left-sleeve
         self.doc.StartUndoMark()
         self.collate_param(arg)
         self.confirm_the_clipping_slope__two()
         self.calculate_the_ratio()
-        if not self.has_draw_left_sleeve_first_segment:
-            mesh_len = self.i_arg[2] + self.shears["T"] + self.shears["B"] * 2
-            self.s_pos.extend(self.cache["netBody"][0:2])
+        if not self.has_draw_two_left_sleeve_first_segment:  # 上袖第一段
+            mesh_len = self.i_arg[2] + self.shears["T"] + (self.shears["B"] * 2) - self.eye_shears["T"] - (
+                    self.eye_shears["B"] * 2)  # 计算后的横向目数
+            true_len = self.span(mesh_len) / 2  # 真实横向长度
+            self.s_pos.extend(self.cache["netBody"][2:4])
             self.s_pos.extend([
-                self.ORI[0] - mesh_len / 2,
+                self.ORI[0] - true_len,
                 self.s_pos[1]
                 + (self.i_arg[0] * self.i_arg[1] * self.ZY)]
             )
@@ -1640,12 +1657,12 @@ class ACAD(AcadTool):
         if self.cache["netBody"] is None:
             print("--no-net-body-first-segment")
             return
-        self.part_obj = "tb"  # 网身 two-body
+        self.part_obj = "tr"  # 下袖 two-right-sleeve
         self.doc.StartUndoMark()
         self.collate_param(arg)
         self.confirm_the_clipping_slope__two()
         self.calculate_the_ratio()
-        if not self.has_draw_right_sleeve_first_segment:
+        if not self.has_draw_two_right_sleeve_first_segment:
             mesh_len = self.i_arg[2] - self.shears["T"] - self.shears["B"] * 2
 
         self.pos_write_to_adoc(self.s_pos)  # 绘制CAD线段
