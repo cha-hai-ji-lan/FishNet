@@ -871,8 +871,113 @@ class AcadTool(AcadDxf):
 
         获得 剪裁斜率代号--起剪 续剪 落剪代号
 
+        例如 : 4-3
+
         :return: None
         """
+        tmp_slope1 = self.i_arg[-1][0]
+        tmp_slope2 = self.i_arg[-1][-1]
+        self.slope = []
+        match tmp_slope1:
+            case 1:
+                match tmp_slope2:
+                    case 1:
+                        self.slope = cut_slope["1-1"]["1"]["NAN"][:]
+                    case _:
+                        print("-shear-slope-support-err")
+            case 2:
+                match tmp_slope2:
+                    case 1:
+                        self.determine_the_optimal_code([
+                            cut_slope["2-1"]["2"]["0.5"][:],
+                            cut_slope["2-1"]["2"]["1.5"][:],
+                        ])
+                    case _:
+                        print("-shear-slope-support-err")
+
+            case 3:
+                match tmp_slope2:
+                    case 1:
+                        self.determine_the_optimal_code([
+                            cut_slope["3-1"]["3"]["0.5"][:],
+                            cut_slope["3-1"]["3"]["1.5"][:],
+                            cut_slope["3-1"]["3"]["2.5"][:],
+                        ])
+                    case 2:
+                        self.determine_the_optimal_code([
+                            cut_slope["3-2"]["3"]["0.5"][:],
+                            cut_slope["3-2"]["3"]["1.5"][:],
+                            cut_slope["3-2"]["3"]["2.5"][:],
+                        ])
+                    case _:
+                        print("-shear-slope-support-err")
+            case 4:
+                match tmp_slope2:
+                    case 1:
+                        self.determine_the_optimal_code([
+                            cut_slope["4-1"]["4"]["0.5"][:],
+                            cut_slope["4-1"]["4"]["1.5"][:],
+                            cut_slope["4-1"]["4"]["2.5"][:],
+                            cut_slope["4-1"]["4"]["3.5"][:],
+                        ])
+                    case 3:
+                        self.determine_the_optimal_code([
+                            cut_slope["4-3"]["4"]["0.5"][:],
+                            cut_slope["4-3"]["4"]["1.5"][:],
+                            cut_slope["4-3"]["4"]["2.5"][:],
+                            cut_slope["4-3"]["4"]["3.5"][:],
+                        ])
+                    case _:
+                        print("-shear-slope-support-err")
+            case 5:
+                match tmp_slope2:
+                    case 1:
+                        self.determine_the_optimal_code([
+                            cut_slope["5-1"]["5"]["0.5"][:],
+                            cut_slope["5-1"]["5"]["1.5"][:],
+                            cut_slope["5-1"]["5"]["2.5"][:],
+                            cut_slope["5-1"]["5"]["3.5"][:],
+                            cut_slope["5-1"]["5"]["4.5"][:],
+                        ])
+                    case 3:
+                        self.determine_the_optimal_code([
+                            cut_slope["5-3"]["5"]["0.5"][:],
+                            cut_slope["5-3"]["5"]["1.5"][:],
+                            cut_slope["5-3"]["5"]["2.5"][:],
+                            cut_slope["5-3"]["5"]["3.5"][:],
+                            cut_slope["5-3"]["5"]["4.5"][:],
+                        ])
+                    case _:
+                        print("-shear-slope-support-err")
+            case 7:
+                match tmp_slope2:
+                    case 1:
+                        self.determine_the_optimal_code([
+                            cut_slope["7-1"]["7"]["0.5"][:],
+                            cut_slope["7-1"]["7"]["1.5"][:],
+                            cut_slope["7-1"]["7"]["2.5"][:],
+                            cut_slope["7-1"]["7"]["3.5"][:],
+                            cut_slope["7-1"]["7"]["4.5"][:],
+                            cut_slope["7-1"]["7"]["5.5"][:],
+                            cut_slope["7-1"]["7"]["6.5"][:],
+                        ])
+                    case _:
+                        print("-shear-slope-support-err")
+                match tmp_slope2:
+                    case 1:
+                        self.determine_the_optimal_code([
+                            cut_slope["8-1"]["8"]["0.5"][:],
+                            cut_slope["8-1"]["8"]["1.5"][:],
+                            cut_slope["8-1"]["8"]["2.5"][:],
+                            cut_slope["8-1"]["8"]["3.5"][:],
+                            cut_slope["8-1"]["8"]["4.5"][:],
+                            cut_slope["8-1"]["8"]["5.5"][:],
+                            cut_slope["8-1"]["8"]["6.5"][:],
+                            cut_slope["8-1"]["8"]["7.5"][:],
+                        ])
+                    case _:
+                        print("-shear-slope-support-err")
+
     def confirm_the_eye_clipping_slope__two(self) -> None:
         tmp_slope1 = self.i_arg[-2][0]
         tmp_slope2 = self.i_arg[-2][-1]
@@ -903,6 +1008,14 @@ class AcadTool(AcadDxf):
                 else:
                     self.eye_slope = ["null"]
                     print("-null-eye-slope")
+
+    def determine_the_optimal_code(self, code_group: list):
+        """
+        从多组代号中计算出最优代号
+        :param code_group:
+        :return:
+        """
+        pass
 
     def calculate_cut_out_the_mesh(self):
         """
