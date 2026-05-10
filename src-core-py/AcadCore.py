@@ -1012,10 +1012,136 @@ class AcadTool(AcadDxf):
     def determine_the_optimal_code(self, code_group: list):
         """
         从多组代号中计算出最优代号
+        反算时着眼于 纵向 所以 T参数 可不考虑
+        可能出现的代号 [开剪: str| list, 续剪: str| list, 落剪: str| list]
         :param code_group:
         :return:
+        
         """
-        pass
+        # 偏离量用于记录每一组代号的计算冗余,
+        # 最优代号应该是计算冗余最少的一组代号
+        # -1: 代表为初始状态 因为偏离量最小都得为1
+        deviation = -1
+        best_code = ["__BEST_CODE__"]
+        for single_code_item in code_group:
+            temp_shears = {"N": 0, "T": 0, "B": 0}
+            temp_loop = 0
+            if isinstance(single_code_item[0], str):  # 开剪  只有两种情况 str | list
+                number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', single_code_item[0])]
+                if "N" in single_code_item[0]:
+                    temp_shears["N"] += number_list[0]
+                if "T" in single_code_item[0]:
+                    temp_shears["T"] += number_list[0]
+                if "B" in single_code_item[0]:
+                    if len(single_code_item[0]) > 2:
+                        temp_shears["B"] += number_list[1] / 2
+                        temp_shears["N"] += number_list[1] / 2
+                    else:
+                        temp_shears["B"] += number_list[0] / 2
+                        temp_shears["N"] += number_list[0] / 2
+            else:  # list
+                for cut_slope_obj in single_code_item[0]:
+                    number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', cut_slope_obj)]
+                    if "N" in cut_slope_obj:
+                        temp_shears["N"] += number_list[0]
+                    if "T" in cut_slope_obj:
+                        temp_shears["T"] += number_list[0]
+                    if "B" in cut_slope_obj:
+                        if len(cut_slope_obj) > 2:
+                            temp_shears["B"] += number_list[1] / 2
+                            temp_shears["N"] += number_list[1] / 2
+                        else:
+                            temp_shears["B"] += number_list[0] / 2
+                            temp_shears["N"] += number_list[0] / 2
+            if isinstance(single_code_item[2], str):  # 落剪
+                number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', single_code_item[2])]
+                if "N" in single_code_item[2]:
+                    temp_shears["N"] += number_list[0]
+                if "T" in single_code_item[2]:
+                    temp_shears["T"] += number_list[0]
+                if "B" in single_code_item[2]:
+                    if len(single_code_item[2]) > 2:
+                        temp_shears["B"] += number_list[1] / 2
+                        temp_shears["N"] += number_list[1] / 2
+                    else:
+                        temp_shears["B"] += number_list[0] / 2
+                        temp_shears["N"] += number_list[0] / 2
+            else:
+                for cut_slope_obj in single_code_item[2]:
+                    number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', cut_slope_obj)]
+                    if "N" in cut_slope_obj:
+                        temp_shears["N"] += number_list[0]
+                    if "T" in cut_slope_obj:
+                        temp_shears["T"] += number_list[0]
+                    if "B" in cut_slope_obj:
+                        if len(cut_slope_obj) > 2:
+                            temp_shears["B"] += number_list[1] / 2
+                            temp_shears["N"] += number_list[1] / 2
+                        else:
+                            temp_shears["B"] += number_list[0] / 2
+                            temp_shears["N"] += number_list[0] / 2
+            if isinstance(single_code_item[1], str):  # 续剪
+                number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', single_code_item[1])]
+                while True:
+                    if "N" in single_code_item[1]:
+                        temp_shears["N"] += number_list[0]
+                    if "T" in single_code_item[1]:
+                        temp_shears["T"] += number_list[0]
+                    if "B" in single_code_item[1]:
+                        if len(single_code_item[1]) > 2:
+                            temp_shears["B"] += number_list[1] / 2
+                            temp_shears["N"] += number_list[1] / 2
+                        else:
+                            temp_shears["B"] += number_list[0] / 2
+                            temp_shears["N"] += number_list[0] / 2
+                    temp_loop += 1
+                    if temp_shears["N"] >= self.i_arg[1]:
+                        if deviation == -1:  # 偏离量为初值
+                            deviation = temp_loop + temp_shears["N"] - self.i_arg[1]
+                            single_code_item[1] += F" ({temp_loop})"
+                            self.shears = temp_shears
+                            self.cycles = temp_loop
+                            best_code = single_code_item
+                        else:
+                            if deviation > temp_loop + temp_shears["N"] - self.i_arg[1]:  # 当前存有的偏离量不为最小 则更新
+                                deviation = temp_loop + temp_shears["N"] - self.i_arg[1]
+                                single_code_item[1][-1] += F" ({temp_loop})"
+                                self.shears = temp_shears
+                                self.cycles = temp_loop
+                                best_code = single_code_item
+                        break
+            else:
+                for cut_slope_obj in single_code_item[1]:
+                    number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', cut_slope_obj)]
+                    while True:
+                        if "N" in cut_slope_obj:
+                            temp_shears["N"] += number_list[0]
+                        if "T" in cut_slope_obj:
+                            temp_shears["T"] += number_list[0]
+                        if "B" in cut_slope_obj:
+                            if len(cut_slope_obj) > 2:
+                                temp_shears["B"] += number_list[1] / 2
+                                temp_shears["N"] += number_list[1] / 2
+                            else:
+                                temp_shears["B"] += number_list[0] / 2
+                                temp_shears["N"] += number_list[0] / 2
+                        temp_loop += 1
+                        if temp_shears["N"] >= self.i_arg[1]:
+                            if deviation == -1:
+                                deviation = temp_loop + temp_shears["N"] - self.i_arg[1]
+                                single_code_item[1][-1] += F" ({temp_loop})"
+                                self.shears = temp_shears
+                                self.cycles = temp_loop
+                                best_code = single_code_item
+                            else:
+                                if deviation > temp_loop + temp_shears["N"] - self.i_arg[1]:  # 当前存有的偏离量不为最小 则更新
+                                    deviation = temp_loop + temp_shears["N"] - self.i_arg[1]
+                                    single_code_item[1][-1] += F" ({temp_loop})"
+                                    self.shears = temp_shears
+                                    self.cycles = temp_loop
+                                    best_code = single_code_item
+                            break
+        return best_code
 
     def calculate_cut_out_the_mesh(self):
         """
@@ -1030,8 +1156,12 @@ class AcadTool(AcadDxf):
             if "T" in self.slope[0]:
                 self.shears["T"] += number_list[0]
             if "B" in self.slope[0]:
-                self.shears["B"] += number_list[1] / 2
-                self.shears["N"] += number_list[1] / 2
+                if len(self.slope[0]) > 2:
+                    self.shears["B"] += number_list[1] / 2
+                    self.shears["N"] += number_list[1] / 2
+                else:
+                    self.shears["B"] += number_list[0] / 2
+                    self.shears["N"] += number_list[0] / 2
         elif isinstance(self.slope[0], list):
             for cut_slope_obj in self.slope[0]:
                 if isinstance(cut_slope_obj, str):
@@ -1041,43 +1171,44 @@ class AcadTool(AcadDxf):
                     if "T" in cut_slope_obj:
                         self.shears["T"] += number_list[0]
                     if "B" in cut_slope_obj:
-                        self.shears["B"] += number_list[1] / 2
-                        self.shears["N"] += number_list[1] / 2
+                        if len(cut_slope_obj) > 2:
+                            self.shears["B"] += number_list[1] / 2
+                            self.shears["N"] += number_list[1] / 2
+                        else:
+                            self.shears["B"] += number_list[0] / 2
+                            self.shears["N"] += number_list[0] / 2
         # 计算落剪数据
-        if isinstance(self.slope[2], str) and len(self.slope[2]) > 2:
+        if isinstance(self.slope[2], str):
             number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.slope[2])]
             if "N" in self.slope[2]:
                 self.shears["N"] += number_list[0]
             if "T" in self.slope[2]:
                 self.shears["T"] += number_list[0]
             if "B" in self.slope[2]:
-                self.shears["B"] += number_list[1] / 2
-                self.shears["N"] += number_list[1] / 2
-        elif isinstance(self.slope[2], str) and len(self.slope[2]) <= 2:
-            number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.slope[2])]
-            if "N" in self.slope[2]:
-                self.shears["N"] += number_list[0]
-            if "T" in self.slope[2]:
-                self.shears["T"] += number_list[0]
-            if "B" in self.slope[2]:
-                self.shears["B"] += number_list[0] / 2
-                self.shears["N"] += number_list[0] / 2
+                if len(self.slope[2]) > 2:
+                    self.shears["B"] += number_list[1] / 2
+                    self.shears["N"] += number_list[1] / 2
+                else:
+                    self.shears["B"] += number_list[0] / 2
+                    self.shears["N"] += number_list[0] / 2
         elif isinstance(self.slope[2], list):
             for cut_slope_obj in self.slope[2]:
-                if isinstance(cut_slope_obj, str):
-                    number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', cut_slope_obj)]
-                    if "N" in cut_slope_obj:
-                        self.shears["N"] += number_list[0]
-                    if "T" in cut_slope_obj:
-                        self.shears["T"] += number_list[0]
-                    if "B" in cut_slope_obj:
+                number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', cut_slope_obj)]
+                if "N" in cut_slope_obj:
+                    self.shears["N"] += number_list[0]
+                if "T" in cut_slope_obj:
+                    self.shears["T"] += number_list[0]
+                if "B" in cut_slope_obj:
+                    if len(cut_slope_obj) > 2:
                         self.shears["B"] += number_list[1] / 2
                         self.shears["N"] += number_list[1] / 2
-                    self.cycles += 1
+                    else:
+                        self.shears["B"] += number_list[0] / 2
+                        self.shears["N"] += number_list[0] / 2
         # 计算续剪数据
         cycles_total_len = self.i_arg[1] - self.shears["N"]  # 续剪数据总长度
         # 如果剪数据为字符串，并且续剪标志字符长度大于2 (例如 1N2B)，则计算续剪数据
-        if isinstance(self.slope[1], str) and len(self.slope[1]) > 2:
+        if isinstance(self.slope[1], str):
             self.cycles = 0
             temp_one_cycles_len = 0
             number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.slope[1])]
@@ -1088,33 +1219,18 @@ class AcadTool(AcadDxf):
                 if "T" in self.slope[1]:
                     self.shears["T"] += number_list[0]
                 if "B" in self.slope[1]:
-                    self.shears["B"] += number_list[1] / 2
-                    self.shears["N"] += number_list[1] / 2
-                    temp_one_cycles_len += number_list[1] / 2
+                    if len(self.slope[1]) > 2:
+                        self.shears["B"] += number_list[1] / 2
+                        self.shears["N"] += number_list[1] / 2
+                        temp_one_cycles_len += number_list[1] / 2
+                    else:
+                        self.shears["B"] += number_list[0] / 2
+                        self.shears["N"] += number_list[0] / 2
+                        temp_one_cycles_len += number_list[0] / 2
                 self.cycles += 1
                 if temp_one_cycles_len >= cycles_total_len:
                     break
 
-            self.slope[1] += F" ({self.cycles})"
-            self.cycles = 0
-        # 如果剪数据为字符串，并且续剪标志字符长度小于2 (例如 1N)，则计算续剪数据
-        elif isinstance(self.slope[1], str) and len(self.slope[1]) <= 2:
-            self.cycles = 0
-            temp_one_cycles_len = 0
-            number_list = [float(x) for x in re.findall(r'\d+\.\d+|\d+', self.slope[1])]
-            while True:
-                if "N" in self.slope[1]:
-                    self.shears["N"] += number_list[0]
-                    temp_one_cycles_len += number_list[0]
-                if "T" in self.slope[1]:
-                    self.shears["T"] += number_list[0]
-                if "B" in self.slope[1]:
-                    self.shears["B"] += number_list[0] / 2
-                    self.shears["N"] += number_list[0] / 2
-                    temp_one_cycles_len += number_list[0] / 2
-                self.cycles += 1
-                if temp_one_cycles_len >= cycles_total_len:
-                    break
             self.slope[1] += F" ({self.cycles})"
             self.cycles = 0
         elif isinstance(self.slope[1], list):
@@ -1130,9 +1246,14 @@ class AcadTool(AcadDxf):
                         if "T" in cut_slope_obj:
                             self.shears["T"] += number_list[0]
                         if "B" in cut_slope_obj:
-                            self.shears["B"] += number_list[1] / 2
-                            self.shears["N"] += number_list[1] / 2
-                            temp_one_cycles_len += number_list[1] / 2.
+                            if len(cut_slope_obj) > 2:
+                                self.shears["B"] += number_list[1] / 2
+                                self.shears["N"] += number_list[1] / 2
+                                temp_one_cycles_len += number_list[1] / 2.
+                            else:
+                                self.shears["B"] += number_list[0] / 2
+                                self.shears["N"] += number_list[0] / 2
+                                temp_one_cycles_len += number_list[0] / 2
                 self.cycles += 1
                 if temp_one_cycles_len >= cycles_total_len:
                     break

@@ -1,17 +1,19 @@
 @font-face {
-    font-family:'Judou-Heavy';
+    font-family: 'Judou-Heavy';
     src: url('/fonts/Judou-Heavy.ttc') format('truetype');
     font-weight: 400;
     font-display: swap;
 }
+
 @font-face {
-    font-family:'荆南圆体';
+    font-family: '荆南圆体';
     src: url('/fonts/荆南圆体.ttf') format('truetype');
     font-weight: 400;
     font-display: swap;
 }
+
 @font-face {
-    font-family:'思印宋';
+    font-family: '思印宋';
     src: url('/fonts/SiyinSong-Regular.ttf') format('truetype');
     font-weight: 400;
     font-display: swap;
